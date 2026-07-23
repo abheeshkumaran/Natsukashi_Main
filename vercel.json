@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "natsukashi_design/wsgi.py",
+            "src": "vercel_app.py",
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "15mb"
@@ -23,7 +23,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "natsukashi_design/wsgi.py"
+            "dest": "vercel_app.py"
         }
     ]
 }
