@@ -1,0 +1,102 @@
+{% load static %}
+<div class="pm-type-label">
+    {% if product_type == 'mund' %}Onam Set-Mund{% elif product_type == 'colored' %}Colored Saree{% else %}Onam Saree{% endif %}
+</div>
+
+<div class="row g-4">
+
+    <div class="col-lg-6">
+        <div class="pm-main-image-wrap" id="pmMainImageWrap">
+            {% if images|length > 0 %}
+                <img id="pmMainImg" class="pm-main-image-img" src="{{ images.0.image.url }}">
+            {% else %}
+                <img id="pmMainImg" class="pm-main-image-img" src="https://via.placeholder.com/900x1125?text=No+Image">
+            {% endif %}
+        </div>
+
+        {% if images|length > 1 %}
+        <div class="pm-thumbs">
+            {% for image in images %}
+                <img src="{{ image.image.url }}" onclick="pmChangeImage(this)" class="{% if forloop.first %}active{% endif %}">
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <h2 class="pm-product-title">{{ product.collection_name }}</h2>
+            <button
+                type="button"
+                class="pm-wishlist-btn wishlist-toggle-btn"
+                data-id="{{ product.id }}"
+                data-type="{{ product_type }}"
+                data-name="{{ product.collection_name }}"
+                data-price="{{ product.price }}"
+                data-image="{% if images|length > 0 %}{{ images.0.image.url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                onclick="toggleWishlist(this)"
+                aria-label="Add to Wishlist"
+                aria-pressed="false"
+                title="Add to Wishlist">
+                <svg class="pm-heart-icon" viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 21s-6.716-4.35-9.428-8.28C.686 9.5 1.2 5.6 4.5 4.2 7 3.1 9.5 4 12 7c2.5-3 5-3.9 7.5-2.8 3.3 1.4 3.814 5.3 1.928 8.52C18.716 16.65 12 21 12 21z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="pm-rating">★★★★★ <span>(128 Reviews)</span></div>
+
+        <div class="pm-price-card">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="pm-price-current">₹{{ product.price }}</span>
+                {% if product.quantity > 0 %}
+                <span class="pm-price-old">₹{{ product.price|add:'500' }}</span>
+                <span class="pm-price-off">17% off</span>
+                {% endif %}
+            </div>
+
+            {% if product.quantity > 0 and product.stock_available %}
+            <span class="pm-stock-badge in-stock">{{ product.stock_status }}</span>
+            {% else %}
+            <span class="pm-stock-badge out-stock">{{ product.stock_status }}</span>
+            {% endif %}
+        </div>
+
+        <p class="pm-desc">{{ product.description }}</p>
+
+        <div class="pm-qty-row">
+            <span class="fw-semibold">Quantity</span>
+            <div class="pm-qty-stepper">
+                <button type="button" onclick="pmChangeQty(-1)">−</button>
+                <input type="text" id="pmDetailQty" value="1" readonly>
+                <button type="button" onclick="pmChangeQty(1)">+</button>
+            </div>
+        </div>
+
+        <div class="pm-action-buttons">
+            <button
+                class="pm-btn-add-cart cart-toggle-btn"
+                data-default-label="Add to Cart"
+                data-id="{{ product.id }}"
+                data-type="{{ product_type }}"
+                data-name="{{ product.collection_name }}"
+                data-price="{{ product.price }}"
+                data-image="{% if images|length > 0 %}{{ images.0.image.url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                data-out-of-stock="{% if product.quantity == 0 or not product.stock_available %}true{% else %}false{% endif %}"
+                onclick="addToCart(this)"
+                {% if product.quantity == 0 or not product.stock_available %}disabled{% endif %}>Add to Cart</button>
+            <button class="pm-btn-buy-now" {% if product.quantity == 0 or not product.stock_available %}disabled{% endif %}>Buy Now</button>
+        </div>
+    </div>
+
+</div>
+
+<div class="pm-details-panel">
+    <h2>Product Description</h2>
+    <p class="pm-desc mb-0">{{ product.description }}</p>
+
+    <table class="pm-specs-table mt-4 w-100">
+        <tr><td>Availability</td><td>{{ product.stock_status }}</td></tr>
+        <tr><td>Quantity Available</td><td>{{ product.quantity }}</td></tr>
+    </table>
+</div>

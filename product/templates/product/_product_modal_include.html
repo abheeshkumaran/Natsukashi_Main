@@ -1,0 +1,370 @@
+<!-- Shared product-details popup: include once per page, then call
+     openProductModal(type, pk) from a product card's click handler. -->
+
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0" id="productModalBody">
+                <div class="text-center py-5 text-muted">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Blur the page behind the popup instead of the flat dark overlay. */
+    .modal-backdrop {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        background-color: rgba(20, 20, 20, 0.35);
+    }
+
+    .modal-backdrop.show {
+        opacity: 1;
+    }
+
+    #productModalBody .pm-type-label {
+        color: #c91f2f;
+        font-weight: 600;
+        font-size: .76rem;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 6px;
+    }
+
+    #productModalBody .pm-main-image-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 380px;
+        margin: 0 auto;
+        height: 380px;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    }
+
+    #productModalBody .pm-main-image-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        cursor: zoom-in;
+        transition: transform .15s ease-out;
+        transform-origin: 50% 50%;
+    }
+
+    #productModalBody .pm-thumbs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    #productModalBody .pm-thumbs img {
+        width: 55px;
+        height: 68px;
+        object-fit: cover;
+        border: 2px solid #eee;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: .2s;
+    }
+
+    #productModalBody .pm-thumbs img:hover,
+    #productModalBody .pm-thumbs img.active {
+        border-color: #c91f2f;
+    }
+
+    #productModalBody .pm-product-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #212121;
+    }
+
+    #productModalBody .pm-wishlist-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        margin-top: 2px;
+        line-height: 0;
+        flex-shrink: 0;
+        color: #bbb;
+        cursor: pointer;
+        transition: transform .15s ease, color .15s ease;
+    }
+
+    #productModalBody .pm-wishlist-btn:hover {
+        color: #c91f2f;
+        transform: scale(1.12);
+    }
+
+    #productModalBody .pm-wishlist-btn.active {
+        color: #c91f2f;
+        animation: pmHeartPop .3s ease;
+    }
+
+    #productModalBody .pm-heart-icon {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linejoin: round;
+        transition: fill .15s ease;
+    }
+
+    #productModalBody .pm-wishlist-btn.active .pm-heart-icon {
+        fill: currentColor;
+    }
+
+    @keyframes pmHeartPop {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+
+    #productModalBody .pm-rating {
+        color: #f8b400;
+        font-size: 15px;
+        margin: 8px 0;
+    }
+
+    #productModalBody .pm-rating span {
+        color: #888;
+        font-size: 13px;
+        margin-left: 6px;
+    }
+
+    #productModalBody .pm-price-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        padding: 16px;
+        margin: 16px 0;
+    }
+
+    #productModalBody .pm-price-current {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #c91f2f;
+    }
+
+    #productModalBody .pm-price-old {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 1rem;
+    }
+
+    #productModalBody .pm-price-off {
+        color: #388e3c;
+        font-weight: 700;
+    }
+
+    #productModalBody .pm-stock-badge {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    #productModalBody .pm-stock-badge.in-stock {
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    #productModalBody .pm-stock-badge.out-stock {
+        background: #fdecea;
+        color: #c91f2f;
+    }
+
+    #productModalBody .pm-desc {
+        line-height: 1.7;
+        color: #555;
+        margin: 14px 0;
+        font-size: .92rem;
+    }
+
+    #productModalBody .pm-qty-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 14px 0;
+        font-size: .95rem;
+    }
+
+    #productModalBody .pm-qty-stepper {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #dcdcdc;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    #productModalBody .pm-qty-stepper button {
+        width: 34px;
+        height: 34px;
+        border: none;
+        background: #f5f5f5;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    #productModalBody .pm-qty-stepper button:hover {
+        background: #eaeaea;
+    }
+
+    #productModalBody .pm-qty-stepper input {
+        width: 40px;
+        height: 34px;
+        text-align: center;
+        font-weight: 600;
+        border: none;
+        background: transparent;
+    }
+
+    #productModalBody .pm-action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    #productModalBody .pm-btn-add-cart {
+        background: #c91f2f;
+        color: #fff;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        transition: .25s;
+        flex: 1;
+        font-size: .88rem;
+    }
+
+    #productModalBody .pm-btn-add-cart:hover:not(:disabled) {
+        background: #a51725;
+        color: #fff;
+    }
+
+    #productModalBody .pm-btn-buy-now {
+        background: transparent;
+        color: #c91f2f;
+        border: 2px solid #c91f2f;
+        padding: 11px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        transition: .25s;
+        flex: 1;
+        font-size: .88rem;
+    }
+
+    #productModalBody .pm-btn-buy-now:hover:not(:disabled) {
+        background: #c91f2f;
+        color: #fff;
+    }
+
+    #productModalBody .pm-action-buttons button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    #productModalBody .pm-details-panel {
+        margin-top: 30px;
+        background: #fafafa;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    #productModalBody .pm-details-panel h2 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #212121;
+        margin-bottom: 12px;
+    }
+
+    #productModalBody .pm-specs-table td {
+        padding: 9px;
+        border-bottom: 1px solid #eee;
+        font-size: .9rem;
+    }
+
+    #productModalBody .pm-specs-table td:first-child {
+        font-weight: 600;
+        color: #666;
+        width: 160px;
+    }
+</style>
+
+<script>
+    function openProductModal(type, pk) {
+        const body = document.getElementById('productModalBody');
+        body.innerHTML = '<div class="text-center py-5 text-muted">Loading...</div>';
+
+        const modalEl = document.getElementById('productModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+
+        fetch(`/modal/${type}/${pk}/`)
+            .then((res) => {
+                if (!res.ok) throw new Error('Failed to load product');
+                return res.text();
+            })
+            .then((html) => {
+                body.innerHTML = html;
+                pmSetupZoom();
+                if (typeof syncAddToCartButtons === 'function') syncAddToCartButtons();
+                if (typeof syncWishlistButtons === 'function') syncWishlistButtons();
+            })
+            .catch(() => {
+                body.innerHTML = '<div class="text-center py-5 text-danger">Sorry, could not load product details.</div>';
+            });
+    }
+
+    function pmChangeImage(thumbEl) {
+        const mainImg = document.getElementById('pmMainImg');
+        if (!mainImg) return;
+        mainImg.src = thumbEl.src;
+        document.querySelectorAll('#productModalBody .pm-thumbs img').forEach((t) => t.classList.remove('active'));
+        thumbEl.classList.add('active');
+
+        // Whichever image is on display becomes the one saved to the cart/wishlist.
+        const cartBtn = document.querySelector('#productModalBody .cart-toggle-btn');
+        if (cartBtn) cartBtn.dataset.image = thumbEl.src;
+        const wishlistBtn = document.querySelector('#productModalBody .wishlist-toggle-btn');
+        if (wishlistBtn) wishlistBtn.dataset.image = thumbEl.src;
+    }
+
+    function pmChangeQty(delta) {
+        const input = document.getElementById('pmDetailQty');
+        if (!input) return;
+        input.value = Math.max(1, parseInt(input.value, 10) + delta);
+    }
+
+    // Hover-zoom: scale the image itself around the cursor position, which
+    // reads better than a side-by-side zoom pane at modal width.
+    function pmSetupZoom() {
+        const wrap = document.getElementById('pmMainImageWrap');
+        const img = document.getElementById('pmMainImg');
+        if (!wrap || !img) return;
+
+        wrap.addEventListener('mousemove', (e) => {
+            const rect = wrap.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+            img.style.transform = 'scale(1.8)';
+        });
+
+        wrap.addEventListener('mouseleave', () => {
+            img.style.transform = 'scale(1)';
+        });
+    }
+</script>
