@@ -20,7 +20,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "vercel_app.py"
+            "dest": "/vercel_app.py"
         }
     ]
 }
