@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 
 class OnamSaree(models.Model):
@@ -30,7 +31,7 @@ class OnamSaree(models.Model):
 
 class OnamSareeImage(models.Model):
     saree = models.ForeignKey(OnamSaree, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='onam_sarees/')
+    image = models.ImageField(upload_to='onam_sarees/', storage=MediaCloudinaryStorage())
 
     def __str__(self):
         return f"Image for {self.saree.collection_name}"
@@ -65,7 +66,7 @@ class OnamSetMund(models.Model):
 
 class OnamSetMundImage(models.Model):
     mund = models.ForeignKey(OnamSetMund, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='onam_munds/')
+    image = models.ImageField(upload_to='onam_munds/', storage=MediaCloudinaryStorage())
 
     class Meta:
         db_table = 'product_onammundimage'
@@ -105,7 +106,7 @@ class ColoredSaree(models.Model):
 
 class ColoredSareeImage(models.Model):
     saree = models.ForeignKey(ColoredSaree, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='colored_sarees/')
+    image = models.ImageField(upload_to='colored_sarees/', storage=MediaCloudinaryStorage())
 
     class Meta:
         verbose_name = 'Colored Saree Image'
