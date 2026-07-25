@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
     'product',
@@ -135,26 +134,19 @@ STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary Storage Settings
-cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
-if cloudinary_url.startswith('cloudinary://'):
-    creds = cloudinary_url.replace('cloudinary://', '')
-    try:
-        api_key_secret, cloud_name = creds.split('@')
-        api_key, api_secret = api_key_secret.split(':')
-        CLOUDINARY_STORAGE = {
-            'CLOUD_NAME': cloud_name,
-            'API_KEY': api_key,
-            'API_SECRET': api_secret,
-        }
-    except Exception:
-        CLOUDINARY_STORAGE = {'CLOUD_NAME': 'dummy', 'API_KEY': 'dummy', 'API_SECRET': 'dummy'}
-else:
-    CLOUDINARY_STORAGE = {'CLOUD_NAME': 'dummy', 'API_KEY': 'dummy', 'API_SECRET': 'dummy'}
+# Cloudinary Configuration
+import cloudinary
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
+    secure=True,
+)
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",

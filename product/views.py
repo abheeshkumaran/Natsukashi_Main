@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
+import cloudinary.uploader
 from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
 from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage
 
@@ -26,7 +27,8 @@ def add_onam_set_mund(request):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSetMundImage.objects.create(mund=mund, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="onam_munds")
+                OnamSetMundImage.objects.create(mund=mund, image=upload_result['public_id'])
 
             return redirect('list_onam_set_munds')
     else:
@@ -44,7 +46,8 @@ def add_onam_saree(request):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSareeImage.objects.create(saree=saree, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="onam_sarees")
+                OnamSareeImage.objects.create(saree=saree, image=upload_result['public_id'])
 
             return redirect('admin_dashboard')
     else:
@@ -62,7 +65,8 @@ def add_colored_saree(request):
 
             images = request.FILES.getlist('images')
             for image in images:
-                ColoredSareeImage.objects.create(saree=saree, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="colored_sarees")
+                ColoredSareeImage.objects.create(saree=saree, image=upload_result['public_id'])
 
             return redirect('admin_dashboard')
     else:
@@ -98,7 +102,8 @@ def edit_onam_saree(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSareeImage.objects.create(saree=saree, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="onam_sarees")
+                OnamSareeImage.objects.create(saree=saree, image=upload_result['public_id'])
 
             return redirect('list_onam_sarees')
     else:
@@ -119,7 +124,8 @@ def edit_colored_saree(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                ColoredSareeImage.objects.create(saree=saree, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="colored_sarees")
+                ColoredSareeImage.objects.create(saree=saree, image=upload_result['public_id'])
 
             return redirect('list_colored_sarees')
     else:
@@ -154,7 +160,8 @@ def edit_onam_set_mund(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSetMundImage.objects.create(mund=mund, image=image)
+                upload_result = cloudinary.uploader.upload(image, folder="onam_munds")
+                OnamSetMundImage.objects.create(mund=mund, image=upload_result['public_id'])
 
             return redirect('list_onam_set_munds')
     else:
