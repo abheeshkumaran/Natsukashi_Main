@@ -135,6 +135,22 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary Storage Settings
+cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
+if cloudinary_url.startswith('cloudinary://'):
+    creds = cloudinary_url.replace('cloudinary://', '')
+    try:
+        api_key_secret, cloud_name = creds.split('@')
+        api_key, api_secret = api_key_secret.split(':')
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': cloud_name,
+            'API_KEY': api_key,
+            'API_SECRET': api_secret,
+        }
+    except Exception:
+        CLOUDINARY_STORAGE = {'CLOUD_NAME': 'dummy', 'API_KEY': 'dummy', 'API_SECRET': 'dummy'}
+else:
+    CLOUDINARY_STORAGE = {'CLOUD_NAME': 'dummy', 'API_KEY': 'dummy', 'API_SECRET': 'dummy'}
+
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
