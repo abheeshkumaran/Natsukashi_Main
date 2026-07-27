@@ -285,7 +285,42 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        .row .col-md-4 .product-card {
+        /* Horizontal Scroll Container */
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding-bottom: 20px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+            scrollbar-color: #c91f2f #f1f1f1;
+        }
+        
+        .horizontal-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar-thumb {
+            background: #c91f2f;
+            border-radius: 4px;
+        }
+
+        .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a51725;
+        }
+
+        .horizontal-scroll-item {
+            flex: 0 0 auto;
+            width: 320px;
+            scroll-snap-align: start;
+        }
+
+        .horizontal-scroll-item .product-card {
             opacity: 0;
             transform: translateY(18px);
             animation: cardReveal 550ms ease forwards;
@@ -293,12 +328,12 @@
             max-width: 320px;
         }
 
-        .row .col-md-4:nth-child(1) .product-card { animation-delay: 0.12s; }
-        .row .col-md-4:nth-child(2) .product-card { animation-delay: 0.2s; }
-        .row .col-md-4:nth-child(3) .product-card { animation-delay: 0.28s; }
-        .row .col-md-4:nth-child(4) .product-card { animation-delay: 0.36s; }
-        .row .col-md-4:nth-child(5) .product-card { animation-delay: 0.44s; }
-        .row .col-md-4:nth-child(6) .product-card { animation-delay: 0.52s; }
+        .horizontal-scroll-item:nth-child(1) .product-card { animation-delay: 0.12s; }
+        .horizontal-scroll-item:nth-child(2) .product-card { animation-delay: 0.2s; }
+        .horizontal-scroll-item:nth-child(3) .product-card { animation-delay: 0.28s; }
+        .horizontal-scroll-item:nth-child(4) .product-card { animation-delay: 0.36s; }
+        .horizontal-scroll-item:nth-child(5) .product-card { animation-delay: 0.44s; }
+        .horizontal-scroll-item:nth-child(6) .product-card { animation-delay: 0.52s; }
 
         .product-card:hover {
             transform: translateY(-6px) scale(1.02);
@@ -420,9 +455,9 @@
                 <p class="section-desc reveal-left">Celebrate Onam with our curated sarees — vibrant colours, fine weaves, and festival-ready designs.</p>
             </div>
 
-            <div class="row">
+            <div class="horizontal-scroll-container">
                 {% for saree in sarees %}
-                <div class="col-md-4 mb-4">
+                <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
                         <a href="javascript:void(0)" onclick="openProductModal('saree', '{{ saree.pk }}')">
                             {% if saree.first_image_url %}
@@ -484,9 +519,9 @@
                 <p class="section-desc reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect for the festival.</p>
             </div>
 
-            <div class="row">
+            <div class="horizontal-scroll-container">
                 {% for mund in munds %}
-                <div class="col-md-4 mb-4">
+                <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
                         <a href="javascript:void(0)" onclick="openProductModal('mund', '{{ mund.pk }}')">
                             {% if mund.first_image_url %}
@@ -549,9 +584,9 @@
                         <p class="section-desc reveal-left">Bright, contemporary colored sarees for everyday elegance.</p>
                     </div>
 
-                    <div class="row">
+                    <div class="horizontal-scroll-container">
                         {% for saree in colored %}
-                        <div class="col-md-4 mb-4">
+                        <div class="horizontal-scroll-item">
                             <div class="card product-card h-100">
                                 <a href="javascript:void(0)" onclick="openProductModal('colored', '{{ saree.pk }}')">
                                     {% if saree.first_image_url %}
