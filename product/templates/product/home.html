@@ -665,6 +665,17 @@
             document.querySelectorAll('.reveal-left').forEach(el => observer.observe(el));
         })();
 
+        // Triple click on navbar logo to open admin panel
+        const navbarBrand = document.querySelector('.navbar-brand');
+        if (navbarBrand) {
+            navbarBrand.addEventListener('click', function(e) {
+                if (e.detail === 3) {
+                    e.preventDefault();
+                    window.location.href = "{% url 'admin_dashboard' %}";
+                }
+            });
+        }
+
         // Hide the navbar on scroll-down, reveal it again on scroll-up.
         (function () {
             const navbar = document.querySelector('.navbar');
