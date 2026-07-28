@@ -9,365 +9,8 @@
     <title>Natsukashi - Traditional Collections</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #faf8f5;
-            overflow-x: hidden;
-        }
-
-        /* Navbar */
-
-        .navbar {
-            background: #fff;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-            transition: transform .35s ease;
-            height: 80px;
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-
-        .navbar.navbar-hidden {
-            transform: translateY(-100%);
-        }
-
-        .navbar > .container {
-            height: 100%;
-        }
-
-        .navbar-brand {
-            padding: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar-logo {
-            height: 100%;
-            width: auto;
-            max-width: 100%;
-            display: block;
-            object-fit: contain;
-        }
-
-        .nav-link {
-            color: #333 !important;
-            margin-left: 20px;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            color: lightgray !important;
-        }
-
-        .cart-count,
-        .wishlist-count {
-            position: absolute;
-            top: 2px;
-            right: -6px;
-            font-size: 11px;
-            display: none;
-        }
-
-        /* Hero Section */
-
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 50px 20px;
-        }
-
-        .hero-content {
-            max-width: 1000px;
-        }
-
-        /* Logo Animation */
-
-        .logo {
-            width: 700px;
-            max-width: 95%;
-            opacity: 0;
-            animation: logoReveal 2s ease forwards;
-        }
-
-        @keyframes logoReveal {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-                filter: blur(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-                filter: blur(0);
-            }
-        }
-
-        .line {
-            width: 0;
-            height: 2px;
-            background: #c91f2f;
-            margin: 25px auto;
-            animation: growLine 1.5s ease forwards;
-            animation-delay: 1s;
-        }
-
-        @keyframes growLine {
-            from {
-                width: 0;
-            }
-
-            to {
-                width: 250px;
-            }
-        }
-
-        .tagline {
-            margin-top: 25px;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            color: #666;
-            opacity: 0;
-            animation: fadeUp 1.5s ease forwards;
-            animation-delay: 1.8s;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-text {
-            margin-top: 40px;
-            font-size: 18px;
-            color: #555;
-            line-height: 1.8;
-        }
-
-        .btn-shop {
-            background: #c91f2f;
-            color: #fff;
-            border: none;
-            padding: 14px 35px;
-            margin-top: 35px;
-            transition: .3s;
-        }
-
-        .btn-shop:hover {
-            background: #a51725;
-            color: #fff;
-        }
-
-        .btn-about {
-            border: 2px solid #c91f2f;
-            color: #c91f2f;
-            padding: 14px 35px;
-            margin-top: 35px;
-            margin-left: 15px;
-        }
-
-        .btn-about:hover {
-            background: #c91f2f;
-            color: #fff;
-        }
-
-        /* Features */
-
-        .features {
-            padding: 80px 20px;
-            background: #fff;
-        }
-
-        .feature-card {
-            padding: 30px;
-            text-align: center;
-            transition: .3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-        }
-
-        .feature-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-
-        /* Products */
-        .product-card {
-            border: none;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            max-width: 320px;
-            margin: 0 auto;
-        }
-
-        .product-card .card-img-top {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }
-
-        /* Section header styling + animations */
-        .section-header h3 {
-            font-size: 2.6rem;
-            letter-spacing: 2px;
-            font-weight: 700;
-            margin: 0;
-            background: linear-gradient(90deg, #c91f2f 0%, #ff8a65 60%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            opacity: 0;
-            transform: translateY(12px) scale(0.98);
-            animation: headerReveal 700ms cubic-bezier(.2,.9,.2,1) forwards;
-        }
-
-        .header-line {
-            width: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #c91f2f 0%, #ff8a65 60%);
-            margin: 12px auto 0;
-            border-radius: 3px;
-            animation: lineGrow 700ms cubic-bezier(.2,.9,.2,1) .3s forwards;
-        }
-
-        @keyframes headerReveal {
-            from { opacity: 0; transform: translateY(12px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes lineGrow {
-            from { width: 0; }
-            to   { width: 160px; }
-        }
-
-        .section-desc {
-            margin-top: 12px;
-            color: #555;
-            font-size: 1.125rem;
-            max-width: 820px;
-            margin-left: auto;
-            margin-right: auto;
-            opacity: 0;
-            transform: translateX(-30px);
-            transition: transform 520ms cubic-bezier(.2,.9,.2,1), opacity 520ms ease;
-        }
-
-        .reveal-left.in-view {
-            opacity: 1 !important;
-            transform: translateX(0) !important;
-        }
-
-        /* Product card entrance + hover */
-        @keyframes cardReveal {
-            from { opacity: 0; transform: translateY(18px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Horizontal Scroll Container */
-        .horizontal-scroll-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 20px;
-            padding-bottom: 20px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: thin;
-            scrollbar-color: #c91f2f #f1f1f1;
-        }
-        
-        .horizontal-scroll-container::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .horizontal-scroll-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .horizontal-scroll-container::-webkit-scrollbar-thumb {
-            background: #c91f2f;
-            border-radius: 4px;
-        }
-
-        .horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-            background: #a51725;
-        }
-
-        .horizontal-scroll-item {
-            flex: 0 0 auto;
-            width: 320px;
-            scroll-snap-align: start;
-        }
-
-        .horizontal-scroll-item .product-card {
-            opacity: 0;
-            transform: translateY(18px);
-            animation: cardReveal 550ms ease forwards;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .horizontal-scroll-item:nth-child(1) .product-card { animation-delay: 0.12s; }
-        .horizontal-scroll-item:nth-child(2) .product-card { animation-delay: 0.2s; }
-        .horizontal-scroll-item:nth-child(3) .product-card { animation-delay: 0.28s; }
-        .horizontal-scroll-item:nth-child(4) .product-card { animation-delay: 0.36s; }
-        .horizontal-scroll-item:nth-child(5) .product-card { animation-delay: 0.44s; }
-        .horizontal-scroll-item:nth-child(6) .product-card { animation-delay: 0.52s; }
-
-        .product-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 14px 34px rgba(0,0,0,0.14);
-        }
-
-        .btn-explore {
-            display: inline-block;
-            padding: 16px 42px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #c91f2f 0%, #ff8a65 100%);
-            color: #fff;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease;
-            box-shadow: 0 12px 30px rgba(201, 26, 30, 0.18);
-        }
-
-        .btn-explore:hover {
-            transform: translateY(-2px);
-            opacity: .95;
-            box-shadow: 0 18px 34px rgba(201, 26, 30, 0.22);
-        }
-
-        /* Footer */
-
-        footer {
-            background: #111;
-            color: #fff;
-            text-align: center;
-            padding: 30px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 
 <body>
@@ -394,13 +37,13 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             ♥ Wishlist
-                            <span class="wishlist-count badge rounded-pill bg-danger">0</span>
+                            <span class="wishlist-count badge rounded-pill">0</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openCartDrawer()">
                             🛒 Cart
-                            <span class="cart-count badge rounded-pill bg-danger">0</span>
+                            <span class="cart-count badge rounded-pill">0</span>
                         </a>
                     </li>
                 </ul>
@@ -411,69 +54,103 @@
     <!-- Hero -->
 
     <section class="hero">
-
-        <div class="hero-content">
-
-            <!-- Replace logo.png with your uploaded logo -->
-            <img src="/static/images/Natsukashii_logo.png" alt="Natsukashi Logo" class="logo">
-
-            <div class="line"></div>
-
-            <p class="tagline">
-                Traditional Collections
-            </p>
-
-            <p class="hero-text">
-                Discover handcrafted sarees, elegant salwars and timeless
-                traditional wear inspired by heritage, culture and artistry.
-                Every piece reflects craftsmanship, comfort and elegance.
-            </p>
-
-            <div>
-                <button class="btn btn-shop">
-                    Shop Collection
-                </button>
-
-                <button class="btn btn-about">
-                    Explore Brand
-                </button>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content text-start">
+                    <h1 class="heading-font">Traditional Collections</h1>
+                    <div class="line mx-0"></div>
+                    <p class="tagline">Premium Onam Edition</p>
+                    <p class="hero-text">
+                        Discover handcrafted sarees, elegant salwars and timeless
+                        traditional wear inspired by heritage, culture and artistry.
+                        Every piece reflects craftsmanship, comfort and elegance.
+                    </p>
+                    <div class="mt-4">
+                        <button class="btn btn-primary-custom me-3">Shop Collection</button>
+                        <button class="btn btn-secondary-custom">Explore Brand</button>
+                    </div>
+                </div>
+                <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+                    <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo" class="logo" style="background: rgba(255,255,255,0.8); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                </div>
             </div>
-
         </div>
+    </section>
 
+    <!-- Features -->
+
+    <section class="features">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧵</div>
+                        <h4>Handpicked Collection</h4>
+                        <p class="text-muted small mb-0">Traditional weaving and authentic craftsmanship.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">🚚</div>
+                        <h4>Free Shipping</h4>
+                        <p class="text-muted small mb-0">Delivered safely and securely to your doorstep.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">🌿</div>
+                        <h4>Premium Quality</h4>
+                        <p class="text-muted small mb-0">Comfortable, breathable and elegant natural fabrics.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎁</div>
+                        <h4>Carefully Packed</h4>
+                        <p class="text-muted small mb-0">Every order is packed with love and care.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- Featured Products -->
 
     <section class="products">
-
         <div class="container">
-
-            <div class="section-header mb-4 text-center">
+            <div class="section-header mb-5 text-center">
                 <h3>Onam Saree Collections</h3>
                 <div class="header-line" aria-hidden="true"></div>
-                <p class="section-desc reveal-left">Celebrate Onam with our curated sarees — vibrant colours, fine weaves, and festival-ready designs.</p>
+                <p class="text-muted reveal-left">Celebrate Onam with our curated sarees — vibrant colours, fine weaves, and festival-ready designs.</p>
             </div>
 
             <div class="horizontal-scroll-container">
                 {% for saree in sarees %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
+                        <span class="wishlist-icon">♥</span>
+                        {% if saree.quantity == 0 or not saree.stock_available %}
+                        <span class="stock-badge stock-out">Out of Stock</span>
+                        {% else %}
+                        <span class="stock-badge stock-in">In Stock</span>
+                        {% endif %}
                         <a href="javascript:void(0)" onclick="openProductModal('saree', '{{ saree.pk }}')">
-                            {% if saree.first_image_url %}
-                            <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
-                            {% else %}
-                            <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
-                            {% endif %}
+                            <div class="card-img-wrapper">
+                                {% if saree.first_image_url %}
+                                <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
+                                {% else %}
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
+                                {% endif %}
+                            </div>
                         </a>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ saree.collection_name }}</h5>
                             <p class="card-text">{{ saree.description }}</p>
-                            <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <span class="fw-bold">₹{{ saree.price }}</span>
-                                <div>
+                            <div class="mt-auto">
+                                <div class="product-price mb-3">₹{{ saree.price }}</div>
+                                <div class="d-flex justify-content-between">
                                     <button
-                                        class="btn btn-outline-secondary btn-sm me-2 cart-toggle-btn"
+                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
                                         data-default-label="Add to Cart"
                                         data-id="{{ saree.id }}"
                                         data-type="saree"
@@ -483,12 +160,9 @@
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
                                         onclick="addToCart(this)"
                                         {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-primary btn-sm" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
-                        {% if saree.quantity == 0 or not saree.stock_available %}
-                        <div class="text-danger mt-2">Stock Not Available</div>
-                        {% endif %}
                         </div>
                     </div>
                 </div>
@@ -499,45 +173,49 @@
                 {% endfor %}
             </div>
 
-            <div class="text-center mt-4">
-                <a href="{% url 'onam_saree_explore' %}" class="btn btn-explore">Explore More Collections</a>
+            <div class="text-center mt-5">
+                <a href="{% url 'onam_saree_explore' %}" class="btn-secondary-custom">Explore More Collections</a>
             </div>
-
         </div>
-
     </section>
 
     <!-- Onam Edition Collections -->
 
-    <section class="products mt-5">
-
+    <section class="products bg-white">
         <div class="container">
-
-            <div class="section-header mb-4 text-center">
+            <div class="section-header mb-5 text-center">
                 <h3>Onam set-mund Collections</h3>
                 <div class="header-line" aria-hidden="true"></div>
-                <p class="section-desc reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect for the festival.</p>
+                <p class="text-muted reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect for the festival.</p>
             </div>
 
             <div class="horizontal-scroll-container">
                 {% for mund in munds %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
+                        <span class="wishlist-icon">♥</span>
+                        {% if mund.quantity == 0 or not mund.stock_available %}
+                        <span class="stock-badge stock-out">Out of Stock</span>
+                        {% else %}
+                        <span class="stock-badge stock-in">In Stock</span>
+                        {% endif %}
                         <a href="javascript:void(0)" onclick="openProductModal('mund', '{{ mund.pk }}')">
-                            {% if mund.first_image_url %}
-                            <img src="{{ mund.first_image_url }}" class="card-img-top" alt="{{ mund.collection_name }}">
-                            {% else %}
-                            <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ mund.collection_name }}">
-                            {% endif %}
+                            <div class="card-img-wrapper">
+                                {% if mund.first_image_url %}
+                                <img src="{{ mund.first_image_url }}" class="card-img-top" alt="{{ mund.collection_name }}">
+                                {% else %}
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ mund.collection_name }}">
+                                {% endif %}
+                            </div>
                         </a>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ mund.collection_name }}</h5>
                             <p class="card-text">{{ mund.description }}</p>
-                            <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <span class="fw-bold">₹{{ mund.price }}</span>
-                                <div>
+                            <div class="mt-auto">
+                                <div class="product-price mb-3">₹{{ mund.price }}</div>
+                                <div class="d-flex justify-content-between">
                                     <button
-                                        class="btn btn-outline-secondary btn-sm me-2 cart-toggle-btn"
+                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
                                         data-default-label="Add to Cart"
                                         data-id="{{ mund.id }}"
                                         data-type="mund"
@@ -547,12 +225,9 @@
                                         data-out-of-stock="{% if mund.quantity == 0 or not mund.stock_available %}true{% else %}false{% endif %}"
                                         onclick="addToCart(this)"
                                         {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-primary btn-sm" {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Buy Now</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
-                        {% if mund.quantity == 0 or not mund.stock_available %}
-                        <div class="text-danger mt-2">Stock Not Available</div>
-                        {% endif %}
                         </div>
                     </div>
                 </div>
@@ -561,121 +236,110 @@
                     <p class="text-muted">No Onam Set-Mund collections are available yet.</p>
                 </div>
                 {% endfor %}
-
             </div>
 
-            <div class="text-center mt-4">
-                <a href="{% url 'onam_mund_explore' %}" class="btn btn-explore">Explore More Collections</a>
+            <div class="text-center mt-5">
+                <a href="{% url 'onam_mund_explore' %}" class="btn-secondary-custom">Explore More Collections</a>
             </div>
-
         </div>
-
     </section>
 
-            <!-- Colored Sarees Collections -->
+    <!-- Colored Sarees Collections -->
 
-            <section class="products mt-5">
+    <section class="products">
+        <div class="container">
+            <div class="section-header mb-5 text-center">
+                <h3>Colored Sarees</h3>
+                <div class="header-line" aria-hidden="true"></div>
+                <p class="text-muted reveal-left">Bright, contemporary colored sarees for everyday elegance.</p>
+            </div>
 
-                <div class="container">
-
-                    <div class="section-header mb-4 text-center">
-                        <h3>Colored Sarees</h3>
-                        <div class="header-line" aria-hidden="true"></div>
-                        <p class="section-desc reveal-left">Bright, contemporary colored sarees for everyday elegance.</p>
-                    </div>
-
-                    <div class="horizontal-scroll-container">
-                        {% for saree in colored %}
-                        <div class="horizontal-scroll-item">
-                            <div class="card product-card h-100">
-                                <a href="javascript:void(0)" onclick="openProductModal('colored', '{{ saree.pk }}')">
-                                    {% if saree.first_image_url %}
-                                    <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
-                                    {% else %}
-                                    <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
-                                    {% endif %}
-                                </a>
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">{{ saree.collection_name }}</h5>
-                                    <p class="card-text">{{ saree.description }}</p>
-                                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                                        <span class="fw-bold">₹{{ saree.price }}</span>
-                                        <div>
-                                            <button
-                                                class="btn btn-outline-secondary btn-sm me-2 cart-toggle-btn"
-                                                data-default-label="Add to Cart"
-                                                data-id="{{ saree.id }}"
-                                                data-type="colored"
-                                                data-name="{{ saree.collection_name }}"
-                                                data-price="{{ saree.price }}"
-                                                data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                                                data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                                onclick="addToCart(this)"
-                                                {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                            <button class="btn btn-primary btn-sm" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
-                                        </div>
-                                    </div>
-                                {% if saree.quantity == 0 or not saree.stock_available %}
-                                <div class="text-danger mt-2">Stock Not Available</div>
+            <div class="horizontal-scroll-container">
+                {% for saree in colored %}
+                <div class="horizontal-scroll-item">
+                    <div class="card product-card h-100">
+                        <span class="wishlist-icon">♥</span>
+                        {% if saree.quantity == 0 or not saree.stock_available %}
+                        <span class="stock-badge stock-out">Out of Stock</span>
+                        {% else %}
+                        <span class="stock-badge stock-in">In Stock</span>
+                        {% endif %}
+                        <a href="javascript:void(0)" onclick="openProductModal('colored', '{{ saree.pk }}')">
+                            <div class="card-img-wrapper">
+                                {% if saree.first_image_url %}
+                                <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
+                                {% else %}
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
                                 {% endif %}
+                            </div>
+                        </a>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ saree.collection_name }}</h5>
+                            <p class="card-text">{{ saree.description }}</p>
+                            <div class="mt-auto">
+                                <div class="product-price mb-3">₹{{ saree.price }}</div>
+                                <div class="d-flex justify-content-between">
+                                    <button
+                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
+                                        data-default-label="Add to Cart"
+                                        data-id="{{ saree.id }}"
+                                        data-type="colored"
+                                        data-name="{{ saree.collection_name }}"
+                                        data-price="{{ saree.price }}"
+                                        data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                                        data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
+                                        onclick="addToCart(this)"
+                                        {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
-                        {% empty %}
-                        <div class="col-12 text-center py-5">
-                            <p class="text-muted">No Colored saree collections are available yet.</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <a href="{% url 'colored_saree_explore' %}" class="btn btn-explore">Explore More Colored Sarees</a>
-                    </div>
-
-                </div>
-
-            </section>
-
-    <!-- Features -->
-
-    <section class="features">
-
-        <div class="container">
-
-            <div class="row">
-
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">🧵</div>
-                        <h4>Handcrafted</h4>
-                        <p>Traditional weaving and authentic craftsmanship.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">🌿</div>
-                        <h4>Natural Fabrics</h4>
-                        <p>Comfortable, breathable and elegant materials.</p>
-                    </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No Colored saree collections are available yet.</p>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">👗</div>
-                        <h4>Premium Collection</h4>
-                        <p>Curated traditional styles for every occasion.</p>
-                    </div>
-                </div>
-
+                {% endfor %}
             </div>
 
+            <div class="text-center mt-5">
+                <a href="{% url 'colored_saree_explore' %}" class="btn-secondary-custom">Explore More Colored Sarees</a>
+            </div>
         </div>
-
     </section>
 
+    <!-- Footer -->
     <footer>
-        © 2026 Natsukashi Traditional Collections
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h4 class="footer-title">Natsukashi</h4>
+                    <p class="text-muted-light">Premium traditional collections celebrating the heritage and artistry of Kerala. Discover the elegance of Kasavu.</p>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5 class="footer-title" style="font-size: 1.2rem;">Quick Links</h5>
+                    <a href="#" class="footer-link">Home</a>
+                    <a href="#" class="footer-link">About Us</a>
+                    <a href="#" class="footer-link">Collections</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+                <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+                    <h5 class="footer-title" style="font-size: 1.2rem;">Collections</h5>
+                    <a href="{% url 'onam_saree_explore' %}" class="footer-link">Onam Sarees</a>
+                    <a href="{% url 'onam_mund_explore' %}" class="footer-link">Onam Set Mund</a>
+                    <a href="{% url 'colored_saree_explore' %}" class="footer-link">Colored Sarees</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="footer-title" style="font-size: 1.2rem;">Contact Us</h5>
+                    <p class="text-muted-light mb-2">Email: info@natsukashi.com</p>
+                    <p class="text-muted-light mb-2">Phone: +91 98765 43210</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 Natsukashi Traditional Collections. All rights reserved.
+            </div>
+        </div>
     </footer>
 
     {% include 'product/_cart_drawer_include.html' %}

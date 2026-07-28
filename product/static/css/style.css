@@ -1,0 +1,519 @@
+:root {
+    --bg-color: #FFFDF8;
+    --primary-color: #7A1F1F;
+    --secondary-color: #B8863B;
+    --accent-color: #F8EEDC;
+    --text-color: #2E2E2E;
+    --border-color: #E9D9C3;
+    --hover-gold: #C89A3D;
+    --heading-font: 'Playfair Display', 'Cormorant Garamond', serif;
+    --body-font: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: var(--body-font);
+    color: var(--text-color);
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .heading-font {
+    font-family: var(--heading-font);
+    color: var(--primary-color);
+}
+
+/* Navbar */
+.navbar {
+    background: #fff;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    transition: transform .35s ease;
+    height: 80px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.navbar.navbar-hidden {
+    transform: translateY(-100%);
+}
+
+.navbar > .container {
+    height: 100%;
+}
+
+.navbar-brand {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-logo {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.nav-link {
+    color: var(--text-color) !important;
+    margin-left: 20px;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--hover-gold) !important;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 10px;
+    right: 10px;
+    background-color: var(--hover-gold);
+    transition: width 0.3s ease;
+    transform: scaleX(0);
+}
+
+.nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+.cart-count,
+.wishlist-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    font-size: 11px;
+    display: none;
+    background-color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--accent-color) 100%);
+    padding: 50px 20px;
+    overflow: hidden;
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.logo {
+    width: 400px;
+    max-width: 95%;
+    opacity: 0;
+    animation: logoReveal 1.5s ease forwards;
+}
+
+@keyframes logoReveal {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    opacity: 0;
+    animation: fadeUp 1.5s ease forwards 0.5s;
+}
+
+.line {
+    width: 0;
+    height: 2px;
+    background: var(--hover-gold);
+    margin: 25px 0;
+    animation: growLine 1.5s ease forwards 1s;
+}
+
+@keyframes growLine {
+    from { width: 0; }
+    to { width: 150px; }
+}
+
+.tagline {
+    margin-top: 15px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--secondary-color);
+    font-weight: 600;
+    opacity: 0;
+    animation: fadeUp 1.5s ease forwards 1.2s;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-text {
+    margin-top: 20px;
+    font-size: 18px;
+    color: var(--text-color);
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 1.5s ease forwards 1.4s;
+}
+
+/* Buttons */
+.btn-primary-custom {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-primary-custom:hover {
+    background: var(--hover-gold);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 154, 61, 0.4);
+}
+
+.btn-secondary-custom {
+    background: #fff;
+    border: 2px solid var(--border-color);
+    color: var(--text-color);
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-secondary-custom:hover {
+    background: var(--hover-gold);
+    color: #fff;
+    border-color: var(--hover-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 154, 61, 0.4);
+}
+
+/* Feature Cards */
+.features {
+    padding: 80px 20px;
+    background: var(--bg-color);
+}
+
+.feature-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(184, 134, 59, 0.15);
+    border-color: var(--hover-gold);
+}
+
+.feature-icon {
+    font-size: 40px;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.feature-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-family: var(--heading-font);
+}
+
+/* Product Cards */
+.products {
+    padding: 60px 0;
+}
+
+.section-header h3 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary-color);
+    font-family: var(--heading-font);
+}
+
+.header-line {
+    width: 80px;
+    height: 3px;
+    background: var(--hover-gold);
+    margin: 15px auto;
+}
+
+.product-card {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.product-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(122, 31, 31, 0.1);
+}
+
+.product-card .card-img-top {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    transition: transform 0.5s ease;
+}
+
+.card-img-wrapper {
+    overflow: hidden;
+    position: relative;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.product-card .card-body {
+    padding: 20px;
+    background: #fff;
+    position: relative;
+    z-index: 2;
+}
+
+.product-card .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+    font-family: var(--heading-font);
+}
+
+.product-card .card-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.btn-card-outline {
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.btn-card-outline:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.btn-card-filled {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.btn-card-filled:hover:not(:disabled) {
+    background: var(--hover-gold);
+    border-color: var(--hover-gold);
+    color: #fff;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.wishlist-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 10;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.wishlist-icon:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.stock-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10;
+}
+
+.stock-out {
+    background: #ffebe6;
+    color: var(--primary-color);
+    border: 1px solid rgba(122, 31, 31, 0.2);
+}
+
+.stock-in {
+    background: #e6f4ea;
+    color: #1e8e3e;
+    border: 1px solid rgba(30, 142, 62, 0.2);
+}
+
+/* Horizontal Scroll Container */
+.horizontal-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 24px;
+    padding: 20px 10px 40px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-color) var(--accent-color);
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+    background: var(--accent-color);
+    border-radius: 10px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 10px;
+}
+
+.horizontal-scroll-item {
+    flex: 0 0 auto;
+    width: 320px;
+    scroll-snap-align: start;
+}
+
+/* Footer */
+footer {
+    background: var(--primary-color);
+    color: var(--accent-color);
+    padding: 60px 20px 30px;
+    border-top: 4px solid var(--hover-gold);
+}
+
+.footer-title {
+    font-family: var(--heading-font);
+    color: var(--hover-gold);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.footer-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.footer-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(248, 238, 220, 0.2);
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-color);
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-title {
+    font-family: var(--heading-font);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Drawer styling */
+.offcanvas {
+    background-color: var(--bg-color);
+}
+
+.offcanvas-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.offcanvas-title {
+    font-family: var(--heading-font);
+    color: var(--primary-color);
+}

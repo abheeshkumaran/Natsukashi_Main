@@ -19,7 +19,7 @@
     .modal-backdrop {
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
-        background-color: rgba(20, 20, 20, 0.35);
+        background-color: rgba(46, 46, 46, 0.4);
     }
 
     .modal-backdrop.show {
@@ -27,12 +27,12 @@
     }
 
     #productModalBody .pm-type-label {
-        color: #c91f2f;
+        color: var(--secondary-color);
         font-weight: 600;
-        font-size: .76rem;
+        font-size: .8rem;
         text-transform: uppercase;
-        letter-spacing: .4px;
-        margin-bottom: 6px;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
     }
 
     #productModalBody .pm-main-image-wrap {
@@ -44,6 +44,7 @@
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--border-color);
     }
 
     #productModalBody .pm-main-image-img {
@@ -58,17 +59,17 @@
 
     #productModalBody .pm-thumbs {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
         justify-content: center;
         margin-top: 15px;
     }
 
     #productModalBody .pm-thumbs img {
-        width: 55px;
-        height: 68px;
+        width: 60px;
+        height: 75px;
         object-fit: cover;
-        border: 2px solid #eee;
+        border: 2px solid var(--border-color);
         cursor: pointer;
         border-radius: 8px;
         transition: .2s;
@@ -76,13 +77,14 @@
 
     #productModalBody .pm-thumbs img:hover,
     #productModalBody .pm-thumbs img.active {
-        border-color: #c91f2f;
+        border-color: var(--primary-color);
     }
 
     #productModalBody .pm-product-title {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         font-weight: 700;
-        color: #212121;
+        color: var(--primary-color);
+        font-family: var(--heading-font);
     }
 
     #productModalBody .pm-wishlist-btn {
@@ -98,12 +100,12 @@
     }
 
     #productModalBody .pm-wishlist-btn:hover {
-        color: #c91f2f;
+        color: var(--primary-color);
         transform: scale(1.12);
     }
 
     #productModalBody .pm-wishlist-btn.active {
-        color: #c91f2f;
+        color: var(--primary-color);
         animation: pmHeartPop .3s ease;
     }
 
@@ -126,7 +128,7 @@
     }
 
     #productModalBody .pm-rating {
-        color: #f8b400;
+        color: var(--secondary-color);
         font-size: 15px;
         margin: 8px 0;
     }
@@ -138,17 +140,18 @@
     }
 
     #productModalBody .pm-price-card {
-        background: #fff;
+        background: var(--bg-color);
         border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
         padding: 16px;
         margin: 16px 0;
     }
 
     #productModalBody .pm-price-current {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: #c91f2f;
+        color: var(--primary-color);
     }
 
     #productModalBody .pm-price-old {
@@ -164,9 +167,9 @@
 
     #productModalBody .pm-stock-badge {
         display: inline-block;
-        padding: 5px 14px;
+        padding: 6px 14px;
         border-radius: 20px;
-        font-size: .8rem;
+        font-size: .85rem;
         font-weight: 600;
         margin-top: 10px;
     }
@@ -174,18 +177,20 @@
     #productModalBody .pm-stock-badge.in-stock {
         background: #e6f4ea;
         color: #1e7e34;
+        border: 1px solid rgba(30, 142, 62, 0.2);
     }
 
     #productModalBody .pm-stock-badge.out-stock {
-        background: #fdecea;
-        color: #c91f2f;
+        background: #ffebe6;
+        color: var(--primary-color);
+        border: 1px solid rgba(122, 31, 31, 0.2);
     }
 
     #productModalBody .pm-desc {
         line-height: 1.7;
         color: #555;
         margin: 14px 0;
-        font-size: .92rem;
+        font-size: .95rem;
     }
 
     #productModalBody .pm-qty-row {
@@ -199,75 +204,78 @@
     #productModalBody .pm-qty-stepper {
         display: inline-flex;
         align-items: center;
-        border: 1px solid #dcdcdc;
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         overflow: hidden;
     }
 
     #productModalBody .pm-qty-stepper button {
-        width: 34px;
-        height: 34px;
+        width: 36px;
+        height: 36px;
         border: none;
-        background: #f5f5f5;
+        background: var(--bg-color);
+        color: var(--primary-color);
         font-size: 16px;
         line-height: 1;
         cursor: pointer;
+        transition: background 0.2s;
     }
 
     #productModalBody .pm-qty-stepper button:hover {
-        background: #eaeaea;
+        background: var(--accent-color);
     }
 
     #productModalBody .pm-qty-stepper input {
-        width: 40px;
-        height: 34px;
+        width: 44px;
+        height: 36px;
         text-align: center;
         font-weight: 600;
         border: none;
-        background: transparent;
+        background: #fff;
     }
 
     #productModalBody .pm-action-buttons {
         display: flex;
         gap: 12px;
-        margin-top: 8px;
+        margin-top: 10px;
     }
 
     #productModalBody .pm-btn-add-cart {
-        background: #c91f2f;
-        color: #fff;
-        border: none;
-        padding: 11px 20px;
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 12px 20px;
         border-radius: 8px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: .5px;
         transition: .25s;
         flex: 1;
-        font-size: .88rem;
+        font-size: .9rem;
     }
 
     #productModalBody .pm-btn-add-cart:hover:not(:disabled) {
-        background: #a51725;
+        background: var(--primary-color);
         color: #fff;
     }
 
     #productModalBody .pm-btn-buy-now {
-        background: transparent;
-        color: #c91f2f;
-        border: 2px solid #c91f2f;
-        padding: 11px 20px;
+        background: var(--primary-color);
+        color: #fff;
+        border: 1px solid var(--primary-color);
+        padding: 12px 20px;
         border-radius: 8px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: .5px;
         transition: .25s;
         flex: 1;
-        font-size: .88rem;
+        font-size: .9rem;
     }
 
     #productModalBody .pm-btn-buy-now:hover:not(:disabled) {
-        background: #c91f2f;
+        background: var(--hover-gold);
+        border-color: var(--hover-gold);
         color: #fff;
     }
 
@@ -278,27 +286,29 @@
 
     #productModalBody .pm-details-panel {
         margin-top: 30px;
-        background: #fafafa;
+        background: var(--bg-color);
         border-radius: 16px;
-        padding: 20px;
+        padding: 24px;
+        border: 1px solid var(--border-color);
     }
 
     #productModalBody .pm-details-panel h2 {
-        font-size: 1.05rem;
+        font-size: 1.15rem;
         font-weight: 700;
-        color: #212121;
-        margin-bottom: 12px;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        font-family: var(--heading-font);
     }
 
     #productModalBody .pm-specs-table td {
-        padding: 9px;
-        border-bottom: 1px solid #eee;
-        font-size: .9rem;
+        padding: 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: .95rem;
     }
 
     #productModalBody .pm-specs-table td:first-child {
         font-weight: 600;
-        color: #666;
+        color: var(--secondary-color);
         width: 160px;
     }
 </style>
