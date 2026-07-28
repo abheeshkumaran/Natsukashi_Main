@@ -20,4 +20,10 @@ urlpatterns = [
     path('admin-panel/list-colored-sarees/', views.list_colored_sarees, name='list_colored_sarees'),
     path('admin-panel/edit-colored-saree/<int:pk>/', views.edit_colored_saree, name='edit_colored_saree'),
     path('admin-panel/delete-colored-saree/<int:pk>/', views.delete_colored_saree, name='delete_colored_saree'),
+    path('register/', views.register_user, name='register'),
+    path('login/', views.login_user, name='login'),
+    path('logout/', views.logout_user, name='logout'),
+    path('admin-panel/users/', views.list_users, name='list_users'),
+    path('admin-panel/users/edit/<int:pk>/', views.edit_user, name='edit_user'),
+    path('admin-panel/users/delete/<int:pk>/', views.delete_user, name='delete_user'),
 ]

@@ -1,7 +1,9 @@
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db.models import Q
 from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
-from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage
+from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser
 
 # Create your views here.
 def home(request):
@@ -109,6 +111,58 @@ def list_onam_sarees(request):
 def list_colored_sarees(request):
     sarees = ColoredSaree.objects.prefetch_related('images').all()
     return render(request, 'admin/list_colored_sarees.html', {'sarees': sarees})
+
+def register_user(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        place = request.POST.get('place')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match!')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+            
+        if SiteUser.objects.filter(email=email).exists():
+            messages.error(request, 'Email is already registered!')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+            
+        user = SiteUser(name=name, place=place, email=email, phone=phone)
+        user.set_password(password)
+        user.save()
+        
+        # Auto log in the user after registration
+        request.session['site_user_id'] = user.id
+        request.session['site_user_name'] = user.name
+        
+        messages.success(request, 'Account created successfully!')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+        
+    return redirect('/')
+
+def login_user(request):
+    if request.method == 'POST':
+        login_id = request.POST.get('email') # It comes from the name="email" input, but can be phone or email
+        password = request.POST.get('password')
+        try:
+            user = SiteUser.objects.get(Q(email=login_id) | Q(phone=login_id))
+            if user.check_password(password):
+                request.session['site_user_id'] = user.id
+                request.session['site_user_name'] = user.name
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
+        except SiteUser.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'failed to login invalid email or phone number'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def logout_user(request):
+    request.session.pop('site_user_id', None)
+    request.session.pop('site_user_name', None)
+    messages.success(request, 'Logged out successfully!')
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 def list_onam_set_munds(request):
@@ -233,5 +287,28 @@ def product_modal(request, product_type, pk):
         'images': product.images.all(),
         'product_type': product_type,
     })
+
+def list_users(request):
+    users = SiteUser.objects.all().order_by('-id')
+    return render(request, 'admin/list_users.html', {'users': users})
+
+def edit_user(request, pk):
+    user = get_object_or_404(SiteUser, pk=pk)
+    if request.method == 'POST':
+        user.name = request.POST.get('name')
+        user.place = request.POST.get('place')
+        user.email = request.POST.get('email')
+        user.phone = request.POST.get('phone')
+        user.save()
+        messages.success(request, 'User updated successfully.')
+        return redirect('list_users')
+    return render(request, 'admin/edit_user.html', {'site_user': user})
+
+def delete_user(request, pk):
+    user = get_object_or_404(SiteUser, pk=pk)
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'User deleted successfully.')
+    return redirect('list_users')
 
 

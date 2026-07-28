@@ -1,5 +1,6 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
+from django.contrib.auth.hashers import make_password, check_password
 
 
 class OnamSaree(models.Model):
@@ -114,3 +115,25 @@ class ColoredSareeImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.saree.collection_name}"
+
+
+class SiteUser(models.Model):
+    name = models.CharField(max_length=255)
+    place = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20)
+    password = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'users'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return self.name
+        
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+        
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
