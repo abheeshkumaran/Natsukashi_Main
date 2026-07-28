@@ -10,9 +10,9 @@ class OnamSaree(models.Model):
     stock_available = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'onam_sarees'
-        verbose_name = 'Onam Saree'
-        verbose_name_plural = 'Onam Sarees'
+        db_table = 'featured_onam'
+        verbose_name = 'FEATURED ONAM'
+        verbose_name_plural = 'FEATURED ONAM'
 
     def __str__(self):
         return self.collection_name
@@ -45,9 +45,9 @@ class OnamSetMund(models.Model):
     stock_available = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'onam_munds'
-        verbose_name = 'Onam Set-Mund'
-        verbose_name_plural = 'Onam Set-Munds'
+        db_table = 'shop_by_collection'
+        verbose_name = 'SHOP BY COLLECTION'
+        verbose_name_plural = 'SHOP BY COLLECTION'
 
     def __str__(self):
         return self.collection_name
@@ -85,9 +85,9 @@ class ColoredSaree(models.Model):
     stock_available = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'colored_sarees'
-        verbose_name = 'Colored Saree'
-        verbose_name_plural = 'Colored Sarees'
+        db_table = 'most_purchased_sarees'
+        verbose_name = 'MOST PURCHASED SAREE'
+        verbose_name_plural = 'MOST PURCHASED SAREES'
 
     def __str__(self):
         return self.collection_name
