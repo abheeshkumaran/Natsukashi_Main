@@ -160,6 +160,12 @@
         // Reset to login form whenever the modal is closed
         setTimeout(() => {
             toggleAuthForm('login');
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) loginForm.reset();
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) registerForm.reset();
+            const errorMsg = document.getElementById('loginErrorMsg');
+            if (errorMsg) errorMsg.style.display = 'none';
         }, 300); // Wait for modal slide out animation to finish
     }
 
@@ -213,9 +219,12 @@
                 const text = btn.textContent.trim().toLowerCase();
                 // Check if button text is 'buy now'
                 if (text === 'buy now' && !btn.disabled) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openAuthModal();
+                    const isUserLoggedIn = {% if request.session.site_user_name %}true{% else %}false{% endif %};
+                    if (!isUserLoggedIn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openAuthModal();
+                    }
                 }
             }
         });

@@ -517,3 +517,19 @@ footer {
     font-family: var(--heading-font);
     color: var(--primary-color);
 }
+
+.wishlist-toggle-btn {
+    color: #ccc;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.wishlist-toggle-btn:hover {
+    transform: scale(1.1);
+    color: #ffb6b6;
+}
+
+.wishlist-toggle-btn.active {
+    color: #e74c3c !important; /* solid red when active */
+}
