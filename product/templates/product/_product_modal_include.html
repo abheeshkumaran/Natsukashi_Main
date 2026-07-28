@@ -193,46 +193,6 @@
         font-size: .95rem;
     }
 
-    #productModalBody .pm-qty-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 14px 0;
-        font-size: .95rem;
-    }
-
-    #productModalBody .pm-qty-stepper {
-        display: inline-flex;
-        align-items: center;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    #productModalBody .pm-qty-stepper button {
-        width: 36px;
-        height: 36px;
-        border: none;
-        background: var(--bg-color);
-        color: var(--primary-color);
-        font-size: 16px;
-        line-height: 1;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    #productModalBody .pm-qty-stepper button:hover {
-        background: var(--accent-color);
-    }
-
-    #productModalBody .pm-qty-stepper input {
-        width: 44px;
-        height: 36px;
-        text-align: center;
-        font-weight: 600;
-        border: none;
-        background: #fff;
-    }
 
     #productModalBody .pm-action-buttons {
         display: flex;
@@ -352,11 +312,7 @@
         if (wishlistBtn) wishlistBtn.dataset.image = thumbEl.src;
     }
 
-    function pmChangeQty(delta) {
-        const input = document.getElementById('pmDetailQty');
-        if (!input) return;
-        input.value = Math.max(1, parseInt(input.value, 10) + delta);
-    }
+
 
     // Hover-zoom: scale the image itself around the cursor position, which
     // reads better than a side-by-side zoom pane at modal width.

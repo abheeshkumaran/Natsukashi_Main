@@ -10,9 +10,9 @@ class OnamSaree(models.Model):
     stock_available = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'featured_onam'
-        verbose_name = 'FEATURED ONAM'
-        verbose_name_plural = 'FEATURED ONAM'
+        db_table = 'featured_onam_picks'
+        verbose_name = 'FEATURED ONAM PICKS PICKS'
+        verbose_name_plural = 'FEATURED ONAM PICKS PICKS'
 
     def __str__(self):
         return self.collection_name

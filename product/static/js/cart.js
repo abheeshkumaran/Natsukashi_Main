@@ -153,7 +153,7 @@ function renderCartDrawer() {
             <img src="${item.image}" alt="${item.name}" class="cart-item-img">
             <div class="cart-item-info">
                 <h6 class="item-name">${item.name}</h6>
-                <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : 'FEATURED ONAM'}</div>
+                <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : 'FEATURED ONAM PICKS PICKS'}</div>
                 <div class="price-block">
                     <span class="item-price">${formatPrice(item.price)}</span>
                     <span class="item-mrp">${formatPrice(mrp)}</span>
@@ -211,7 +211,7 @@ function renderCartPage() {
             <img src="${item.image}" alt="${item.name}" class="cart-item-img">
             <div class="cart-item-info">
                 <h6 class="item-name">${item.name}</h6>
-                <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : item.type === 'colored' ? 'MOST PURCHASED SAREE' : 'FEATURED ONAM'}</div>
+                <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : item.type === 'colored' ? 'MOST PURCHASED SAREE' : 'FEATURED ONAM PICKS PICKS'}</div>
                 <div class="price-block">
                     <span class="item-price">${formatPrice(item.price)}</span>
                     <span class="item-mrp">${formatPrice(mrp)}</span>

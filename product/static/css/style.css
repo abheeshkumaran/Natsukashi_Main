@@ -263,7 +263,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     width: 80px;
     height: 3px;
     background: var(--hover-gold);
-    margin: 15px auto;
+    margin: 15px 0;
 }
 
 .product-card {

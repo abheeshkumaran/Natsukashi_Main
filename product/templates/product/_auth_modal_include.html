@@ -1,0 +1,89 @@
+{% load static %}
+<!-- Auth Modal Popup for "Buy Now" -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content auth-modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 px-5 pb-5">
+                <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" style="max-height: 80px; margin-bottom: 10px;">
+                <h3 class="auth-modal-title mb-2">Welcome to Natsukashi</h3>
+                <p class="text-muted small mb-4">Please log in or register to complete your purchase and enjoy a seamless premium shopping experience.</p>
+                
+                <div class="d-grid gap-3">
+                    <a href="#" class="btn auth-btn-primary">Log In</a>
+                    <a href="#" class="btn auth-btn-secondary">Register New Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-modal-content {
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    .auth-modal-title {
+        font-family: var(--heading-font);
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    .auth-btn-primary {
+        background: var(--primary-color);
+        color: #fff;
+        border: 1px solid var(--primary-color);
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: 0.3s;
+    }
+    .auth-btn-primary:hover {
+        background: var(--hover-gold);
+        border-color: var(--hover-gold);
+        color: #fff;
+    }
+    .auth-btn-secondary {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: 0.3s;
+    }
+    .auth-btn-secondary:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.addEventListener('click', function(e) {
+            // Find if the clicked element or any of its parents is a button
+            const btn = e.target.closest('button');
+            if (btn) {
+                const text = btn.textContent.trim().toLowerCase();
+                // Check if button text is 'buy now'
+                if (text === 'buy now' && !btn.disabled) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const authModalEl = document.getElementById('authModal');
+                    if (authModalEl) {
+                        const modal = bootstrap.Modal.getOrCreateInstance(authModalEl);
+                        modal.show();
+                    }
+                }
+            }
+        });
+    });
+</script>
