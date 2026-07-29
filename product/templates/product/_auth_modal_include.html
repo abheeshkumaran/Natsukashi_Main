@@ -212,22 +212,25 @@
             });
         }
 
+        window.IS_USER_LOGGED_IN = {% if request.session.site_user_name %}true{% else %}false{% endif %};
+        window.SITE_USER_ID = "{% if request.session.site_user_id %}{{ request.session.site_user_id }}{% else %}{% endif %}";
+
+        // Use capture phase (true) to intercept clicks for 'Buy Now'
         document.body.addEventListener('click', function(e) {
-            // Find if the clicked element or any of its parents is a button
-            const btn = e.target.closest('button');
+            const btn = e.target.closest ? e.target.closest('button') : null;
             if (btn) {
                 const text = btn.textContent.trim().toLowerCase();
-                // Check if button text is 'buy now'
-                if (text === 'buy now' && !btn.disabled) {
-                    const isUserLoggedIn = {% if request.session.site_user_name %}true{% else %}false{% endif %};
-                    if (!isUserLoggedIn) {
+                const isBuyNow = text === 'buy now';
+                
+                if (isBuyNow && !btn.disabled) {
+                    if (!window.IS_USER_LOGGED_IN) {
                         e.preventDefault();
                         e.stopPropagation();
                         openAuthModal();
                     }
                 }
             }
-        });
+        }, true);
         
         const authModalEl = document.getElementById('authModal');
         if (authModalEl) {

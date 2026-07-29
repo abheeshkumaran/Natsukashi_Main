@@ -1,11 +1,15 @@
-// Simple client-side cart stored in localStorage. No backend cart model needed.
-const CART_KEY = 'natsukashi_cart';
-// Decorative MRP markup so the price-details section can show a "discount",
-// matching the same fake-MRP convention already used on the product detail page.
 const FAKE_MRP_MARKUP = 500;
 
+function getCartKey() {
+    return (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID) 
+        ? 'natsukashi_cart_' + window.SITE_USER_ID 
+        : null;
+}
+
 function getCart() {
-    const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    const key = getCartKey();
+    if (!key) return [];
+    const cart = JSON.parse(localStorage.getItem(key) || '[]');
     // Backfill items saved by an older version of the cart that stored an
     // "images" array + "imgIndex" instead of a single "image" field.
     cart.forEach((item) => {
@@ -17,10 +21,13 @@ function getCart() {
 }
 
 function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    const key = getCartKey();
+    if (!key) return;
+    localStorage.setItem(key, JSON.stringify(cart));
     updateCartBadge();
     renderCartDrawer();
     syncAddToCartButtons();
+    if (typeof renderCartPage === 'function') renderCartPage();
 }
 
 // Keeps every "Add to Cart" button on the page in sync with the cart: disabled
@@ -52,6 +59,13 @@ function updateCartBadge() {
 }
 
 function addToCart(btn) {
+    if (typeof window.IS_USER_LOGGED_IN !== 'undefined' && !window.IS_USER_LOGGED_IN) {
+        if (typeof openAuthModal === 'function') {
+            openAuthModal();
+            return;
+        }
+    }
+
     const cart = getCart();
     const existing = cart.find((item) => item.id === btn.dataset.id && item.type === btn.dataset.type);
     if (existing) {

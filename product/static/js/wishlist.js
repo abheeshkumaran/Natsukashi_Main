@@ -1,12 +1,19 @@
-// Simple client-side wishlist stored in localStorage, mirroring cart.js.
-const WISHLIST_KEY = 'natsukashi_wishlist';
+function getWishlistKey() {
+    return (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID) 
+        ? 'natsukashi_wishlist_' + window.SITE_USER_ID 
+        : null;
+}
 
 function getWishlist() {
-    return JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]');
+    const key = getWishlistKey();
+    if (!key) return [];
+    return JSON.parse(localStorage.getItem(key) || '[]');
 }
 
 function saveWishlist(list) {
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(list));
+    const key = getWishlistKey();
+    if (!key) return;
+    localStorage.setItem(key, JSON.stringify(list));
     syncWishlistButtons();
     updateWishlistBadge();
     renderWishlistDrawer();
@@ -17,6 +24,13 @@ function isInWishlist(id, type) {
 }
 
 function toggleWishlist(btn) {
+    if (typeof window.IS_USER_LOGGED_IN !== 'undefined' && !window.IS_USER_LOGGED_IN) {
+        if (typeof openAuthModal === 'function') {
+            openAuthModal();
+            return;
+        }
+    }
+
     const { id, type, name, price, image } = btn.dataset;
     let list = getWishlist();
     const exists = list.some((item) => item.id === id && item.type === type);
@@ -37,6 +51,13 @@ function removeFromWishlist(id, type) {
 // Wishlisted item -> cart, using cart.js's own storage helpers (loaded on
 // the same pages), then drops it out of the wishlist and opens the cart.
 function moveWishlistItemToCart(id, type) {
+    if (typeof window.IS_USER_LOGGED_IN !== 'undefined' && !window.IS_USER_LOGGED_IN) {
+        if (typeof openAuthModal === 'function') {
+            openAuthModal();
+            return;
+        }
+    }
+
     const item = getWishlist().find((i) => i.id === id && i.type === type);
     if (!item) return;
 
