@@ -236,8 +236,10 @@
                                 addToCart(addToCartBtn);
                             }
                         }
-                        // Redirect to checkout
-                        window.location.href = '/checkout/';
+                        // Open cart drawer
+                        if (typeof openCartDrawer === 'function') {
+                            openCartDrawer();
+                        }
                     }
                 }
             }
