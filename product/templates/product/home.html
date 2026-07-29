@@ -141,10 +141,14 @@
                                         data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
-                                        %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
-                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)"
+                                        {% if saree.quantity == 0 or not saree.stock_available %}
+                                        disabled
+                                        {% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1"
+                                        {% if saree.quantity == 0 or not saree.stock_available %}
+                                        disabled
+                                        {% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -211,10 +215,14 @@
                                         data-name="{{ mund.collection_name }}" data-price="{{ mund.price }}"
                                         data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if mund.quantity == 0 or not mund.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if mund.quantity==0 or not mund.stock_available
-                                        %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity==0 or not
-                                        mund.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)"
+                                        {% if mund.quantity == 0 or not mund.stock_available %}
+                                        disabled
+                                        {% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1"
+                                        {% if mund.quantity == 0 or not mund.stock_available %}
+                                        disabled
+                                        {% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -280,10 +288,14 @@
                                         data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
-                                        %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
-                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)"
+                                        {% if saree.quantity == 0 or not saree.stock_available %}
+                                        disabled
+                                        {% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1"
+                                        {% if saree.quantity == 0 or not saree.stock_available %}
+                                        disabled
+                                        {% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
