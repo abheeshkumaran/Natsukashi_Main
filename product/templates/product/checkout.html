@@ -37,8 +37,9 @@
         <div class="checkout-card">
             <h1 class="checkout-title">Secure Checkout</h1>
             
-            <form action="{% url 'checkout' %}" method="POST">
+            <form action="{% url 'checkout' %}" method="POST" id="checkoutForm">
                 {% csrf_token %}
+                <input type="hidden" name="cart_data" id="cartDataInput">
                 
                 <h3 class="section-title mt-0">Personal Information</h3>
                 <div class="row g-3">
@@ -110,9 +111,20 @@
     </script>
     <script src="{% static 'js/cart.js' %}?v=6"></script>
     <script>
-        document.querySelector('form').addEventListener('submit', function() {
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            // Get cart from localStorage and put it in the hidden input
+            const key = (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID) 
+                ? 'natsukashi_cart_' + window.SITE_USER_ID 
+                : null;
+            
+            if (key) {
+                const cartData = localStorage.getItem(key) || '[]';
+                document.getElementById('cartDataInput').value = cartData;
+            }
+
+            // Clear the cart immediately upon form submission
             if (typeof saveCart === 'function') {
-                saveCart([]); // clear the cart immediately upon form submission
+                saveCart([]);
             }
         });
     </script>

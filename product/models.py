@@ -160,3 +160,47 @@ class UserData(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.user.email})"
+
+class Order(models.Model):
+    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='orders')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=50, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Snapshot of shipping details for this specific order
+    full_name = models.CharField(max_length=255)
+    mobile_number = models.CharField(max_length=20)
+    email_address = models.EmailField()
+    house_flat_number = models.CharField(max_length=255)
+    street_area = models.CharField(max_length=255)
+    landmark = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100, default='India')
+    pin_code = models.CharField(max_length=20)
+    order_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'orders'
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.user.email}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product_name = models.CharField(max_length=255)
+    product_type = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'order_items'
+        verbose_name = 'Order Item'
+        verbose_name_plural = 'Order Items'
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product_name}"
+

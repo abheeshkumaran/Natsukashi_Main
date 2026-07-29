@@ -1,10 +1,11 @@
 from django.http import Http404, JsonResponse, HttpResponse
 import csv
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
 from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
-from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData
+from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData, Order, OrderItem
 
 # Create your views here.
 def home(request):
@@ -313,37 +314,42 @@ def delete_user(request, pk):
     return redirect('list_users')
 
 def list_user_data(request):
-    user_data_list = UserData.objects.all().order_by('-id')
-    return render(request, 'admin/list_user_data.html', {'user_data_list': user_data_list})
+    orders = Order.objects.all().order_by('-created_at')
+    return render(request, 'admin/list_user_data.html', {'orders': orders})
 
 def download_user_data_csv(request):
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="user_data_orders.csv"'
+    response['Content-Disposition'] = 'attachment; filename="user_orders.csv"'
 
     writer = csv.writer(response)
     writer.writerow([
-        'ID', 'User Email (Account)', 'Full Name', 'Mobile', 'Contact Email',
+        'Order ID', 'Date', 'Total Amount', 'Status', 'User Email (Account)', 'Full Name', 'Mobile', 'Contact Email',
         'House/Flat', 'Street/Area', 'Landmark', 'City', 'District',
-        'State', 'Country', 'PIN Code', 'Order Notes'
+        'State', 'Country', 'PIN Code', 'Items Ordered', 'Order Notes'
     ])
 
-    user_data_list = UserData.objects.all().order_by('-id')
-    for ud in user_data_list:
+    orders = Order.objects.all().order_by('-created_at')
+    for order in orders:
+        items_str = " | ".join([f"{item.quantity}x {item.product_name} (₹{item.price})" for item in order.items.all()])
         writer.writerow([
-            ud.id,
-            ud.user.email if ud.user else '',
-            ud.full_name,
-            ud.mobile_number,
-            ud.email_address,
-            ud.house_flat_number,
-            ud.street_area,
-            ud.landmark,
-            ud.city,
-            ud.district,
-            ud.state,
-            ud.country,
-            ud.pin_code,
-            ud.order_notes
+            order.id,
+            order.created_at.strftime("%Y-%m-%d %H:%M"),
+            order.total_amount,
+            order.status,
+            order.user.email if order.user else '',
+            order.full_name,
+            order.mobile_number,
+            order.email_address,
+            order.house_flat_number,
+            order.street_area,
+            order.landmark,
+            order.city,
+            order.district,
+            order.state,
+            order.country,
+            order.pin_code,
+            items_str,
+            order.order_notes
         ])
 
     return response
@@ -400,6 +406,46 @@ def checkout(request):
                 country=country,
                 pin_code=pin_code,
                 order_notes=order_notes
+            )
+            
+        # Parse cart data and create Order
+        cart_data_str = request.POST.get('cart_data', '[]')
+        try:
+            cart_items = json.loads(cart_data_str)
+        except json.JSONDecodeError:
+            cart_items = []
+            
+        # Ensure we have items (even if empty, we can create a record, but best if there are items)
+        # We will calculate total amount manually from the parsed items
+        total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
+        
+        # Create Order Snapshot
+        order = Order.objects.create(
+            user=user,
+            total_amount=total_amount,
+            status='Pending',
+            full_name=full_name,
+            mobile_number=mobile_number,
+            email_address=email_address,
+            house_flat_number=house_flat_number,
+            street_area=street_area,
+            landmark=landmark,
+            city=city,
+            district=district,
+            state=state,
+            country=country,
+            pin_code=pin_code,
+            order_notes=order_notes
+        )
+        
+        # Create Order Items
+        for item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product_name=item.get('name', 'Unknown Product'),
+                product_type=item.get('type', 'Unknown Type'),
+                price=item.get('price', 0),
+                quantity=item.get('qty', 1)
             )
         
         return redirect('order_success')

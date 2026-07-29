@@ -20,41 +20,45 @@
             <table class="table table-bordered align-middle mb-0" style="white-space: nowrap;">
                 <thead class="table-light">
                     <tr>
-                        <th>ID</th>
-                        <th>User Email (Account)</th>
-                        <th>Full Name</th>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>User Email</th>
+                        <th>Shipping Name</th>
                         <th>Mobile</th>
-                        <th>Contact Email</th>
-                        <th>House/Flat</th>
-                        <th>Street/Area</th>
-                        <th>Landmark</th>
-                        <th>City</th>
-                        <th>District</th>
-                        <th>State</th>
-                        <th>Country</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Items Bought</th>
+                        <th>City / State</th>
                         <th>PIN</th>
                         <th>Order Notes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for ud in user_data_list %}
+                    {% for order in orders %}
                     <tr>
-                        <td>{{ ud.id }}</td>
-                        <td>{{ ud.user.email }}</td>
-                        <td><strong>{{ ud.full_name }}</strong></td>
-                        <td>{{ ud.mobile_number }}</td>
-                        <td>{{ ud.email_address }}</td>
-                        <td>{{ ud.house_flat_number }}</td>
-                        <td>{{ ud.street_area }}</td>
-                        <td>{{ ud.landmark|default:"-" }}</td>
-                        <td>{{ ud.city }}</td>
-                        <td>{{ ud.district }}</td>
-                        <td>{{ ud.state }}</td>
-                        <td>{{ ud.country }}</td>
-                        <td>{{ ud.pin_code }}</td>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ order.user.email }}</td>
+                        <td>{{ order.full_name }}</td>
+                        <td>{{ order.mobile_number }}</td>
+                        <td class="text-success fw-bold">₹{{ order.total_amount }}</td>
                         <td>
-                            {% if ud.order_notes %}
-                                <span title="{{ ud.order_notes }}">{{ ud.order_notes|truncatechars:30 }}</span>
+                            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                        </td>
+                        <td>
+                            <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
+                                {% for item in order.items.all %}
+                                <li>{{ item.quantity }}x {{ item.product_name }} (₹{{ item.price }})</li>
+                                {% empty %}
+                                <li>No items</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>{{ order.city }}, {{ order.state }}</td>
+                        <td>{{ order.pin_code }}</td>
+                        <td>
+                            {% if order.order_notes %}
+                                <span title="{{ order.order_notes }}">{{ order.order_notes|truncatechars:30 }}</span>
                             {% else %}
                                 -
                             {% endif %}
@@ -62,7 +66,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="14" class="text-center py-4 text-muted">No user data found.</td>
+                        <td colspan="11" class="text-center py-4 text-muted">No orders found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
