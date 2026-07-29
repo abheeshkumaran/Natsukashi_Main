@@ -93,42 +93,6 @@
         </div>
     </section>
 
-    <!-- Features -->
-
-    <section class="features">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-md-3 col-sm-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">🧵</div>
-                        <h4>Handpicked Collection</h4>
-                        <p class="text-muted small mb-0">Traditional weaving and authentic craftsmanship.</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">🚚</div>
-                        <h4>Free Shipping</h4>
-                        <p class="text-muted small mb-0">Delivered safely and securely to your doorstep.</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">🌿</div>
-                        <h4>Premium Quality</h4>
-                        <p class="text-muted small mb-0">Comfortable, breathable and elegant natural fabrics.</p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">🎁</div>
-                        <h4>Carefully Packed</h4>
-                        <p class="text-muted small mb-0">Every order is packed with love and care.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Featured Products -->
 
@@ -177,8 +141,10 @@
                                         data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
+                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -245,8 +211,10 @@
                                         data-name="{{ mund.collection_name }}" data-price="{{ mund.price }}"
                                         data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if mund.quantity == 0 or not mund.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if mund.quantity==0 or not mund.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity==0 or not
+                                        mund.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -312,8 +280,10 @@
                                         data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
+                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -327,8 +297,47 @@
             </div>
 
             <div class="text-center mt-5">
-                <a href="{% url 'colored_saree_explore' %}" class="btn-secondary-custom">Explore More MOST PURCHASED
-                    SAREES</a>
+                <a href="{% url 'colored_saree_explore' %}" class="btn-secondary-custom">Explore More Collections</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features py-4">
+        <div class="container">
+            <div class="row g-3">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card p-3 h-100 shadow-sm" style="border-radius: 10px;">
+                        <div class="feature-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🧵</div>
+                        <h6 class="fw-bold mb-2">Handpicked Collection</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">Traditional weaving and authentic
+                            craftsmanship.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card p-3 h-100 shadow-sm" style="border-radius: 10px;">
+                        <div class="feature-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🚚</div>
+                        <h6 class="fw-bold mb-2">Free Shipping</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">Delivered safely and securely to your
+                            doorstep.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card p-3 h-100 shadow-sm" style="border-radius: 10px;">
+                        <div class="feature-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🌿</div>
+                        <h6 class="fw-bold mb-2">Premium Quality</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">Comfortable, breathable and elegant
+                            natural fabrics.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card p-3 h-100 shadow-sm" style="border-radius: 10px;">
+                        <div class="feature-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🎁</div>
+                        <h6 class="fw-bold mb-2">Carefully Packed</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">Every order is packed with love and care.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
