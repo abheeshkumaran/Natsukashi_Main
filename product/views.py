@@ -443,6 +443,7 @@ def checkout(request):
             OrderItem.objects.create(
                 order=order,
                 product_id=item.get('id'),
+                product_image=item.get('image'),
                 product_name=item.get('name', 'Unknown Product'),
                 product_type=item.get('type', 'Unknown Type'),
                 price=item.get('price', 0),

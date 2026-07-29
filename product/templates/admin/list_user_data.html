@@ -19,10 +19,11 @@
                         <th>Mobile</th>
                         <th>Total Amount</th>
                         <th>Status</th>
-                        <th>Items Bought</th>
+                        <th>Bought Products</th>
                         <th>City / State</th>
                         <th>PIN</th>
                         <th>Order Notes</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,7 +41,12 @@
                         <td>
                             <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
                                 {% for item in order.items.all %}
-                                <li>{{ item.quantity }}x {{ item.product_name }} (₹{{ item.price }})</li>
+                                <li class="d-flex align-items-center mb-2">
+                                    {% if item.product_image %}
+                                        <img src="{{ item.product_image }}" alt="{{ item.product_name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;">
+                                    {% endif %}
+                                    <span>{{ item.quantity }}x {{ item.product_name }} (₹{{ item.price }})</span>
+                                </li>
                                 {% empty %}
                                 <li>No items</li>
                                 {% endfor %}
@@ -55,14 +61,97 @@
                                 -
                             {% endif %}
                         </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">Show More</button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="11" class="text-center py-4 text-muted">No orders found.</td>
+                        <td colspan="12" class="text-center py-4 text-muted">No orders found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Modals for Show More -->
+        {% for order in orders %}
+        <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-primary fw-bold" style="font-family: var(--heading-font);">Order Details: #{{ order.id }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Customer Information</h6>
+                                <p class="mb-1"><strong>Name:</strong> {{ order.full_name }}</p>
+                                <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
+                                <p class="mb-1"><strong>Mobile:</strong> {{ order.mobile_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Shipping Address</h6>
+                                <p class="mb-1">{{ order.house_number }}, {{ order.street_area }}</p>
+                                {% if order.landmark %}<p class="mb-1"><strong>Landmark:</strong> {{ order.landmark }}</p>{% endif %}
+                                <p class="mb-1">{{ order.city }}, {{ order.district }}, {{ order.state }}</p>
+                                <p class="mb-1"><strong>Country:</strong> {{ order.country }} &nbsp;|&nbsp; <strong>PIN:</strong> {{ order.pin_code }}</p>
+                            </div>
+                        </div>
+                        
+                        <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Bought Products</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items.all %}
+                                    <tr>
+                                        <td style="width: 80px; text-align: center;">
+                                            {% if item.product_image %}
+                                            <a href="{{ item.product_image }}" target="_blank" title="Click to view full image">
+                                                <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="shadow-sm" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted small">No Image</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.product_name }}</td>
+                                        <td>₹{{ item.price }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No items found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+                            <div>
+                                {% if order.order_notes %}
+                                <strong>Notes:</strong> {{ order.order_notes }}
+                                {% endif %}
+                            </div>
+                            <h5 class="mb-0 text-success fw-bold">Total Amount: ₹{{ order.total_amount }}</h5>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
     </div>
 {% endblock %}
