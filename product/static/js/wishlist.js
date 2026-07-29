@@ -96,7 +96,7 @@ function updateWishlistBadge() {
 function typeLabel(type) {
     if (type === 'mund') return 'SHOP BY COLLECTION';
     if (type === 'colored') return 'MOST PURCHASED SAREE';
-    return 'FEATURED ONAM PICKS PICKS';
+    return 'FEATURED ONAM PICKS';
 }
 
 function renderWishlistDrawer() {

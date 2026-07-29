@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='onamsaree',
-            options={'verbose_name': 'FEATURED ONAM PICKS PICKS', 'verbose_name_plural': 'FEATURED ONAM PICKS PICKS'},
+            options={'verbose_name': 'FEATURED ONAM PICKS', 'verbose_name_plural': 'FEATURED ONAM PICKS'},
         ),
     ]

@@ -12,8 +12,8 @@ class OnamSaree(models.Model):
 
     class Meta:
         db_table = 'featured_onam_picks'
-        verbose_name = 'FEATURED ONAM PICKS PICKS'
-        verbose_name_plural = 'FEATURED ONAM PICKS PICKS'
+        verbose_name = 'FEATURED ONAM PICKS'
+        verbose_name_plural = 'FEATURED ONAM PICKS'
 
     def __str__(self):
         return self.collection_name
