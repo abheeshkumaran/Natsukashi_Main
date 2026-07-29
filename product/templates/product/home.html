@@ -9,7 +9,9 @@
     <title>Natsukashi - Traditional Collections</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link href="{% static 'css/style.css' %}?v=1.1" rel="stylesheet">
 </head>
 
@@ -48,14 +50,15 @@
                     </li>
                     <li class="nav-item dropdown">
                         {% if request.session.site_user_name %}
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                👤 {{ request.session.site_user_name }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-                            </ul>
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            👤 {{ request.session.site_user_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
                         {% else %}
-                            <a class="nav-link" href="javascript:void(0)" onclick="openAuthModal()">👤 Login</a>
+                        <a class="nav-link" href="javascript:void(0)" onclick="openAuthModal()">👤 Login</a>
                         {% endif %}
                     </li>
                 </ul>
@@ -69,7 +72,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 hero-content text-start">
-                    <h1 class="heading-font">Traditional Collections</h1>
+                    <h1 class="heading-font">Onam Collections</h1>
                     <div class="line mx-0"></div>
                     <p class="tagline">Premium Onam Edition</p>
                     <p class="hero-text">
@@ -77,13 +80,14 @@
                         traditional wear inspired by heritage, culture and artistry.
                         Every piece reflects craftsmanship, comfort and elegance.
                     </p>
-                    <div class="mt-4 d-flex flex-column gap-3 align-items-start">
-                        <button class="btn btn-primary-custom">SHOP ONAM COLLECTION</button>
-                        <button class="btn btn-secondary-custom">VIEW ALL COLLECTIONS</button>
+                    <div class="mt-4">
+                        <button class="btn btn-primary-custom me-3 mb-3">SHOP ONAM COLLECTION</button>
+                        <button class="btn btn-secondary-custom mb-3">VIEW ALL COLLECTIONS</button>
                     </div>
                 </div>
                 <div class="col-lg-6 mt-5 mt-lg-0 text-center">
-                    <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo" class="logo" style="background: rgba(255,255,255,0.8); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo" class="logo"
+                        style="background: rgba(255,255,255,0.8); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                 </div>
             </div>
         </div>
@@ -133,20 +137,19 @@
             <div class="section-header mb-5">
                 <h3>FEATURED ONAM PICKS</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
-                <p class="text-muted reveal-left">Celebrate Onam with our curated sarees — vibrant colours, fine weaves, and festival-ready designs.</p>
+                <p class="text-muted reveal-left">Celebrate Onam with our curated sarees — vibrant colours, fine weaves,
+                    and festival-ready designs.</p>
             </div>
 
             <div class="horizontal-scroll-container">
                 {% for saree in sarees %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
-                        <button type="button" class="wishlist-toggle-btn wishlist-icon" style="background:transparent; border:none; z-index:10;"
-                                data-id="{{ saree.id }}"
-                                data-type="saree"
-                                data-name="{{ saree.collection_name }}"
-                                data-price="{{ saree.price }}"
-                                data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                                onclick="toggleWishlist(this)">♥</button>
+                        <button type="button" class="wishlist-toggle-btn wishlist-icon"
+                            style="background:transparent; border:none; z-index:10;" data-id="{{ saree.id }}"
+                            data-type="saree" data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
+                            data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                            onclick="toggleWishlist(this)">♥</button>
                         {% if saree.quantity == 0 or not saree.stock_available %}
                         <span class="stock-badge stock-out">Out of Stock</span>
                         {% else %}
@@ -155,9 +158,11 @@
                         <a href="javascript:void(0)" onclick="openProductModal('saree', '{{ saree.pk }}')">
                             <div class="card-img-wrapper">
                                 {% if saree.first_image_url %}
-                                <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
+                                <img src="{{ saree.first_image_url }}" class="card-img-top"
+                                    alt="{{ saree.collection_name }}">
                                 {% else %}
-                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top"
+                                    alt="{{ saree.collection_name }}">
                                 {% endif %}
                             </div>
                         </a>
@@ -167,18 +172,15 @@
                             <div class="mt-auto">
                                 <div class="product-price mb-3">₹{{ saree.price }}</div>
                                 <div class="d-flex justify-content-between">
-                                    <button
-                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
-                                        data-default-label="Add to Cart"
-                                        data-id="{{ saree.id }}"
-                                        data-type="saree"
-                                        data-name="{{ saree.collection_name }}"
-                                        data-price="{{ saree.price }}"
+                                    <button class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
+                                        data-default-label="Add to Cart" data-id="{{ saree.id }}" data-type="saree"
+                                        data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)"
-                                        {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
+                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -204,20 +206,20 @@
             <div class="section-header mb-5">
                 <h3>SHOP BY COLLECTION</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
-                <p class="text-muted reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect for the festival.</p>
+                <p class="text-muted reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect
+                    for the festival.</p>
             </div>
 
             <div class="horizontal-scroll-container">
                 {% for mund in munds %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
-                        <button type="button" class="wishlist-toggle-btn wishlist-icon" style="background:transparent; border:none; z-index:10; color: #ccc;"
-                                data-id="{{ mund.id }}"
-                                data-type="mund"
-                                data-name="{{ mund.collection_name }}"
-                                data-price="{{ mund.price }}"
-                                data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                                onclick="toggleWishlist(this)">♥</button>
+                        <button type="button" class="wishlist-toggle-btn wishlist-icon"
+                            style="background:transparent; border:none; z-index:10; color: #ccc;"
+                            data-id="{{ mund.id }}" data-type="mund" data-name="{{ mund.collection_name }}"
+                            data-price="{{ mund.price }}"
+                            data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                            onclick="toggleWishlist(this)">♥</button>
                         {% if mund.quantity == 0 or not mund.stock_available %}
                         <span class="stock-badge stock-out">Out of Stock</span>
                         {% else %}
@@ -226,9 +228,11 @@
                         <a href="javascript:void(0)" onclick="openProductModal('mund', '{{ mund.pk }}')">
                             <div class="card-img-wrapper">
                                 {% if mund.first_image_url %}
-                                <img src="{{ mund.first_image_url }}" class="card-img-top" alt="{{ mund.collection_name }}">
+                                <img src="{{ mund.first_image_url }}" class="card-img-top"
+                                    alt="{{ mund.collection_name }}">
                                 {% else %}
-                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ mund.collection_name }}">
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top"
+                                    alt="{{ mund.collection_name }}">
                                 {% endif %}
                             </div>
                         </a>
@@ -238,18 +242,15 @@
                             <div class="mt-auto">
                                 <div class="product-price mb-3">₹{{ mund.price }}</div>
                                 <div class="d-flex justify-content-between">
-                                    <button
-                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
-                                        data-default-label="Add to Cart"
-                                        data-id="{{ mund.id }}"
-                                        data-type="mund"
-                                        data-name="{{ mund.collection_name }}"
-                                        data-price="{{ mund.price }}"
+                                    <button class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
+                                        data-default-label="Add to Cart" data-id="{{ mund.id }}" data-type="mund"
+                                        data-name="{{ mund.collection_name }}" data-price="{{ mund.price }}"
                                         data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if mund.quantity == 0 or not mund.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)"
-                                        {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity == 0 or not mund.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if mund.quantity==0 or not mund.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if mund.quantity==0 or not
+                                        mund.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -282,13 +283,12 @@
                 {% for saree in colored %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
-                        <button type="button" class="wishlist-toggle-btn wishlist-icon" style="background:transparent; border:none; z-index:10; color: #ccc;"
-                                data-id="{{ saree.id }}"
-                                data-type="colored"
-                                data-name="{{ saree.collection_name }}"
-                                data-price="{{ saree.price }}"
-                                data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                                onclick="toggleWishlist(this)">♥</button>
+                        <button type="button" class="wishlist-toggle-btn wishlist-icon"
+                            style="background:transparent; border:none; z-index:10; color: #ccc;"
+                            data-id="{{ saree.id }}" data-type="colored" data-name="{{ saree.collection_name }}"
+                            data-price="{{ saree.price }}"
+                            data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                            onclick="toggleWishlist(this)">♥</button>
                         {% if saree.quantity == 0 or not saree.stock_available %}
                         <span class="stock-badge stock-out">Out of Stock</span>
                         {% else %}
@@ -297,9 +297,11 @@
                         <a href="javascript:void(0)" onclick="openProductModal('colored', '{{ saree.pk }}')">
                             <div class="card-img-wrapper">
                                 {% if saree.first_image_url %}
-                                <img src="{{ saree.first_image_url }}" class="card-img-top" alt="{{ saree.collection_name }}">
+                                <img src="{{ saree.first_image_url }}" class="card-img-top"
+                                    alt="{{ saree.collection_name }}">
                                 {% else %}
-                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top" alt="{{ saree.collection_name }}">
+                                <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top"
+                                    alt="{{ saree.collection_name }}">
                                 {% endif %}
                             </div>
                         </a>
@@ -309,18 +311,15 @@
                             <div class="mt-auto">
                                 <div class="product-price mb-3">₹{{ saree.price }}</div>
                                 <div class="d-flex justify-content-between">
-                                    <button
-                                        class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
-                                        data-default-label="Add to Cart"
-                                        data-id="{{ saree.id }}"
-                                        data-type="colored"
-                                        data-name="{{ saree.collection_name }}"
-                                        data-price="{{ saree.price }}"
+                                    <button class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
+                                        data-default-label="Add to Cart" data-id="{{ saree.id }}" data-type="colored"
+                                        data-name="{{ saree.collection_name }}" data-price="{{ saree.price }}"
                                         data-image="{% if saree.first_image_url %}{{ saree.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                                         data-out-of-stock="{% if saree.quantity == 0 or not saree.stock_available %}true{% else %}false{% endif %}"
-                                        onclick="addToCart(this)"
-                                        {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Add to Cart</button>
-                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity == 0 or not saree.stock_available %}disabled{% endif %}>Buy Now</button>
+                                        onclick="addToCart(this)" {% if saree.quantity==0 or not saree.stock_available
+                                        %}disabled{% endif %}>Add to Cart</button>
+                                    <button class="btn btn-card-filled flex-grow-1" {% if saree.quantity==0 or not
+                                        saree.stock_available %}disabled{% endif %}>Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -334,7 +333,8 @@
             </div>
 
             <div class="text-center mt-5">
-                <a href="{% url 'colored_saree_explore' %}" class="btn-secondary-custom">Explore More MOST PURCHASED SAREES</a>
+                <a href="{% url 'colored_saree_explore' %}" class="btn-secondary-custom">Explore More MOST PURCHASED
+                    SAREES</a>
             </div>
         </div>
     </section>
@@ -344,8 +344,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
-                    <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo" style="max-width: 280px; margin-bottom: 20px;">
-                    <p class="text-muted-light">Premium traditional collections celebrating the heritage and artistry of Kerala. Discover the elegance of Kasavu.</p>
+                    <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo"
+                        style="max-width: 280px; margin-bottom: 20px;">
+                    <p class="text-muted-light">Premium traditional collections celebrating the heritage and artistry of
+                        Kerala. Discover the elegance of Kasavu.</p>
                 </div>
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
                     <h5 class="footer-title" style="font-size: 1.2rem;">Quick Links</h5>
@@ -375,14 +377,14 @@
     {% include 'product/_cart_drawer_include.html' %}
     {% include 'product/_wishlist_drawer_include.html' %}
     {% include 'product/_product_modal_include.html' %}
-	{% include 'product/_auth_modal_include.html' %}
+    {% include 'product/_auth_modal_include.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/cart.js' %}?v=6"></script>
     <script src="{% static 'js/wishlist.js' %}?v=3"></script>
     <script>
         // IntersectionObserver to reveal paragraph on scroll
-        (function(){
+        (function () {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -398,7 +400,7 @@
         // Triple click on navbar logo to open admin panel
         const navbarBrand = document.querySelector('.navbar-brand');
         if (navbarBrand) {
-            navbarBrand.addEventListener('click', function(e) {
+            navbarBrand.addEventListener('click', function (e) {
                 if (e.detail === 3) {
                     e.preventDefault();
                     window.location.href = "{% url 'admin_dashboard' %}";
