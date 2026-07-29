@@ -7,8 +7,6 @@ Django==6.0.6
 django-cloudinary-storage==0.3.0
 idna==3.18
 pillow==12.3.0
-psycopg==3.3.4
-psycopg-binary==3.3.4
 psycopg2-binary==2.9.12
 python-dotenv==1.2.2
 requests==2.34.2
