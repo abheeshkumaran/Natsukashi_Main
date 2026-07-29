@@ -26,4 +26,8 @@ urlpatterns = [
     path('admin-panel/users/', views.list_users, name='list_users'),
     path('admin-panel/users/edit/<int:pk>/', views.edit_user, name='edit_user'),
     path('admin-panel/users/delete/<int:pk>/', views.delete_user, name='delete_user'),
+    path('admin-panel/user-data/', views.list_user_data, name='list_user_data'),
+    path('admin-panel/user-data/download/', views.download_user_data_csv, name='download_user_data_csv'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order-success/', views.order_success, name='order_success'),
 ]

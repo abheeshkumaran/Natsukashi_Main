@@ -137,3 +137,26 @@ class SiteUser(models.Model):
         
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
+
+class UserData(models.Model):
+    user = models.OneToOneField(SiteUser, on_delete=models.CASCADE, related_name='user_data')
+    full_name = models.CharField(max_length=255)
+    mobile_number = models.CharField(max_length=20)
+    email_address = models.EmailField()
+    house_flat_number = models.CharField(max_length=255)
+    street_area = models.CharField(max_length=255)
+    landmark = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100, default='India')
+    pin_code = models.CharField(max_length=20)
+    order_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'user_data'
+        verbose_name = 'User Data'
+        verbose_name_plural = 'User Data'
+
+    def __str__(self):
+        return f"{self.full_name} ({self.user.email})"

@@ -1,9 +1,10 @@
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponse
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
 from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
-from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser
+from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData
 
 # Create your views here.
 def home(request):
@@ -311,4 +312,112 @@ def delete_user(request, pk):
         messages.success(request, 'User deleted successfully.')
     return redirect('list_users')
 
+def list_user_data(request):
+    user_data_list = UserData.objects.all().order_by('-id')
+    return render(request, 'admin/list_user_data.html', {'user_data_list': user_data_list})
 
+def download_user_data_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="user_data_orders.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'ID', 'User Email (Account)', 'Full Name', 'Mobile', 'Contact Email',
+        'House/Flat', 'Street/Area', 'Landmark', 'City', 'District',
+        'State', 'Country', 'PIN Code', 'Order Notes'
+    ])
+
+    user_data_list = UserData.objects.all().order_by('-id')
+    for ud in user_data_list:
+        writer.writerow([
+            ud.id,
+            ud.user.email if ud.user else '',
+            ud.full_name,
+            ud.mobile_number,
+            ud.email_address,
+            ud.house_flat_number,
+            ud.street_area,
+            ud.landmark,
+            ud.city,
+            ud.district,
+            ud.state,
+            ud.country,
+            ud.pin_code,
+            ud.order_notes
+        ])
+
+    return response
+
+def checkout(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        messages.error(request, 'Please login to continue to checkout.')
+        return redirect('home')
+
+    user = get_object_or_404(SiteUser, id=user_id)
+    user_data = getattr(user, 'user_data', None)
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        mobile_number = request.POST.get('mobile_number')
+        email_address = request.POST.get('email_address')
+        house_flat_number = request.POST.get('house_flat_number')
+        street_area = request.POST.get('street_area')
+        landmark = request.POST.get('landmark', '')
+        city = request.POST.get('city')
+        district = request.POST.get('district')
+        state = request.POST.get('state')
+        country = request.POST.get('country', 'India')
+        pin_code = request.POST.get('pin_code')
+        order_notes = request.POST.get('order_notes', '')
+
+        if user_data:
+            user_data.full_name = full_name
+            user_data.mobile_number = mobile_number
+            user_data.email_address = email_address
+            user_data.house_flat_number = house_flat_number
+            user_data.street_area = street_area
+            user_data.landmark = landmark
+            user_data.city = city
+            user_data.district = district
+            user_data.state = state
+            user_data.country = country
+            user_data.pin_code = pin_code
+            user_data.order_notes = order_notes
+            user_data.save()
+        else:
+            UserData.objects.create(
+                user=user,
+                full_name=full_name,
+                mobile_number=mobile_number,
+                email_address=email_address,
+                house_flat_number=house_flat_number,
+                street_area=street_area,
+                landmark=landmark,
+                city=city,
+                district=district,
+                state=state,
+                country=country,
+                pin_code=pin_code,
+                order_notes=order_notes
+            )
+        
+        return redirect('order_success')
+
+    # For GET request, provide initial data if UserData exists
+    context = {}
+    if user_data:
+        context['user_data'] = user_data
+    else:
+        # Provide default SiteUser data for email and phone if no UserData exists
+        context['user_data'] = {
+            'full_name': user.name,
+            'mobile_number': user.phone,
+            'email_address': user.email
+        }
+
+    return render(request, 'product/checkout.html', context)
+
+
+def order_success(request):
+    return render(request, 'product/order_success.html')
