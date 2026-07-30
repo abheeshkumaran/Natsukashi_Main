@@ -29,6 +29,7 @@
                         
                         <div class="text-center mt-3">
                             <p class="text-muted small mb-0">Don't have an account? <a href="javascript:void(0)" class="auth-link" onclick="toggleAuthForm('register')">Register here</a></p>
+                            <p class="text-muted small mt-2"><a href="javascript:void(0)" class="auth-link" onclick="toggleAuthForm('guest')">Buy without registration</a></p>
                         </div>
                     </form>
                 </div>
@@ -72,6 +73,29 @@
                         
                         <div class="text-center mt-3">
                             <p class="text-muted small mb-0">Already have an account? <a href="javascript:void(0)" class="auth-link" onclick="toggleAuthForm('login')">Log In here</a></p>
+                            <p class="text-muted small mt-2"><a href="javascript:void(0)" class="auth-link" onclick="toggleAuthForm('guest')">Buy without registration</a></p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Guest Form Container (Hidden initially) -->
+                <div id="guestFormContainer" style="display: none;">
+                    <h3 class="auth-modal-title mb-2">Guest Checkout</h3>
+                    <p class="text-muted small mb-4">Please provide your details to proceed.</p>
+                    
+                    <form id="guestForm" class="text-start auth-form">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Name</label>
+                            <input type="text" name="guest_name" class="form-control custom-input" placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold">Phone Number</label>
+                            <input type="tel" name="guest_phone" class="form-control custom-input" placeholder="Enter your phone number" required>
+                        </div>
+                        <button type="button" class="btn auth-btn-primary w-100 mb-3" onclick="submitGuestCheckout()">Continue</button>
+                        
+                        <div class="text-center mt-3">
+                            <p class="text-muted small mb-0"><a href="javascript:void(0)" class="auth-link" onclick="toggleAuthForm('login')">Back to Login</a></p>
                         </div>
                     </form>
                 </div>
@@ -146,13 +170,27 @@
     function toggleAuthForm(formType) {
         const loginForm = document.getElementById('loginFormContainer');
         const registerForm = document.getElementById('registerFormContainer');
+        const guestForm = document.getElementById('guestFormContainer');
+        
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'none';
+        if (guestForm) guestForm.style.display = 'none';
         
         if (formType === 'register') {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
+            if (registerForm) registerForm.style.display = 'block';
+        } else if (formType === 'guest') {
+            if (guestForm) guestForm.style.display = 'block';
         } else {
-            registerForm.style.display = 'none';
-            loginForm.style.display = 'block';
+            if (loginForm) loginForm.style.display = 'block';
+        }
+    }
+    
+    function submitGuestCheckout() {
+        alert('Proceeding as Guest!');
+        const authModalEl = document.getElementById('authModal');
+        if (authModalEl) {
+            const modal = bootstrap.Modal.getInstance(authModalEl);
+            if (modal) modal.hide();
         }
     }
     
@@ -164,6 +202,8 @@
             if (loginForm) loginForm.reset();
             const registerForm = document.getElementById('registerForm');
             if (registerForm) registerForm.reset();
+            const guestForm = document.getElementById('guestForm');
+            if (guestForm) guestForm.reset();
             const errorMsg = document.getElementById('loginErrorMsg');
             if (errorMsg) errorMsg.style.display = 'none';
         }, 300); // Wait for modal slide out animation to finish
