@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Natsukashi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .orders-container { max-width: 800px; margin: 60px auto; padding: 0 15px; }
+        .order-card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .order-id { font-weight: 600; color: var(--primary-color); font-family: var(--heading-font); font-size: 1.2rem; }
+        .order-date { color: #777; font-size: 0.9rem; }
+        .order-status { font-weight: 500; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .status-pending { background: #fff3e0; color: #e65100; }
+        .order-item { display: flex; align-items: center; margin-bottom: 15px; }
+        .item-image { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-right: 15px; border: 1px solid var(--border-color); }
+        .item-details h5 { margin: 0 0 5px 0; font-size: 1rem; font-weight: 500; }
+        .item-price { color: var(--primary-color); font-weight: 600; }
+        .order-total { text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--primary-color); border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 10px; }
+        .empty-orders { text-align: center; padding: 50px 20px; }
+        .empty-orders h3 { font-family: var(--heading-font); color: var(--primary-color); }
+        .tab-btn {
+            background: #fff;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 8px 24px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover {
+            background: var(--accent-color);
+        }
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+        .btn-group .tab-btn:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        .btn-group .tab-btn:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navbar (simplified for this page, usually you would include it) -->
+    <nav class="navbar navbar-expand-lg bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" height="40">
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="me-3">Hello, {{ site_user_name }}</span>
+                <a href="{% url 'home' %}" class="btn-primary-custom" style="padding: 8px 20px; font-size: 0.9rem;">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="orders-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-family: var(--heading-font); color: var(--primary-color); margin-bottom: 0;">My Orders</h2>
+            <div class="btn-group" role="group" style="box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 8px;">
+                <button type="button" class="tab-btn active" id="btn-active" onclick="showTab('active')">Active Orders</button>
+                <button type="button" class="tab-btn" id="btn-previous" onclick="showTab('previous')">Previous Orders</button>
+            </div>
+        </div>
+        
+        <div id="active-orders-section">
+        {% if active_orders %}
+            {% for order in active_orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #{{ order.id }}</div>
+                            <div class="order-date">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</div>
+                        </div>
+                        <div>
+                            <span class="order-status status-pending">{{ order.status }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                            <div class="order-item">
+                                {% if item.product_image %}
+                                    <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="item-image">
+                                {% else %}
+                                    <div class="item-image" style="background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">No Image</div>
+                                {% endif %}
+                                <div class="item-details">
+                                    <h5>{{ item.product_name }}</h5>
+                                    <div style="font-size: 0.9rem; color: #666;">Qty: {{ item.quantity }} | Type: {{ item.product_type }}</div>
+                                    <div class="item-price">₹{{ item.price }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="order-total">
+                        Total Amount: ₹{{ order.total_amount }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            {% if not previous_orders %}
+            <div class="order-card empty-orders">
+                <h3>No Orders Found</h3>
+                <p class="text-muted mb-4">You haven't placed any active orders yet.</p>
+                <a href="{% url 'home' %}" class="btn-primary-custom">Start Shopping</a>
+            </div>
+            {% else %}
+            <div class="order-card empty-orders" style="padding: 30px;">
+                <p class="text-muted mb-0">You have no active orders.</p>
+            </div>
+            {% endif %}
+        {% endif %}
+        </div>
+
+        <div id="previous-orders-section" style="display: none;">
+        {% if previous_orders %}
+            {% for order in previous_orders %}
+                <div class="order-card" style="opacity: 0.85;">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #{{ order.id }}</div>
+                            <div class="order-date">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</div>
+                        </div>
+                        <div>
+                            <span class="order-status status-pending" style="background: #e8f5e9; color: #2e7d32;">{{ order.status }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items">
+                        {% for item in order.items.all %}
+                            <div class="order-item">
+                                {% if item.product_image %}
+                                    <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="item-image" style="filter: grayscale(20%);">
+                                {% else %}
+                                    <div class="item-image" style="background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">No Image</div>
+                                {% endif %}
+                                <div class="item-details">
+                                    <h5>{{ item.product_name }}</h5>
+                                    <div style="font-size: 0.9rem; color: #666;">Qty: {{ item.quantity }} | Type: {{ item.product_type }}</div>
+                                    <div class="item-price">₹{{ item.price }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="order-total">
+                        Total Amount: ₹{{ order.total_amount }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="order-card empty-orders">
+                <h3>No Previous Orders</h3>
+                <p class="text-muted mb-4">You have no previously delivered or returned orders.</p>
+                <a href="{% url 'home' %}" class="btn-primary-custom">Start Shopping</a>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            document.getElementById('active-orders-section').style.display = tabName === 'active' ? 'block' : 'none';
+            document.getElementById('previous-orders-section').style.display = tabName === 'previous' ? 'block' : 'none';
+            
+            if (tabName === 'active') {
+                document.getElementById('btn-active').classList.add('active');
+                document.getElementById('btn-previous').classList.remove('active');
+            } else {
+                document.getElementById('btn-previous').classList.add('active');
+                document.getElementById('btn-active').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

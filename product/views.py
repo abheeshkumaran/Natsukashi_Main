@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
 from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
-from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData, Order, OrderItem
+from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData, Order, OrderItem, OrderStatus
 
 # Create your views here.
 def home(request):
@@ -313,9 +313,62 @@ def delete_user(request, pk):
         messages.success(request, 'User deleted successfully.')
     return redirect('list_users')
 
+from django.db.models.functions import Lower
+
 def list_user_data(request):
-    orders = Order.objects.all().order_by('-created_at')
-    return render(request, 'admin/list_user_data.html', {'orders': orders})
+    allowed_statuses = [
+        'pending', 'confirmed', 'processing', 'packed', 'shiped', 
+        'out of delivery', 'deliverd', 'order placed'
+    ]
+    
+    # Exclude delivered orders from this view, but keep others in allowed_statuses
+    orders_query = Order.objects.annotate(status_lower=Lower('status')).filter(status_lower__in=allowed_statuses).exclude(status_lower='deliverd')
+
+    status_filter = request.GET.get('status_filter')
+    if status_filter:
+        orders = orders_query.filter(status_lower=status_filter.lower()).order_by('-created_at')
+    else:
+        orders = orders_query.order_by('-created_at')
+    
+    statuses = OrderStatus.objects.filter(status_name__in=allowed_statuses)
+    return render(request, 'admin/list_user_data.html', {
+        'orders': orders, 
+        'statuses': statuses,
+        'current_filter': status_filter
+    })
+
+def list_delivered_orders(request):
+    allowed_statuses = [
+        'deliverd', 'cancelled', 'return requested', 'return rejected', 
+        'return approved', 'returened', 'refund initiated', 'refund completed'
+    ]
+    
+    orders_query = Order.objects.annotate(status_lower=Lower('status')).filter(status_lower__in=allowed_statuses)
+    
+    status_filter = request.GET.get('status_filter')
+    if status_filter:
+        orders = orders_query.filter(status_lower=status_filter.lower()).order_by('-created_at')
+    else:
+        orders = orders_query.order_by('-created_at')
+        
+    statuses = OrderStatus.objects.filter(status_name__in=allowed_statuses)
+    return render(request, 'admin/list_delivered_orders.html', {
+        'orders': orders, 
+        'statuses': statuses,
+        'current_filter': status_filter
+    })
+
+def update_order_status(request, order_id):
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        new_status = request.POST.get('status')
+        if new_status:
+            order.status = new_status
+            order.save()
+            messages.success(request, f'Order #{order.id} status updated to {new_status}.')
+        else:
+            messages.error(request, 'Failed to update order status.')
+    return redirect('list_user_data')
 
 def download_user_data_csv(request):
     response = HttpResponse(content_type='text/csv')
@@ -469,3 +522,27 @@ def checkout(request):
 
 def order_success(request):
     return render(request, 'product/order_success.html')
+
+def my_orders(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        messages.error(request, 'Please login to view your orders.')
+        return redirect('home')
+
+    user = get_object_or_404(SiteUser, id=user_id)
+    
+    previous_statuses = [
+        'deliverd', 'cancelled', 'return requested', 'return rejected', 
+        'return approved', 'returened', 'refund initiated', 'refund completed'
+    ]
+    
+    all_orders = Order.objects.annotate(status_lower=Lower('status')).filter(mobile_number=user.phone).prefetch_related('items').order_by('-created_at')
+    
+    active_orders = all_orders.exclude(status_lower__in=previous_statuses)
+    previous_orders = all_orders.filter(status_lower__in=previous_statuses)
+
+    return render(request, 'product/my_orders.html', {
+        'active_orders': active_orders,
+        'previous_orders': previous_orders,
+        'site_user_name': request.session.get('site_user_name')
+    })

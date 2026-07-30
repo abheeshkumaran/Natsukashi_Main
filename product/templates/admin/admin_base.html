@@ -168,6 +168,10 @@
             <a href="{% url 'list_user_data' %}" class="sidebar-link {% if 'user_data' in request.resolver_match.url_name %}active{% endif %}">
                 Orders (User Data)
             </a>
+            
+            <a href="{% url 'list_delivered_orders' %}" class="sidebar-link {% if 'delivered_orders' in request.resolver_match.url_name %}active{% endif %}">
+                Delivered Orders
+            </a>
 
             <div class="nav-label">Products (List)</div>
             

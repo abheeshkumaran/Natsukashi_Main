@@ -28,6 +28,9 @@ urlpatterns = [
     path('admin-panel/users/delete/<int:pk>/', views.delete_user, name='delete_user'),
     path('admin-panel/user-data/', views.list_user_data, name='list_user_data'),
     path('admin-panel/user-data/download/', views.download_user_data_csv, name='download_user_data_csv'),
+    path('admin-panel/delivered-orders/', views.list_delivered_orders, name='list_delivered_orders'),
+    path('admin-panel/update-order-status/<int:order_id>/', views.update_order_status, name='update_order_status'),
     path('checkout/', views.checkout, name='checkout'),
     path('order-success/', views.order_success, name='order_success'),
+    path('my-orders/', views.my_orders, name='my_orders'),
 ]

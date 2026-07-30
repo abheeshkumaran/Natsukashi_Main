@@ -206,3 +206,14 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product_name}"
 
+class OrderStatus(models.Model):
+    status_name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        db_table = 'order_status'
+        verbose_name = 'Order Status'
+        verbose_name_plural = 'Order Statuses'
+
+    def __str__(self):
+        return self.status_name
+
