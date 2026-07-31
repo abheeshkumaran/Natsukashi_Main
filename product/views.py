@@ -525,21 +525,20 @@ def order_success(request):
 
 def my_orders(request):
     user_id = request.session.get('site_user_id')
-    if not user_id:
-        messages.error(request, 'Please login to view your orders.')
-        return redirect('home')
-
-    user = get_object_or_404(SiteUser, id=user_id)
     
     previous_statuses = [
         'deliverd', 'cancelled', 'return requested', 'return rejected', 
         'return approved', 'returened', 'refund initiated', 'refund completed'
     ]
     
-    all_orders = Order.objects.annotate(status_lower=Lower('status')).filter(mobile_number=user.phone).prefetch_related('items').order_by('-created_at')
-    
-    active_orders = all_orders.exclude(status_lower__in=previous_statuses)
-    previous_orders = all_orders.filter(status_lower__in=previous_statuses)
+    if user_id:
+        user = get_object_or_404(SiteUser, id=user_id)
+        all_orders = Order.objects.annotate(status_lower=Lower('status')).filter(mobile_number=user.phone).prefetch_related('items').order_by('-created_at')
+        active_orders = all_orders.exclude(status_lower__in=previous_statuses)
+        previous_orders = all_orders.filter(status_lower__in=previous_statuses)
+    else:
+        active_orders = []
+        previous_orders = []
 
     return render(request, 'product/my_orders.html', {
         'active_orders': active_orders,
