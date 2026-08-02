@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin-panel/user-data/download-csv/', views.download_user_data_csv, name='download_user_data_csv'),
     path('admin-panel/updations/', views.manage_updations, name='manage_updations'),
     path('admin-panel/updations/add/', views.add_updation, name='add_updation'),
+    path('admin-panel/manual-selling/', views.manual_selling, name='manual_selling'),
     path('admin-panel/updations/status/<int:pk>/', views.update_updation_status, name='update_updation_status'),
     path('admin-panel/delivered-orders/', views.list_delivered_orders, name='list_delivered_orders'),
     path('admin-panel/update-order-status/<int:order_id>/', views.update_order_status, name='update_order_status'),

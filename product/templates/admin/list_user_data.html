@@ -30,6 +30,8 @@
                         <th>Mobile</th>
                         <th>Total Amount</th>
                         <th>Status</th>
+                        <th>Purchase Type</th>
+                        <th>Payment Type</th>
                         <th>Update Status</th>
                         <th>Bought Products</th>
                         <th>City / State</th>
@@ -50,6 +52,14 @@
                         <td>
                             <span class="badge bg-warning text-dark">{{ order.status }}</span>
                         </td>
+                        <td>
+                            {% if order.purchase_type == 'Manual' %}
+                            <span class="badge bg-warning text-dark">{{ order.purchase_type }}</span>
+                            {% else %}
+                            <span class="badge bg-info text-dark">{{ order.purchase_type|default:"Online" }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.payment_type|default:"" }}</td>
                         <td>
                             <form action="{% url 'update_order_status' order.id %}" method="POST" class="d-flex align-items-center">
                                 {% csrf_token %}
@@ -96,7 +106,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="13" class="text-center py-4 text-muted">No orders found.</td>
+                        <td colspan="15" class="text-center py-4 text-muted">No orders found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

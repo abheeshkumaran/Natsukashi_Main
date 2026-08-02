@@ -183,6 +183,10 @@
             
             <div class="nav-label">Management</div>
             
+            <a href="{% url 'manual_selling' %}" class="sidebar-link {% if 'manual_selling' in request.resolver_match.url_name %}active{% endif %}">
+                Manual Selling
+            </a>
+            
             <a href="{% url 'list_users' %}" class="sidebar-link {% if 'user' in request.resolver_match.url_name and 'data' not in request.resolver_match.url_name %}active{% endif %}">
                 Users
             </a>

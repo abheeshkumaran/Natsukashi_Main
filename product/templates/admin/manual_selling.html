@@ -1,0 +1,110 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-gold">Manual Selling</h2>
+    </div>
+    
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4 p-md-5">
+            <form method="POST" action="{% url 'manual_selling' %}">
+                {% csrf_token %}
+                
+                <h4 class="mb-4" style="color: var(--gold);">Order Details</h4>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Select Product *</label>
+                        <select name="product_id" class="form-select" required>
+                            <option value="">-- Choose a Product --</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.collection_name }} (₹{{ product.price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label text-muted fw-bold">Quantity *</label>
+                        <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted fw-bold">Assign to User *</label>
+                        <select name="user_id" class="form-select" required>
+                            <option value="">-- Choose a User --</option>
+                            {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.full_name }} ({{ u.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+                <h4 class="mb-4" style="color: var(--gold);">Customer & Shipping Information</h4>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Full Name *</label>
+                        <input type="text" name="full_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Mobile Number *</label>
+                        <input type="tel" name="mobile_number" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Email Address *</label>
+                        <input type="email" name="email_address" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Payment Type *</label>
+                        <select name="payment_type" class="form-select" required>
+                            <option value="Collect by hand">Collect by hand</option>
+                            <option value="Collect by account">Collect by account</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">House / Flat Number *</label>
+                        <input type="text" name="house_flat_number" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Street / Area *</label>
+                        <input type="text" name="street_area" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">Landmark</label>
+                        <input type="text" name="landmark" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted fw-bold">City *</label>
+                        <input type="text" name="city" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted fw-bold">District *</label>
+                        <input type="text" name="district" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted fw-bold">State *</label>
+                        <input type="text" name="state" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted fw-bold">PIN Code *</label>
+                        <input type="text" name="pin_code" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-bold">Order Notes</label>
+                    <textarea name="order_notes" class="form-control" rows="3" placeholder="Any special notes for delivery..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn" style="background-color: var(--gold); color: white; padding: 10px 30px; font-weight: 600; border-radius: 8px;">
+                        Create Manual Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

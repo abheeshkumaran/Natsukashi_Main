@@ -106,6 +106,8 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=50, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    purchase_type = models.CharField(max_length=50, default='Online')
+    payment_type = models.CharField(max_length=50, blank=True, null=True)
     
     # Snapshot of shipping details for this specific order
     full_name = models.CharField(max_length=255)
@@ -170,6 +172,8 @@ class UpdationTask(models.Model):
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    purchase_type = models.CharField(max_length=50, default='Online')
+    payment_type = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f"{self.issue_related} ({self.status})"

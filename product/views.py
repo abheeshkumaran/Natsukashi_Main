@@ -710,3 +710,73 @@ def updations_context(request):
     except Exception:
         count = 0
     return {'pending_count': count}
+
+def manual_selling(request):
+    from .models import Product, SiteUser, Order, OrderItem
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        product_id = request.POST.get('product_id')
+        quantity = int(request.POST.get('quantity', 1))
+        
+        full_name = request.POST.get('full_name')
+        mobile_number = request.POST.get('mobile_number')
+        email_address = request.POST.get('email_address')
+        house_flat_number = request.POST.get('house_flat_number')
+        street_area = request.POST.get('street_area')
+        landmark = request.POST.get('landmark', '')
+        city = request.POST.get('city')
+        district = request.POST.get('district')
+        state = request.POST.get('state')
+        country = request.POST.get('country', 'India')
+        pin_code = request.POST.get('pin_code')
+        order_notes = request.POST.get('order_notes', '')
+        
+        payment_type = request.POST.get('payment_type')
+        
+        site_user = get_object_or_404(SiteUser, id=user_id)
+        product = get_object_or_404(Product, id=product_id)
+        
+        total_amount = product.price * quantity
+        
+        order = Order.objects.create(
+            user=site_user,
+            total_amount=total_amount,
+            status='Order Placed',
+            full_name=full_name,
+            mobile_number=mobile_number,
+            email_address=email_address,
+            house_flat_number=house_flat_number,
+            street_area=street_area,
+            landmark=landmark,
+            city=city,
+            district=district,
+            state=state,
+            country=country,
+            pin_code=pin_code,
+            order_notes=order_notes,
+            purchase_type='Manual',
+            payment_type=payment_type
+        )
+        
+        OrderItem.objects.create(
+            order=order,
+            product_id=product.id,
+            product_image=product.first_image_url,
+            product_name=product.collection_name,
+            product_type='',
+            price=product.price,
+            quantity=quantity
+        )
+        
+        messages.success(request, f'Manual order created successfully for {full_name}!')
+        return redirect('list_user_data')
+        
+    products = Product.objects.all()
+    from .models import SiteUser
+    users = SiteUser.objects.all()
+    
+    return render(request, 'admin/manual_selling.html', {
+        'products': products,
+        'users': users
+    })
