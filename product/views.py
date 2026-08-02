@@ -4,15 +4,13 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
-from .forms import OnamSareeForm, OnamSetMundForm, ColoredSareeForm
-from .models import OnamSaree, OnamSareeImage, OnamSetMund, OnamSetMundImage, ColoredSaree, ColoredSareeImage, SiteUser, UserData, Order, OrderItem, OrderStatus
+from .forms import ProductForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus
 
 # Create your views here.
 def home(request):
-    sarees = OnamSaree.objects.prefetch_related('images').all()[:6]
-    munds = OnamSetMund.objects.prefetch_related('images').all()[:6]
-    colored = ColoredSaree.objects.prefetch_related('images').all()[:6]
-    return render(request, 'product/home.html', {'sarees': sarees, 'munds': munds, 'colored': colored})
+    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')[:6]
+    return render(request, 'product/home.html', {'munds': munds})
 
 
 def admin_dashboard(request):
@@ -21,7 +19,7 @@ def admin_dashboard(request):
 
 def add_onam_set_mund(request):
     if request.method == 'POST':
-        form = OnamSetMundForm(request.POST, request.FILES)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             mund = form.save(commit=False)
             mund.stock_available = request.POST.get('stock_available') == 'on'
@@ -30,36 +28,36 @@ def add_onam_set_mund(request):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSetMundImage.objects.create(mund=mund, image=image)
+                ProductImage.objects.create(product=mund, image=image)
 
             return redirect('list_onam_set_munds')
     else:
-        form = OnamSetMundForm()
+        form = ProductForm()
 
     return render(request, 'product/add_onam_set_mund.html', {'form': form})
 
 
 # def add_onam_saree(request):
 #     if request.method == 'POST':
-#         form = OnamSareeForm(request.POST, request.FILES)
+#         form = ProductForm(request.POST, request.FILES)
 #         if form.is_valid():
 #             saree = form.save(commit=False)
 #             saree.save()
 
 #             images = request.FILES.getlist('images')
 #             for image in images:
-#                 OnamSareeImage.objects.create(saree=saree, image=image)
+#                 ProductImage.objects.create(product=saree, image=image)
 
 #             return redirect('admin_dashboard')
 #     else:
-#         form = OnamSareeForm()
+#         form = ProductForm()
 
 #     return render(request, 'product/add_onam_saree.html', {'form': form})
 
 
 def add_onam_saree(request):
     if request.method == 'POST':
-        form = OnamSareeForm(request.POST, request.FILES)
+        form = ProductForm(request.POST, request.FILES)
 
         if form.is_valid():
             print("FILES:", request.FILES)
@@ -73,7 +71,7 @@ def add_onam_saree(request):
             for image in images:
                 print("Uploading:", image.name)
 
-                obj = OnamSareeImage(saree=saree)
+                obj = ProductImage(product=saree)
                 obj.image = image
                 obj.save()
 
@@ -82,36 +80,36 @@ def add_onam_saree(request):
             return redirect("admin_dashboard")
 
     else:
-        form = OnamSareeForm()
+        form = ProductForm()
 
     return render(request, "product/add_onam_saree.html", {"form": form})
 
 
 def add_colored_saree(request):
     if request.method == 'POST':
-        form = ColoredSareeForm(request.POST, request.FILES)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             saree = form.save(commit=False)
             saree.save()
 
             images = request.FILES.getlist('images')
             for image in images:
-                ColoredSareeImage.objects.create(saree=saree, image=image)
+                ProductImage.objects.create(product=saree, image=image)
 
             return redirect('admin_dashboard')
     else:
-        form = ColoredSareeForm()
+        form = ProductForm()
 
     return render(request, 'product/add_colored_saree.html', {'form': form})
 
 
 def list_onam_sarees(request):
-    sarees = OnamSaree.objects.prefetch_related('images').all()
+    sarees = Product.objects.filter(category__name='Featured Onam Picks').prefetch_related('images')
     return render(request, 'admin/list_onam_sarees.html', {'sarees': sarees})
 
 
 def list_colored_sarees(request):
-    sarees = ColoredSaree.objects.prefetch_related('images').all()
+    sarees = Product.objects.filter(category__name='Most Purchased Sarees').prefetch_related('images')
     return render(request, 'admin/list_colored_sarees.html', {'sarees': sarees})
 
 def register_user(request):
@@ -168,14 +166,14 @@ def logout_user(request):
 
 
 def list_onam_set_munds(request):
-    munds = OnamSetMund.objects.prefetch_related('images').all()
+    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')
     return render(request, 'admin/list_onam_set_munds.html', {'munds': munds})
 
 
 def edit_onam_saree(request, pk):
-    saree = get_object_or_404(OnamSaree, pk=pk)
+    saree = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
-        form = OnamSareeForm(request.POST, request.FILES, instance=saree)
+        form = ProductForm(request.POST, request.FILES, instance=saree)
         if form.is_valid():
             saree = form.save(commit=False)
             saree.stock_available = request.POST.get('stock_available') == 'on'
@@ -184,19 +182,19 @@ def edit_onam_saree(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSareeImage.objects.create(saree=saree, image=image)
+                ProductImage.objects.create(product=saree, image=image)
 
             return redirect('list_onam_sarees')
     else:
-        form = OnamSareeForm(instance=saree)
+        form = ProductForm(instance=saree)
 
     return render(request, 'admin/edit_onam_saree.html', {'form': form, 'saree': saree})
 
 
 def edit_colored_saree(request, pk):
-    saree = get_object_or_404(ColoredSaree, pk=pk)
+    saree = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
-        form = ColoredSareeForm(request.POST, request.FILES, instance=saree)
+        form = ProductForm(request.POST, request.FILES, instance=saree)
         if form.is_valid():
             saree = form.save(commit=False)
             saree.stock_available = request.POST.get('stock_available') == 'on'
@@ -205,33 +203,33 @@ def edit_colored_saree(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                ColoredSareeImage.objects.create(saree=saree, image=image)
+                ProductImage.objects.create(product=saree, image=image)
 
             return redirect('list_colored_sarees')
     else:
-        form = ColoredSareeForm(instance=saree)
+        form = ProductForm(instance=saree)
 
     return render(request, 'admin/edit_colored_saree.html', {'form': form, 'saree': saree})
 
 
 def delete_onam_saree(request, pk):
-    saree = get_object_or_404(OnamSaree, pk=pk)
+    saree = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         saree.delete()
     return redirect('list_onam_sarees')
 
 
 def delete_colored_saree(request, pk):
-    saree = get_object_or_404(ColoredSaree, pk=pk)
+    saree = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         saree.delete()
     return redirect('list_colored_sarees')
 
 
 def edit_onam_set_mund(request, pk):
-    mund = get_object_or_404(OnamSetMund, pk=pk)
+    mund = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
-        form = OnamSetMundForm(request.POST, request.FILES, instance=mund)
+        form = ProductForm(request.POST, request.FILES, instance=mund)
         if form.is_valid():
             mund = form.save(commit=False)
             mund.stock_available = request.POST.get('stock_available') == 'on'
@@ -240,42 +238,38 @@ def edit_onam_set_mund(request, pk):
 
             images = request.FILES.getlist('images')
             for image in images:
-                OnamSetMundImage.objects.create(mund=mund, image=image)
+                ProductImage.objects.create(product=mund, image=image)
 
             return redirect('list_onam_set_munds')
     else:
-        form = OnamSetMundForm(instance=mund)
+        form = ProductForm(instance=mund)
 
     return render(request, 'admin/edit_onam_set_mund.html', {'form': form, 'mund': mund})
 
 
 def delete_onam_set_mund(request, pk):
-    mund = get_object_or_404(OnamSetMund, pk=pk)
+    mund = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         mund.delete()
     return redirect('list_onam_set_munds')
 
 
 def onam_saree_explore(request):
-    sarees = OnamSaree.objects.prefetch_related('images').all()
+    sarees = Product.objects.filter(category__name='Featured Onam Picks').prefetch_related('images')
     return render(request, 'product/onam_saree_explore.html', {'sarees': sarees})
 
 
 def colored_saree_explore(request):
-    sarees = ColoredSaree.objects.prefetch_related('images').all()
+    sarees = Product.objects.filter(category__name='Most Purchased Sarees').prefetch_related('images')
     return render(request, 'product/colored_saree_explore.html', {'sarees': sarees})
 
 
 def onam_mund_explore(request):
-    munds = OnamSetMund.objects.prefetch_related('images').all()
+    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')
     return render(request, 'product/onam_mund_explore.html', {'munds': munds})
 
 
-PRODUCT_MODEL_BY_TYPE = {
-    'saree': OnamSaree,
-    'mund': OnamSetMund,
-    'colored': ColoredSaree,
-}
+PRODUCT_MODEL_BY_TYPE = {'saree': Product, 'mund': Product, 'colored': Product}
 
 
 def product_modal(request, product_type, pk):

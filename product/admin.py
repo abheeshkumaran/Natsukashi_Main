@@ -1,37 +1,23 @@
 from django.contrib import admin
-from .models import OnamSaree, OnamSareeImage
-from .models import ColoredSaree, ColoredSareeImage
+from .models import Category, Product, ProductImage
 
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
 
-class OnamSareeImageInline(admin.TabularInline):
-    model = OnamSareeImage
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
     extra = 1
 
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('collection_name', 'category', 'price', 'quantity', 'stock_available')
+    list_filter = ('category', 'stock_available')
+    search_fields = ('collection_name', 'description')
+    inlines = [ProductImageInline]
 
-@admin.register(OnamSaree)
-class OnamSareeAdmin(admin.ModelAdmin):
-    list_display = ('collection_name', 'price')
-    search_fields = ('collection_name',)
-    inlines = [OnamSareeImageInline]
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('product', 'image')
 
-
-@admin.register(OnamSareeImage)
-class OnamSareeImageAdmin(admin.ModelAdmin):
-    list_display = ('saree', 'image')
-
-
-class ColoredSareeImageInline(admin.TabularInline):
-    model = ColoredSareeImage
-    extra = 1
-
-
-@admin.register(ColoredSaree)
-class ColoredSareeAdmin(admin.ModelAdmin):
-    list_display = ('collection_name', 'price')
-    search_fields = ('collection_name',)
-    inlines = [ColoredSareeImageInline]
-
-
-@admin.register(ColoredSareeImage)
-class ColoredSareeImageAdmin(admin.ModelAdmin):
-    list_display = ('saree', 'image')

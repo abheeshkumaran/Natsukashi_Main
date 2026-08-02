@@ -176,28 +176,6 @@
                 Delivered Orders
             </a>
 
-            <div class="nav-label">Products (List)</div>
-            
-            <a href="{% url 'list_onam_sarees' %}" class="sidebar-link {% if 'list_onam_saree' in request.resolver_match.url_name %}active{% endif %}">
-                Featured Onam Picks
-            </a>
-            <a href="{% url 'list_onam_set_munds' %}" class="sidebar-link {% if 'list_onam_set_mund' in request.resolver_match.url_name %}active{% endif %}">
-                Shop By Collection
-            </a>
-            <a href="{% url 'list_colored_sarees' %}" class="sidebar-link {% if 'list_colored_saree' in request.resolver_match.url_name %}active{% endif %}">
-                Most Purchased Sarees
-            </a>
-
-            <div class="nav-label">Add New</div>
-            <a href="{% url 'add_onam_saree' %}" class="sidebar-link {% if 'add_onam_saree' in request.resolver_match.url_name %}active{% endif %}">
-                + Add Onam Pick
-            </a>
-            <a href="{% url 'add_onam_set_mund' %}" class="sidebar-link {% if 'add_onam_set_mund' in request.resolver_match.url_name %}active{% endif %}">
-                + Add Set Mund
-            </a>
-            <a href="{% url 'add_colored_saree' %}" class="sidebar-link {% if 'add_colored_saree' in request.resolver_match.url_name %}active{% endif %}">
-                + Add Colored Saree
-            </a>
         </div>
         
         <div class="sidebar-footer">
