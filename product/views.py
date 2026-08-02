@@ -2,6 +2,7 @@ from django.http import Http404, JsonResponse, HttpResponse
 import csv
 import json
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
 from django.contrib import messages
 from django.db.models import Q
 from .forms import ProductForm, CategoryForm, UpdationTaskForm
@@ -15,7 +16,20 @@ def home(request):
 
 
 def admin_dashboard(request):
-    return render(request, 'admin/admin.html')
+    total_product_stock = Product.objects.aggregate(total_stock=Sum('quantity'))['total_stock'] or 0
+    total_product_list = Product.objects.count()
+    total_orders = Order.objects.count()
+    orders_pending = Order.objects.filter(status__icontains='pending').count()
+    orders_completed = Order.objects.filter(status__icontains='deliverd').count()
+
+    context = {
+        'total_product_stock': total_product_stock,
+        'total_product_list': total_product_list,
+        'total_orders': total_orders,
+        'orders_pending': orders_pending,
+        'orders_completed': orders_completed,
+    }
+    return render(request, 'admin/admin.html', context)
 
 
 def add_onam_set_mund(request):

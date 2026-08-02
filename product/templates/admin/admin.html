@@ -45,7 +45,7 @@
 
 .hero{
     text-align:center;
-    padding:40px 20px 40px;
+    padding:0 20px 40px;
     animation:fadeUp 1s ease;
 }
 .hero h1{
@@ -142,23 +142,28 @@ th{
     <div class="cards">
 
         <div class="card">
-            <h3>Total Sarees</h3>
-            <div class="value">0</div>
+            <h3>Total Product</h3>
+            <div class="value">{{ total_product_stock }}</div>
         </div>
 
         <div class="card">
-            <h3>Onam Collection</h3>
-            <div class="value">0</div>
+            <h3>Total Product by list</h3>
+            <div class="value">{{ total_product_list }}</div>
         </div>
 
         <div class="card">
-            <h3>Orders</h3>
-            <div class="value">0</div>
+            <h3>Total Orders</h3>
+            <div class="value">{{ total_orders }}</div>
         </div>
 
         <div class="card">
-            <h3>Revenue</h3>
-            <div class="value">0</div>
+            <h3>Orders Pending</h3>
+            <div class="value">{{ orders_pending }}</div>
+        </div>
+        
+        <div class="card">
+            <h3>Orders Completed</h3>
+            <div class="value">{{ orders_completed }}</div>
         </div>
 
     </div>
