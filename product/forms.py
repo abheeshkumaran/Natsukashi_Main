@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Category
+from .models import Product, Category, UpdationTask
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -22,12 +22,21 @@ class MultiFileInput(forms.FileInput):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['categories', 'collection_name', 'description', 'price', 'quantity', 'stock_available']
+        fields = ['collection_name', 'description', 'price', 'quantity', 'stock_available']
         widgets = {
-            'categories': forms.CheckboxSelectMultiple(),
             'collection_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Collection Name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description', 'rows': 4}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Price'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantity'}),
             'stock_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class UpdationTaskForm(forms.ModelForm):
+    class Meta:
+        model = UpdationTask
+        fields = ['issue_related', 'raised_by', 'related_image', 'description']
+        widgets = {
+            'issue_related': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Issue Related'}),
+            'raised_by': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Raised By'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description', 'rows': 4}),
         }

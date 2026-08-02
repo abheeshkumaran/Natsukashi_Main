@@ -1,0 +1,46 @@
+{% extends 'admin/admin_base.html' %}
+{% block content %}
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Log New Updation</h2>
+        <a href="{% url 'manage_updations' %}" class="btn btn-outline-secondary">Back to Updations</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.issue_related.id_for_label }}" class="form-label fw-bold">Issue Related <span class="text-danger">*</span></label>
+                        {{ form.issue_related }}
+                        {{ form.issue_related.errors }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.raised_by.id_for_label }}" class="form-label fw-bold">Raised By <span class="text-danger">*</span></label>
+                        {{ form.raised_by }}
+                        {{ form.raised_by.errors }}
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.related_image.id_for_label }}" class="form-label fw-bold">Related Image</label>
+                        {{ form.related_image }}
+                        <div class="form-text">Optional: Upload a screenshot or image related to the issue.</div>
+                        {{ form.related_image.errors }}
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                        {{ form.description }}
+                        {{ form.description.errors }}
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top text-end">
+                    <a href="{% url 'manage_updations' %}" class="btn btn-light me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4">Log Updation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

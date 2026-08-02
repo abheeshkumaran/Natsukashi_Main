@@ -157,3 +157,19 @@ class OrderStatus(models.Model):
     def __str__(self):
         return self.status_name
 
+
+
+class UpdationTask(models.Model):
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+    )
+    issue_related = models.CharField(max_length=255)
+    raised_by = models.CharField(max_length=100)
+    related_image = CloudinaryField('image', blank=True, null=True)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.issue_related} ({self.status})"

@@ -4,8 +4,8 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
-from .forms import ProductForm, CategoryForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category
+from .forms import ProductForm, CategoryForm, UpdationTaskForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask
 
 # Create your views here.
 def home(request):
@@ -590,7 +590,16 @@ def delete_category(request, pk):
 # Product CRUD
 def list_products(request):
     products = Product.objects.prefetch_related('categories', 'images').all().order_by('-id')
-    return render(request, 'admin/list_products.html', {'products': products})
+    all_categories = Category.objects.all()
+    return render(request, 'admin/list_products.html', {'products': products, 'all_categories': all_categories})
+
+def update_product_categories(request, pk):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, pk=pk)
+        category_ids = request.POST.getlist('categories')
+        product.categories.set(category_ids)
+        messages.success(request, f'Categories updated for {product.collection_name}.')
+    return redirect('list_products')
 
 def add_product(request):
     if request.method == 'POST':
@@ -648,3 +657,42 @@ def delete_product_image(request, pk):
         messages.success(request, 'Image deleted successfully.')
         return redirect('edit_product', pk=product_id)
     return redirect('list_products')
+
+# Updations Tracker
+def manage_updations(request):
+    pending_tasks = UpdationTask.objects.filter(status='Pending').order_by('-created_at')
+    completed_tasks = UpdationTask.objects.filter(status='Completed').order_by('-created_at')
+    return render(request, 'admin/manage_updations.html', {
+        'pending_tasks': pending_tasks,
+        'completed_tasks': completed_tasks
+    })
+
+def add_updation(request):
+    if request.method == 'POST':
+        form = UpdationTaskForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Updation logged successfully.')
+            return redirect('manage_updations')
+    else:
+        form = UpdationTaskForm()
+    return render(request, 'admin/add_updation.html', {'form': form})
+
+def update_updation_status(request, pk):
+    task = get_object_or_404(UpdationTask, pk=pk)
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in ['Pending', 'Completed']:
+            task.status = new_status
+            task.save()
+            messages.success(request, f'Updation status updated to {new_status}.')
+    return redirect('manage_updations')
+
+
+def updations_context(request):
+    from .models import UpdationTask
+    try:
+        count = UpdationTask.objects.filter(status='Pending').count()
+    except Exception:
+        count = 0
+    return {'pending_count': count}

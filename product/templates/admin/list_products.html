@@ -24,6 +24,7 @@
                     <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Manage Categories</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -38,11 +39,11 @@
                         {% endif %}
                     </td>
                     <td><strong>{{ product.collection_name }}</strong></td>
-                    <td>
+                    <td id="category-badges-{{ product.id }}">
                         {% for category in product.categories.all %}
-                            <span class="badge bg-secondary">{{ category.name }}</span>
+                            <span class="badge bg-secondary mb-1" data-cat-id="{{ category.id }}">{{ category.name }} <button type="button" class="btn-close btn-close-white" aria-label="Close" style="font-size: 0.4rem; vertical-align: middle; margin-left: 3px;" onclick="removeCategory({{ product.id }}, {{ category.id }})"></button></span>
                         {% empty %}
-                            <span class="text-muted small">None</span>
+                            <span class="text-muted small no-categories-msg">None</span>
                         {% endfor %}
                     </td>
                     <td>₹{{ product.price }}</td>
@@ -52,6 +53,28 @@
                         {% else %}
                             <span class="badge bg-danger">Out of Stock</span>
                         {% endif %}
+                    </td>
+                    <td>
+                        <form action="{% url 'update_product_categories' product.id %}" method="POST" id="cat-form-{{ product.id }}">
+                            {% csrf_token %}
+                            <div class="dropdown mb-1">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="catDropdown{{ product.id }}" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="font-size: 0.75rem;">
+                                    Select Category
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="catDropdown{{ product.id }}" style="font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
+                                    {% for cat in all_categories %}
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="addCategory({{ product.id }}, {{ cat.id }}, '{{ cat.name|escapejs }}')">{{ cat.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <!-- Hidden inputs for currently selected categories -->
+                            <div id="hidden-inputs-{{ product.id }}">
+                                {% for category in product.categories.all %}
+                                    <input type="hidden" name="categories" value="{{ category.id }}" id="hidden-cat-{{ product.id }}-{{ category.id }}">
+                                {% endfor %}
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-secondary py-0 w-100" style="font-size: 0.75rem;">Save</button>
+                        </form>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
@@ -72,4 +95,60 @@
         </table>
     </div>
 </div>
+
+<script>
+    function addCategory(productId, catId, catName) {
+        // Check if input already exists
+        if (document.getElementById(`hidden-cat-${productId}-${catId}`)) {
+            return; // Already added
+        }
+        
+        // Remove 'None' message if present
+        const badgeContainer = document.getElementById(`category-badges-${productId}`);
+        const noneMsg = badgeContainer.querySelector('.no-categories-msg');
+        if (noneMsg) {
+            noneMsg.remove();
+        }
+
+        // Add hidden input
+        const hiddenContainer = document.getElementById(`hidden-inputs-${productId}`);
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'categories';
+        input.value = catId;
+        input.id = `hidden-cat-${productId}-${catId}`;
+        hiddenContainer.appendChild(input);
+
+        // Add badge
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary mb-1 me-1';
+        badge.setAttribute('data-cat-id', catId);
+        badge.innerHTML = `${catName} <button type="button" class="btn-close btn-close-white" aria-label="Close" style="font-size: 0.4rem; vertical-align: middle; margin-left: 3px;" onclick="removeCategory(${productId}, ${catId})"></button>`;
+        badgeContainer.appendChild(badge);
+    }
+
+    function removeCategory(productId, catId) {
+        // Remove hidden input
+        const input = document.getElementById(`hidden-cat-${productId}-${catId}`);
+        if (input) {
+            input.remove();
+        }
+
+        // Remove badge
+        const badgeContainer = document.getElementById(`category-badges-${productId}`);
+        const badge = badgeContainer.querySelector(`span[data-cat-id="${catId}"]`);
+        if (badge) {
+            badge.remove();
+        }
+
+        // Re-add 'None' if empty
+        if (badgeContainer.querySelectorAll('span.badge').length === 0) {
+            const noneMsg = document.createElement('span');
+            noneMsg.className = 'text-muted small no-categories-msg';
+            noneMsg.innerText = 'None';
+            badgeContainer.appendChild(noneMsg);
+        }
+    }
+</script>
 {% endblock %}
+
