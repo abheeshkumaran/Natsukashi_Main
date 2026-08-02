@@ -589,7 +589,7 @@ def delete_category(request, pk):
 
 # Product CRUD
 def list_products(request):
-    products = Product.objects.select_related('category').prefetch_related('images').all().order_by('-id')
+    products = Product.objects.prefetch_related('categories', 'images').all().order_by('-id')
     return render(request, 'admin/list_products.html', {'products': products})
 
 def add_product(request):
