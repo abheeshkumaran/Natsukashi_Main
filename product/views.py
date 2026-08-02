@@ -4,13 +4,14 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
-from .forms import ProductForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus
+from .forms import ProductForm, CategoryForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category
 
 # Create your views here.
 def home(request):
-    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')[:6]
-    return render(request, 'product/home.html', {'munds': munds})
+    categories = Category.objects.all().prefetch_related('products', 'products__images').order_by('id')
+    all_products = Product.objects.all().prefetch_related('images').order_by('-id')
+    return render(request, 'product/home.html', {'categories': categories, 'all_products': all_products})
 
 
 def admin_dashboard(request):
@@ -364,6 +365,16 @@ def update_order_status(request, order_id):
             messages.error(request, 'Failed to update order status.')
     return redirect('list_user_data')
 
+def delete_order(request, order_id):
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        order.delete()
+        messages.success(request, f'Order #{order.id} has been deleted.')
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('list_user_data')
+
 def download_user_data_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="user_orders.csv"'
@@ -539,3 +550,101 @@ def my_orders(request):
         'previous_orders': previous_orders,
         'site_user_name': request.session.get('site_user_name')
     })
+
+# Category CRUD
+def list_categories(request):
+    categories = Category.objects.all()
+    return render(request, 'admin/list_categories.html', {'categories': categories})
+
+def add_category(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category added successfully.')
+            return redirect('list_categories')
+    else:
+        form = CategoryForm()
+    return render(request, 'admin/add_category.html', {'form': form})
+
+def edit_category(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, request.FILES, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category updated successfully.')
+            return redirect('list_categories')
+    else:
+        form = CategoryForm(instance=category)
+    return render(request, 'admin/edit_category.html', {'form': form, 'category': category})
+
+def delete_category(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Category deleted successfully.')
+        return redirect('list_categories')
+    return redirect('list_categories')
+
+# Product CRUD
+def list_products(request):
+    products = Product.objects.select_related('category').prefetch_related('images').all().order_by('-id')
+    return render(request, 'admin/list_products.html', {'products': products})
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.stock_available = request.POST.get('stock_available') == 'on'
+            product.quantity = int(request.POST.get('quantity', 0))
+            product.save()
+
+            images = request.FILES.getlist('images')
+            for image in images:
+                ProductImage.objects.create(product=product, image=image)
+
+            messages.success(request, 'Product added successfully.')
+            return redirect('list_products')
+    else:
+        form = ProductForm()
+    return render(request, 'admin/add_product.html', {'form': form})
+
+def edit_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            prod = form.save(commit=False)
+            prod.stock_available = request.POST.get('stock_available') == 'on'
+            prod.quantity = int(request.POST.get('quantity', 0))
+            prod.save()
+
+            images = request.FILES.getlist('images')
+            if images:  # Only add new images if they uploaded any
+                for image in images:
+                    ProductImage.objects.create(product=prod, image=image)
+
+            messages.success(request, 'Product updated successfully.')
+            return redirect('list_products')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'admin/edit_product.html', {'form': form, 'product': product})
+
+def delete_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Product deleted successfully.')
+        return redirect('list_products')
+    return redirect('list_products')
+
+def delete_product_image(request, pk):
+    image = get_object_or_404(ProductImage, pk=pk)
+    if request.method == 'POST':
+        product_id = image.product.id
+        image.delete()
+        messages.success(request, 'Image deleted successfully.')
+        return redirect('edit_product', pk=product_id)
+    return redirect('list_products')

@@ -93,60 +93,94 @@
     </section>
 
 
-    <!-- Onam Edition Collections -->
-
-    <section class="products bg-white">
+    <!-- SHOP BY COLLECTION (Categories) -->
+    <section class="products bg-white mb-5">
         <div class="container">
             <div class="section-header mb-5">
                 <h3>SHOP BY COLLECTION</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
-                <p class="text-muted reveal-left">Explore the "Onam Set - Mund Collection" — curated mund sets perfect
-                    for the festival.</p>
+                <p class="text-muted reveal-left">Explore our handpicked categories tailored for every occasion.</p>
+            </div>
+
+            <div class="row g-4">
+                {% for category in categories %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card product-card h-100">
+                        <div class="card-img-wrapper" style="height: 250px; overflow: hidden;">
+                            {% if category.image %}
+                            <img src="{{ category.image.url }}" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="{{ category.name }}">
+                            {% else %}
+                            <img src="https://via.placeholder.com/400x500?text=No+Image" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="{{ category.name }}">
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column text-center">
+                            <h5 class="card-title mb-3 fw-bold" style="font-family: var(--heading-font);">{{ category.name }}</h5>
+                            <div class="mt-auto">
+                                <a href="#" class="btn btn-card-filled w-100 py-2">Explore {{ category.name }}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No collections are available yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ALL PRODUCTS Section -->
+    <section class="products bg-light py-5">
+        <div class="container">
+            <div class="section-header mb-5">
+                <h3>OUR PRODUCTS</h3>
+                <div class="header-line ms-0" aria-hidden="true"></div>
             </div>
 
             <div class="horizontal-scroll-container">
-                {% for mund in munds %}
+                {% for product in all_products %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
                         <button type="button" class="wishlist-toggle-btn wishlist-icon"
                             style="background:transparent; border:none; z-index:10; color: #ccc;"
-                            data-id="{{ mund.id }}" data-type="mund" data-name="{{ mund.collection_name }}"
-                            data-price="{{ mund.price }}"
-                            data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                            data-id="{{ product.id }}" data-type="product" data-name="{{ product.collection_name }}"
+                            data-price="{{ product.price }}"
+                            data-image="{% if product.first_image_url %}{{ product.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                             onclick="toggleWishlist(this)">♥</button>
-                        {% if mund.quantity == 0 or not mund.stock_available %}
+                        {% if product.quantity == 0 or not product.stock_available %}
                         <span class="stock-badge stock-out">Out of Stock</span>
                         {% else %}
                         <span class="stock-badge stock-in">In Stock</span>
                         {% endif %}
-                        <a href="javascript:void(0)" onclick="openProductModal('mund', '{{ mund.pk }}')">
+                        <a href="javascript:void(0)" onclick="openProductModal('product', '{{ product.pk }}')">
                             <div class="card-img-wrapper">
-                                {% if mund.first_image_url %}
-                                <img src="{{ mund.first_image_url }}" class="card-img-top"
-                                    alt="{{ mund.collection_name }}">
+                                {% if product.first_image_url %}
+                                <img src="{{ product.first_image_url }}" class="card-img-top"
+                                    alt="{{ product.collection_name }}">
                                 {% else %}
                                 <img src="https://via.placeholder.com/700x700?text=No+Image" class="card-img-top"
-                                    alt="{{ mund.collection_name }}">
+                                    alt="{{ product.collection_name }}">
                                 {% endif %}
                             </div>
                         </a>
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ mund.collection_name }}</h5>
-                            <p class="card-text">{{ mund.description }}</p>
+                            <h5 class="card-title">{{ product.collection_name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
                             <div class="mt-auto">
-                                <div class="product-price mb-3">₹{{ mund.price }}</div>
+                                <div class="product-price mb-3">₹{{ product.price }}</div>
                                 <div class="d-flex justify-content-between">
                                     <button class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn"
-                                        data-default-label="Add to Cart" data-id="{{ mund.id }}" data-type="mund"
-                                        data-name="{{ mund.collection_name }}" data-price="{{ mund.price }}"
-                                        data-image="{% if mund.first_image_url %}{{ mund.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                                        data-out-of-stock="{% if mund.quantity == 0 or not mund.stock_available %}true{% else %}false{% endif %}"
+                                        data-default-label="Add to Cart" data-id="{{ product.id }}" data-type="product"
+                                        data-name="{{ product.collection_name }}" data-price="{{ product.price }}"
+                                        data-image="{% if product.first_image_url %}{{ product.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
+                                        data-out-of-stock="{% if product.quantity == 0 or not product.stock_available %}true{% else %}false{% endif %}"
                                         onclick="addToCart(this)"
-                                        {% if mund.quantity == 0 or not mund.stock_available %}
+                                        {% if product.quantity == 0 or not product.stock_available %}
                                         disabled
                                         {% endif %}>Add to Cart</button>
                                     <button class="btn btn-card-filled flex-grow-1"
-                                        {% if mund.quantity == 0 or not mund.stock_available %}
+                                        {% if product.quantity == 0 or not product.stock_available %}
                                         disabled
                                         {% endif %}>Buy Now</button>
                                 </div>
@@ -156,18 +190,19 @@
                 </div>
                 {% empty %}
                 <div class="col-12 text-center py-5">
-                    <p class="text-muted">No SHOP BY COLLECTION collections are available yet.</p>
+                    <p class="text-muted">No products are available yet.</p>
                 </div>
                 {% endfor %}
             </div>
-
+            
             <div class="text-center mt-5">
-                <a href="{% url 'onam_mund_explore' %}" class="btn-secondary-custom">Explore More Collections</a>
+                <a href="#" class="btn-secondary-custom">Explore All</a>
             </div>
         </div>
     </section>
 
     <!-- Features -->
+
     <section class="features py-4">
         <div class="container">
             <div class="row g-3">

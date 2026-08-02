@@ -1,5 +1,15 @@
 from django import forms
-from .models import Product
+from .models import Product, Category
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category Name'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
 
 class MultiFileInput(forms.FileInput):
     allow_multiple_selected = True
@@ -12,9 +22,9 @@ class MultiFileInput(forms.FileInput):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['category', 'collection_name', 'description', 'price', 'quantity', 'stock_available']
+        fields = ['categories', 'collection_name', 'description', 'price', 'quantity', 'stock_available']
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-select'}),
+            'categories': forms.CheckboxSelectMultiple(),
             'collection_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Collection Name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description', 'rows': 4}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Price'}),

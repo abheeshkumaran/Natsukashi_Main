@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    image = CloudinaryField('image', folder='categories', blank=True, null=True)
 
     class Meta:
         db_table = 'category'
@@ -16,7 +17,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Category, related_name='products')
     collection_name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -29,7 +30,7 @@ class Product(models.Model):
         verbose_name_plural = 'Products'
 
     def __str__(self):
-        return f"{self.collection_name} ({self.category.name})"
+        return f"{self.collection_name}"
 
     @property
     def first_image_url(self):

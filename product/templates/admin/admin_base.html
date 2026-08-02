@@ -162,6 +162,16 @@
                 Dashboard
             </a>
             
+            <div class="nav-label">Our Products</div>
+            <a href="{% url 'list_products' %}" class="sidebar-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+                Manage Products
+            </a>
+
+            <div class="nav-label">Categories</div>
+            <a href="{% url 'list_categories' %}" class="sidebar-link {% if 'categories' in request.resolver_match.url_name %}active{% endif %}">
+                Manage Categories
+            </a>
+
             <div class="nav-label">Management</div>
             
             <a href="{% url 'list_users' %}" class="sidebar-link {% if 'user' in request.resolver_match.url_name and 'data' not in request.resolver_match.url_name %}active{% endif %}">
