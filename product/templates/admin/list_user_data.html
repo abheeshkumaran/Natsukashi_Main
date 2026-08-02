@@ -118,75 +118,208 @@
         <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div id="pdf-content-{{ order.id }}" class="bg-white">
-                        <div class="modal-header">
-                            <h5 class="modal-title text-primary fw-bold" style="font-family: var(--heading-font);">Order Details: #{{ order.id }}</h5>
+                    <div id="pdf-content-{{ order.id }}" style="background-color: #fdfbf7; padding: 0; font-family: 'Inter', sans-serif; color: #333;">
+                        <!-- Non-printable header for modal only -->
+                        <div class="modal-header d-print-none" style="border-bottom: 1px solid #eaeaea; padding: 15px 25px; background: #fff;">
+                            <h5 class="modal-title fw-bold" style="color: #6b1d2f;">Order Details: #{{ order.id }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Customer Information</h6>
-                                <p class="mb-1"><strong>Name:</strong> {{ order.full_name }}</p>
-                                <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
-                                <p class="mb-1"><strong>Mobile:</strong> {{ order.mobile_number }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Shipping Address</h6>
-                                <p class="mb-1">{{ order.house_number }}, {{ order.street_area }}</p>
-                                {% if order.landmark %}<p class="mb-1"><strong>Landmark:</strong> {{ order.landmark }}</p>{% endif %}
-                                <p class="mb-1">{{ order.city }}, {{ order.district }}, {{ order.state }}</p>
-                                <p class="mb-1"><strong>Country:</strong> {{ order.country }} &nbsp;|&nbsp; <strong>PIN:</strong> {{ order.pin_code }}</p>
-                            </div>
-                        </div>
                         
-                        <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Bought Products</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-bordered align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Qty</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in order.items.all %}
-                                    <tr>
-                                        <td style="width: 80px; text-align: center;">
-                                            {% if item.product_image %}
-                                            <a href="{{ item.product_image }}" target="_blank" title="Click to view full image">
-                                                <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="shadow-sm" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
-                                            </a>
-                                            {% else %}
-                                            <span class="text-muted small">No Image</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ item.product_name }}</td>
-                                        <td>₹{{ item.price }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center">No items found</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
-                            <div>
-                                {% if order.order_notes %}
-                                <strong>Notes:</strong> {{ order.order_notes }}
-                                {% endif %}
+                        <!-- INVOICE SECTION -->
+                        <div class="modal-body p-4 p-md-5" style="max-width: 800px; margin: 0 auto; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                            
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3" style="border-color: #f0e6e6 !important;">
+                                <div>
+                                    <h2 class="fw-bold mb-0" style="color: #6b1d2f; font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 1px;">NATSUKASHI</h2>
+                                    <p class="text-muted small mb-0 mt-1" style="font-size: 13px;">Traditional & Elegant</p>
+                                </div>
+                                <div class="text-end">
+                                    <h4 class="text-uppercase mb-2" style="color: #6b1d2f; font-weight: 600; font-size: 18px; letter-spacing: 1.5px;">Tax Invoice / Bill</h4>
+                                    <div class="d-inline-block text-start" style="border: 1px solid #e0d5d5; padding: 8px 15px; border-radius: 4px; background: #fdfbf7;">
+                                        <p class="mb-1" style="font-size: 12px; margin: 0;"><strong>Order No:</strong> #{{ order.id }}</p>
+                                        <p class="mb-0" style="font-size: 12px; margin: 0;"><strong>Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <h5 class="mb-0 text-success fw-bold">Total Amount: ₹{{ order.total_amount }}</h5>
+                            
+                            <!-- Customer & Shipping -->
+                            <div class="row mb-4">
+                                <div class="col-6 pr-2">
+                                    <div class="h-100" style="border: 1px solid #e0d5d5; padding: 15px; border-radius: 4px; background: #faf9f6;">
+                                        <h6 class="text-uppercase mb-3" style="font-size: 11px; color: #6b1d2f; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid #e0d5d5; padding-bottom: 5px;">Customer Information</h6>
+                                        <p class="mb-1" style="font-size: 13px;"><strong>Name:</strong> {{ order.full_name }}</p>
+                                        <p class="mb-1" style="font-size: 13px;"><strong>Email:</strong> {{ order.user.email }}</p>
+                                        <p class="mb-0" style="font-size: 13px;"><strong>Mobile:</strong> {{ order.mobile_number }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-6 pl-2">
+                                    <div class="h-100" style="border: 1px solid #e0d5d5; padding: 15px; border-radius: 4px; background: #faf9f6;">
+                                        <h6 class="text-uppercase mb-3" style="font-size: 11px; color: #6b1d2f; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid #e0d5d5; padding-bottom: 5px;">Shipping Address</h6>
+                                        <p class="mb-1" style="font-size: 13px;">{{ order.house_number }}, {{ order.street_area }}</p>
+                                        {% if order.landmark %}<p class="mb-1" style="font-size: 13px;"><strong>Landmark:</strong> {{ order.landmark }}</p>{% endif %}
+                                        <p class="mb-1" style="font-size: 13px;">{{ order.city }}, {{ order.district }}, {{ order.state }}</p>
+                                        <p class="mb-0" style="font-size: 13px;"><strong>Country:</strong> {{ order.country }} &nbsp;|&nbsp; <strong>PIN:</strong> {{ order.pin_code }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Product Table -->
+                            <div class="table-responsive mb-4">
+                                <table class="table mb-0" style="border: 1px solid #e0d5d5;">
+                                    <thead>
+                                        <tr style="background-color: #6b1d2f; color: #fff;">
+                                            <th style="font-size: 12px; font-weight: 500; border: 1px solid #6b1d2f; padding: 10px; width: 50px;" class="text-center">S.No.</th>
+                                            <th style="font-size: 12px; font-weight: 500; border: 1px solid #6b1d2f; padding: 10px;">Product</th>
+                                            <th style="font-size: 12px; font-weight: 500; border: 1px solid #6b1d2f; padding: 10px;" class="text-end">Price (₹)</th>
+                                            <th style="font-size: 12px; font-weight: 500; border: 1px solid #6b1d2f; padding: 10px;" class="text-center">Qty</th>
+                                            <th style="font-size: 12px; font-weight: 500; border: 1px solid #6b1d2f; padding: 10px;" class="text-end">Total (₹)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items.all %}
+                                        <tr>
+                                            <td style="font-size: 13px; border: 1px solid #e0d5d5; padding: 10px;" class="text-center">{{ forloop.counter }}</td>
+                                            <td style="border: 1px solid #e0d5d5; padding: 10px;">
+                                                <div class="d-flex align-items-center">
+                                                    {% if item.product_image %}
+                                                    <img src="{{ item.product_image }}" alt="{{ item.product_name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 2px; border: 1px solid #eee; margin-right: 10px;">
+                                                    {% endif %}
+                                                    <span style="font-size: 13px; font-weight: 500;">{{ item.product_name }}</span>
+                                                </div>
+                                            </td>
+                                            <td style="font-size: 13px; border: 1px solid #e0d5d5; padding: 10px;" class="text-end">{{ item.price }}</td>
+                                            <td style="font-size: 13px; border: 1px solid #e0d5d5; padding: 10px;" class="text-center">{{ item.quantity }}</td>
+                                            <td style="font-size: 13px; border: 1px solid #e0d5d5; padding: 10px; font-weight: 600;" class="text-end">{% widthratio item.price 1 item.quantity %}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center" style="border: 1px solid #e0d5d5; padding: 15px;">No items found</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Notes & Total -->
+                            <div class="row mb-5 align-items-stretch">
+                                <div class="col-7">
+                                    {% if order.order_notes %}
+                                    <div class="h-100" style="border: 1px dashed #e0d5d5; padding: 15px; border-radius: 4px; background: #faf9f6;">
+                                        <p class="mb-1" style="font-size: 11px; color: #6b1d2f; font-weight: 600; text-transform: uppercase;">Order Notes</p>
+                                        <p style="font-size: 12px; margin: 0; color: #555;">{{ order.order_notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-5">
+                                    <div class="h-100 d-flex flex-column justify-content-center" style="border: 2px solid #6b1d2f; padding: 15px; border-radius: 4px; background: #fffcfc;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="font-size: 14px; font-weight: 600; color: #333;">TOTAL AMOUNT</span>
+                                            <span style="font-size: 20px; font-weight: 700; color: #6b1d2f;">₹{{ order.total_amount }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Thank you section -->
+                            <div class="text-center mt-4 mb-2">
+                                <div style="display: inline-block; width: 50px; height: 1px; background: #e0d5d5; margin-bottom: 15px;"></div>
+                                <p style="font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: #6b1d2f; margin-bottom: 5px;">Thank you for your purchase!</p>
+                                <p style="font-size: 11px; color: #888;">We hope you love your Natsukashi products.</p>
+                                <div style="display: inline-block; width: 50px; height: 1px; background: #e0d5d5; margin-top: 10px;"></div>
+                            </div>
                         </div>
-                    </div>
-                    </div>
-                    <div class="modal-footer">
+
+                        <!-- PAGE BREAK FOR PRINTING -->
+                        <div style="page-break-before: always; height: 20px;"></div>
+
+                        <!-- COURIER / SHIPPING COVER SECTION -->
+                        <div class="modal-body p-4 p-md-5 mt-3 mb-4" style="max-width: 800px; margin: 0 auto; background-color: #fff; border: 1px dashed #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                            <!-- Shipping Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3" style="border-color: #f0e6e6 !important;">
+                                <div>
+                                    <h2 class="fw-bold mb-0" style="color: #6b1d2f; font-family: 'Playfair Display', serif; font-size: 24px;">NATSUKASHI</h2>
+                                </div>
+                                <div class="text-center">
+                                    <h4 class="text-uppercase mb-1" style="color: #333; font-weight: 700; font-size: 16px; letter-spacing: 1px;">Courier / Shipping Cover</h4>
+                                    <p class="mb-0" style="font-size: 11px; color: #6b1d2f; font-weight: 600; letter-spacing: 2px;">HANDLE WITH CARE</p>
+                                </div>
+                                <div class="text-end">
+                                    <div style="border: 1px solid #333; padding: 5px 15px; display: inline-block;">
+                                        <p class="mb-0" style="font-size: 14px; font-weight: bold;">#{{ order.id }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shipping Content -->
+                            <div class="row">
+                                <!-- Left Panel -->
+                                <div class="col-4 pr-0">
+                                    <div style="background-color: #6b1d2f; color: #fff; padding: 20px; height: 100%; border-radius: 4px;">
+                                        <div class="mb-4">
+                                            <h6 style="font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px;">From</h6>
+                                            <p style="font-size: 14px; font-weight: 700; margin-bottom: 2px;">Natsukashi</p>
+                                            <p style="font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4;">Traditional & Elegant Wear<br>India</p>
+                                        </div>
+                                        
+                                        <div class="mb-4 pt-2">
+                                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); margin-bottom: 10px; display: flex; align-items: center;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-seam me-2" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/></svg>
+                                                Premium Packaging
+                                            </p>
+                                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); margin-bottom: 10px; display: flex; align-items: center;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-shield-check me-2" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.084.685A1.5 1.5 0 0 1 8 16a1.5 1.5 0 0 1-.789-.22 7 7 0 0 1-1.084-.685 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/></svg>
+                                                Quality Assured
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right Panel -->
+                                <div class="col-8 pl-2">
+                                    <div style="border: 2px solid #e0d5d5; padding: 25px; border-radius: 4px; height: 100%;">
+                                        <h5 class="fw-bold mb-3" style="color: #333; font-size: 16px; border-bottom: 2px solid #6b1d2f; display: inline-block; padding-bottom: 3px;">TO</h5>
+                                        
+                                        <div class="mb-4">
+                                            <p class="mb-1" style="font-size: 18px; font-weight: 700; color: #111;">{{ order.full_name }}</p>
+                                            <p class="mb-1" style="font-size: 15px; color: #444;">{{ order.house_number }}, {{ order.street_area }}</p>
+                                            {% if order.landmark %}<p class="mb-1" style="font-size: 15px; color: #444;"><strong>Landmark:</strong> {{ order.landmark }}</p>{% endif %}
+                                            <p class="mb-1" style="font-size: 15px; color: #444;">{{ order.city }}, {{ order.district }}, {{ order.state }}</p>
+                                            <p class="mb-2" style="font-size: 15px; color: #444;"><strong>Country:</strong> {{ order.country }}</p>
+                                            
+                                            <div class="d-inline-block mt-2" style="background: #fdfbf7; border: 1px solid #e0d5d5; padding: 8px 15px; border-radius: 4px;">
+                                                <p class="mb-0" style="font-size: 16px; font-weight: 700; color: #6b1d2f; letter-spacing: 2px;">PIN: {{ order.pin_code }}</p>
+                                            </div>
+                                            
+                                            <p class="mt-3 mb-0" style="font-size: 15px; color: #222;"><strong>Mobile:</strong> {{ order.mobile_number }}</p>
+                                        </div>
+                                        
+                                        <!-- Courier Info Box -->
+                                        <div style="border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 20px;">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <p class="mb-1" style="font-size: 11px; text-transform: uppercase; color: #888;">Courier Partner</p>
+                                                    <p class="mb-0 fw-bold" style="font-size: 13px;">{{ order.shipping_provider|default:"Standard Shipping" }}</p>
+                                                </div>
+                                                <div class="col-6">
+                                                    <p class="mb-1" style="font-size: 11px; text-transform: uppercase; color: #888;">Tracking No.</p>
+                                                    <p class="mb-0 fw-bold" style="font-size: 13px;">{{ order.tracking_number|default:"TBD" }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer / Social -->
+                            <div class="mt-4 text-center border-top pt-3" style="border-color: #f0e6e6 !important;">
+                                <div class="d-flex justify-content-center" style="font-size: 11px; color: #666;">
+                                    <span class="mx-3"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-globe me-1" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.256 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/></svg> www.natsukashi.in</span>
+                                    <span class="mx-3"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-instagram me-1" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.036 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/></svg> @natsukashi.in</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>\n                    <div class="modal-footer">
                         <button type="button" class="btn btn-danger" onclick="downloadPDF('{{ order.id }}')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-pdf me-1" viewBox="0 0 16 16">
                                 <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>

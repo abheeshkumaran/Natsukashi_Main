@@ -780,3 +780,8 @@ def manual_selling(request):
         'products': products,
         'users': users
     })
+
+
+def our_story(request):
+    return render(request, 'product/our_story.html')
+
