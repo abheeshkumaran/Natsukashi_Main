@@ -130,16 +130,17 @@
         </div>
     </section>
 
-    <!-- ALL PRODUCTS Section -->
+    <!-- Dynamic Category Product Sections -->
+    {% for category in categories %}
     <section class="products bg-light py-5">
         <div class="container">
             <div class="section-header mb-5">
-                <h3>OUR PRODUCTS</h3>
+                <h3>{{ category.name | upper }}</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
             </div>
 
             <div class="horizontal-scroll-container">
-                {% for product in all_products %}
+                {% for product in category.products.all %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
                         <button type="button" class="wishlist-toggle-btn wishlist-icon"
@@ -190,16 +191,17 @@
                 </div>
                 {% empty %}
                 <div class="col-12 text-center py-5">
-                    <p class="text-muted">No products are available yet.</p>
+                    <p class="text-muted">No products are available in this category yet.</p>
                 </div>
                 {% endfor %}
             </div>
             
             <div class="text-center mt-5">
-                <a href="#" class="btn-secondary-custom">Explore All</a>
+                <a href="#" class="btn-secondary-custom">Explore All {{ category.name }}</a>
             </div>
         </div>
     </section>
+    {% endfor %}
 
     <!-- Features -->
 
