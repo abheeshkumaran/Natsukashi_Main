@@ -58,7 +58,7 @@
                         <form action="{% url 'update_product_categories' product.id %}" method="POST" id="cat-form-{{ product.id }}">
                             {% csrf_token %}
                             <div class="dropdown mb-1">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="catDropdown{{ product.id }}" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="font-size: 0.75rem;">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="catDropdown{{ product.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
                                     Select Category
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="catDropdown{{ product.id }}" style="font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
@@ -73,7 +73,7 @@
                                     <input type="hidden" name="categories" value="{{ category.id }}" id="hidden-cat-{{ product.id }}-{{ category.id }}">
                                 {% endfor %}
                             </div>
-                            <button type="submit" class="btn btn-sm btn-secondary py-0 w-100" style="font-size: 0.75rem;">Save</button>
+                            
                         </form>
                     </td>
                     <td>
@@ -125,6 +125,9 @@
         badge.setAttribute('data-cat-id', catId);
         badge.innerHTML = `${catName} <button type="button" class="btn-close btn-close-white" aria-label="Close" style="font-size: 0.4rem; vertical-align: middle; margin-left: 3px;" onclick="removeCategory(${productId}, ${catId})"></button>`;
         badgeContainer.appendChild(badge);
+        
+        // Auto-save by submitting the form
+        document.getElementById(`cat-form-${productId}`).submit();
     }
 
     function removeCategory(productId, catId) {
@@ -148,6 +151,9 @@
             noneMsg.innerText = 'None';
             badgeContainer.appendChild(noneMsg);
         }
+        
+        // Auto-save by submitting the form
+        document.getElementById(`cat-form-${productId}`).submit();
     }
 </script>
 {% endblock %}
