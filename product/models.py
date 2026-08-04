@@ -6,6 +6,8 @@ from django.contrib.auth.hashers import make_password, check_password
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
     image = CloudinaryField('image', folder='categories', blank=True, null=True)
+    show_in_collection_list = models.BooleanField(default=True)
+    show_in_collection_table = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'category'

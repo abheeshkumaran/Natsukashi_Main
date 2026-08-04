@@ -14,6 +14,7 @@ urlpatterns = [
     path('admin-panel/categories/add/', views.add_category, name='add_category'),
     path('admin-panel/categories/edit/<int:pk>/', views.edit_category, name='edit_category'),
     path('admin-panel/categories/delete/<int:pk>/', views.delete_category, name='delete_category'),
+    path('admin-panel/categories/permissions/', views.category_permissions, name='category_permissions'),
     path('explore-onam/', views.onam_saree_explore, name='onam_saree_explore'),
     path('explore-colored-sarees/', views.colored_saree_explore, name='colored_saree_explore'),
     path('explore-onam-mund/', views.onam_mund_explore, name='onam_mund_explore'),

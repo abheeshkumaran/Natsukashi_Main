@@ -11,11 +11,13 @@ from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem,
 
 # Create your views here.
 def home(request):
-    categories = Category.objects.all().prefetch_related('products', 'products__images').order_by('id')
+    categories = Category.objects.filter(show_in_collection_list=True).prefetch_related('products', 'products__images').order_by('id')
+    table_categories = Category.objects.filter(show_in_collection_table=True).prefetch_related('products', 'products__images').order_by('id')
     all_products = Product.objects.all().prefetch_related('images').order_by('-id')
     onam_category = Category.objects.filter(name='Featured Onam Picks').first()
     return render(request, 'product/home.html', {
         'categories': categories,
+        'table_categories': table_categories,
         'all_products': all_products,
         'onam_category': onam_category,
     })
@@ -325,7 +327,7 @@ def category_products(request, pk):
 
 def nav_categories_context(request):
     try:
-        categories = Category.objects.all().order_by('name')
+        categories = Category.objects.filter(show_in_collection_table=True).order_by('name')
     except Exception:
         categories = []
     return {'nav_categories': categories}
@@ -652,6 +654,19 @@ def delete_category(request, pk):
         messages.success(request, 'Category deleted successfully.')
         return redirect('list_categories')
     return redirect('list_categories')
+
+def category_permissions(request):
+    categories = Category.objects.all().order_by('name')
+    if request.method == 'POST':
+        for category in categories:
+            table_checked = f'cat_table_{category.id}' in request.POST
+            list_checked = table_checked or f'cat_list_{category.id}' in request.POST
+            category.show_in_collection_table = table_checked
+            category.show_in_collection_list = list_checked
+        Category.objects.bulk_update(categories, ['show_in_collection_list', 'show_in_collection_table'])
+        messages.success(request, 'Category permissions updated successfully.')
+        return redirect('category_permissions')
+    return render(request, 'admin/category_permissions.html', {'categories': categories})
 
 # Product CRUD
 def list_products(request):

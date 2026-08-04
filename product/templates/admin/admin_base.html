@@ -172,6 +172,9 @@
             <a href="{% url 'list_categories' %}" class="sidebar-link {% if 'categories' in request.resolver_match.url_name %}active{% endif %}">
                 Manage Categories
             </a>
+            <a href="{% url 'category_permissions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'category_permissions' %}active{% endif %}">
+                Category Permission
+            </a>
 
             <div class="nav-label">Make Updates</div>
             <a href="{% url 'manage_updations' %}" class="sidebar-link {% if 'updations' in request.resolver_match.url_name %}active{% endif %}">
