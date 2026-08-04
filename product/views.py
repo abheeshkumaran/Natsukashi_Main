@@ -324,6 +324,11 @@ def category_products(request, pk):
     products = category.products.all().prefetch_related('images')
     return render(request, 'product/category_products.html', {'category': category, 'products': products})
 
+def all_collections(request):
+    categories = Category.objects.filter(show_in_collection_list=True).order_by('name')
+    products = Product.objects.filter(categories__show_in_collection_list=True).distinct().prefetch_related('images', 'categories').order_by('-id')
+    return render(request, 'product/all_collections.html', {'categories': categories, 'products': products})
+
 
 def nav_categories_context(request):
     try:
@@ -657,16 +662,32 @@ def delete_category(request, pk):
 
 def category_permissions(request):
     categories = Category.objects.all().order_by('name')
-    if request.method == 'POST':
-        for category in categories:
-            table_checked = f'cat_table_{category.id}' in request.POST
-            list_checked = table_checked or f'cat_list_{category.id}' in request.POST
-            category.show_in_collection_table = table_checked
-            category.show_in_collection_list = list_checked
-        Category.objects.bulk_update(categories, ['show_in_collection_list', 'show_in_collection_table'])
-        messages.success(request, 'Category permissions updated successfully.')
-        return redirect('category_permissions')
     return render(request, 'admin/category_permissions.html', {'categories': categories})
+
+def update_category_permission(request):
+    if request.method == 'POST':
+        category = get_object_or_404(Category, pk=request.POST.get('category_id'))
+        field = request.POST.get('field')
+        value = request.POST.get('value') == 'true'
+
+        if field == 'table':
+            category.show_in_collection_table = value
+            if value:
+                category.show_in_collection_list = True
+        elif field == 'list':
+            category.show_in_collection_list = value
+            if not value:
+                category.show_in_collection_table = False
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid field'})
+
+        category.save(update_fields=['show_in_collection_list', 'show_in_collection_table'])
+        return JsonResponse({
+            'success': True,
+            'show_in_collection_list': category.show_in_collection_list,
+            'show_in_collection_table': category.show_in_collection_table,
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 # Product CRUD
 def list_products(request):

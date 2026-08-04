@@ -289,6 +289,81 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     font-family: var(--heading-font);
 }
 
+/* Category Side List (Shop by Collection) */
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.category-list-item {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 22px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.category-list-item:hover {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.category-list-img {
+    flex: 0 0 110px;
+    width: 110px;
+    height: 110px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.category-list-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.category-list-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.category-list-info h5 {
+    margin: 0;
+    font-family: var(--heading-font);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+@media (max-width: 575.98px) {
+    .category-list-item {
+        padding: 12px 14px;
+        gap: 16px;
+    }
+
+    .category-list-img {
+        flex-basis: 80px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .category-list-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .category-list-info .btn {
+        width: 100%;
+    }
+}
+
 /* Product Cards */
 .products {
     padding: 60px 0;

@@ -19,66 +19,110 @@
         <p class="text-muted small mb-3">
             <strong>Category List</strong> shows the category card in the "Shop by Collection" section on the home page only.<br>
             <strong>Category Table</strong> automatically enables Category List too, and additionally shows the category's products in a home page section and in the "Collections" navbar dropdown.
+            Changes are saved automatically.
         </p>
 
-        <form method="POST" id="categoryPermissionsForm">
-            {% csrf_token %}
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-3">
-                    <thead class="table-light">
-                        <tr>
-                            <th rowspan="2" class="align-middle">Category Name</th>
-                            <th colspan="2" class="text-center">Permissions</th>
-                        </tr>
-                        <tr>
-                            <th class="text-center">Category List</th>
-                            <th class="text-center">Category Table</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for category in categories %}
-                        <tr>
-                            <td><strong>{{ category.name }}</strong></td>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input cat-list-checkbox"
-                                    name="cat_list_{{ category.id }}" data-cat-id="{{ category.id }}"
-                                    {% if category.show_in_collection_list %}checked{% endif %}>
-                            </td>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input cat-table-checkbox"
-                                    name="cat_table_{{ category.id }}" data-cat-id="{{ category.id }}"
-                                    {% if category.show_in_collection_table %}checked{% endif %}>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">No categories found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <button type="submit" class="btn btn-primary">Save Permissions</button>
-        </form>
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2" class="align-middle">Category Name</th>
+                        <th colspan="2" class="text-center">Permissions</th>
+                        <th rowspan="2" class="align-middle" style="width: 90px;"></th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">Category List</th>
+                        <th class="text-center">Category Table</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr id="cat-row-{{ category.id }}">
+                        <td><strong>{{ category.name }}</strong></td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input cat-list-checkbox"
+                                data-cat-id="{{ category.id }}" data-field="list"
+                                {% if category.show_in_collection_list %}checked{% endif %}>
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input cat-table-checkbox"
+                                data-cat-id="{{ category.id }}" data-field="table"
+                                {% if category.show_in_collection_table %}checked{% endif %}>
+                        </td>
+                        <td class="text-center">
+                            <span class="cat-save-status small text-success" style="display: none;">Saved</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No categories found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    document.querySelectorAll('.cat-table-checkbox').forEach(function (tableCb) {
-        const catId = tableCb.dataset.catId;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function syncRow(catId) {
         const listCb = document.querySelector('.cat-list-checkbox[data-cat-id="' + catId + '"]');
+        const tableCb = document.querySelector('.cat-table-checkbox[data-cat-id="' + catId + '"]');
+        listCb.disabled = tableCb.checked;
+    }
 
-        function sync() {
-            if (tableCb.checked) {
-                listCb.checked = true;
-                listCb.disabled = true;
-            } else {
-                listCb.disabled = false;
+    function showSaved(catId) {
+        const row = document.getElementById('cat-row-' + catId);
+        const status = row.querySelector('.cat-save-status');
+        status.style.display = 'inline';
+        clearTimeout(status._hideTimer);
+        status._hideTimer = setTimeout(function () {
+            status.style.display = 'none';
+        }, 1500);
+    }
+
+    function saveCheckbox(checkbox) {
+        const catId = checkbox.dataset.catId;
+        const field = checkbox.dataset.field;
+        const value = checkbox.checked;
+
+        fetch("{% url 'update_category_permission' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams({
+                category_id: catId,
+                field: field,
+                value: value,
+                csrfmiddlewaretoken: csrfToken,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const listCb = document.querySelector('.cat-list-checkbox[data-cat-id="' + catId + '"]');
+                const tableCb = document.querySelector('.cat-table-checkbox[data-cat-id="' + catId + '"]');
+                listCb.checked = data.show_in_collection_list;
+                tableCb.checked = data.show_in_collection_table;
+                syncRow(catId);
+                showSaved(catId);
             }
-        }
+        });
+    }
 
-        sync();
-        tableCb.addEventListener('change', sync);
+    document.querySelectorAll('.cat-list-checkbox, .cat-table-checkbox').forEach(function (checkbox) {
+        checkbox.addEventListener('change', function () {
+            saveCheckbox(this);
+        });
+    });
+
+    document.querySelectorAll('.cat-table-checkbox').forEach(function (cb) {
+        syncRow(cb.dataset.catId);
     });
 </script>
 {% endblock %}
