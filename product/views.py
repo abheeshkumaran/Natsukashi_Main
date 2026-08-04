@@ -2,9 +2,10 @@ from django.http import Http404, JsonResponse, HttpResponse
 import csv
 import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum
+from django.db import transaction
+from django.db.models import Sum, F, Q, Value
+from django.db.models.functions import Greatest
 from django.contrib import messages
-from django.db.models import Q
 from .forms import ProductForm, CategoryForm, UpdationTaskForm
 from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask
 
@@ -171,6 +172,30 @@ def login_user(request):
                 return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
         except SiteUser.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'failed to login invalid email or phone number'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def guest_login(request):
+    if request.method == 'POST':
+        name = request.POST.get('guest_name', '').strip()
+        phone = request.POST.get('guest_phone', '').strip()
+        password = request.POST.get('guest_password', '').strip()
+
+        if not name or not phone or not password:
+            return JsonResponse({'success': False, 'error': 'Name, phone number and password are required.'})
+
+        user = SiteUser.objects.filter(phone=phone).first()
+        if user:
+            user.name = name
+            user.set_password(password)
+            user.save(update_fields=['name', 'password'])
+        else:
+            user = SiteUser(name=name, place='', email=f'guest_{phone}@guest.natsukashii.local', phone=phone)
+            user.set_password(password)
+            user.save()
+
+        request.session['site_user_id'] = user.id
+        request.session['site_user_name'] = 'Guest'
+        return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 def logout_user(request):
@@ -491,37 +516,45 @@ def checkout(request):
         # We will calculate total amount manually from the parsed items
         total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
         
-        # Create Order Snapshot
-        order = Order.objects.create(
-            user=user,
-            total_amount=total_amount,
-            status='Pending',
-            full_name=full_name,
-            mobile_number=mobile_number,
-            email_address=email_address,
-            house_flat_number=house_flat_number,
-            street_area=street_area,
-            landmark=landmark,
-            city=city,
-            district=district,
-            state=state,
-            country=country,
-            pin_code=pin_code,
-            order_notes=order_notes
-        )
-        
-        # Create Order Items
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product_id=item.get('id'),
-                product_image=item.get('image'),
-                product_name=item.get('name', 'Unknown Product'),
-                product_type=item.get('type', 'Unknown Type'),
-                price=item.get('price', 0),
-                quantity=item.get('qty', 1)
+        # Create Order Snapshot, Order Items, and reduce stock atomically
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=user,
+                total_amount=total_amount,
+                status='Pending',
+                full_name=full_name,
+                mobile_number=mobile_number,
+                email_address=email_address,
+                house_flat_number=house_flat_number,
+                street_area=street_area,
+                landmark=landmark,
+                city=city,
+                district=district,
+                state=state,
+                country=country,
+                pin_code=pin_code,
+                order_notes=order_notes
             )
-        
+
+            for item in cart_items:
+                product_id = item.get('id')
+                qty = int(item.get('qty', 1))
+
+                OrderItem.objects.create(
+                    order=order,
+                    product_id=product_id,
+                    product_image=item.get('image'),
+                    product_name=item.get('name', 'Unknown Product'),
+                    product_type=item.get('type', 'Unknown Type'),
+                    price=item.get('price', 0),
+                    quantity=qty
+                )
+
+                if product_id:
+                    Product.objects.filter(pk=product_id).update(
+                        quantity=Greatest(F('quantity') - qty, Value(0))
+                    )
+
         return redirect('order_success')
 
     # For GET request, provide initial data if UserData exists
@@ -738,37 +771,42 @@ def manual_selling(request):
         product = get_object_or_404(Product, id=product_id)
         
         total_amount = product.price * quantity
-        
-        order = Order.objects.create(
-            user=site_user,
-            total_amount=total_amount,
-            status='Order Placed',
-            full_name=full_name,
-            mobile_number=mobile_number,
-            email_address=email_address,
-            house_flat_number=house_flat_number,
-            street_area=street_area,
-            landmark=landmark,
-            city=city,
-            district=district,
-            state=state,
-            country=country,
-            pin_code=pin_code,
-            order_notes=order_notes,
-            purchase_type='Manual',
-            payment_type=payment_type
-        )
-        
-        OrderItem.objects.create(
-            order=order,
-            product_id=product.id,
-            product_image=product.first_image_url,
-            product_name=product.collection_name,
-            product_type='',
-            price=product.price,
-            quantity=quantity
-        )
-        
+
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=site_user,
+                total_amount=total_amount,
+                status='Order Placed',
+                full_name=full_name,
+                mobile_number=mobile_number,
+                email_address=email_address,
+                house_flat_number=house_flat_number,
+                street_area=street_area,
+                landmark=landmark,
+                city=city,
+                district=district,
+                state=state,
+                country=country,
+                pin_code=pin_code,
+                order_notes=order_notes,
+                purchase_type='Manual',
+                payment_type=payment_type
+            )
+
+            OrderItem.objects.create(
+                order=order,
+                product_id=product.id,
+                product_image=product.first_image_url,
+                product_name=product.collection_name,
+                product_type='',
+                price=product.price,
+                quantity=quantity
+            )
+
+            Product.objects.filter(pk=product.id).update(
+                quantity=Greatest(F('quantity') - quantity, Value(0))
+            )
+
         messages.success(request, f'Manual order created successfully for {full_name}!')
         return redirect('list_user_data')
         
@@ -784,4 +822,7 @@ def manual_selling(request):
 
 def our_story(request):
     return render(request, 'product/our_story.html')
+
+def refund_policy(request):
+    return render(request, 'product/refund_policy.html')
 

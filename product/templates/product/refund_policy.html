@@ -6,9 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Natsukashi - Traditional Collections</title>
+    <title>Refund Policy - Natsukashi</title>
     <link rel="icon" type="image/png" href="{% static 'images/Natsukashii_logo.png' %}">
-
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +23,7 @@
 
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
 
@@ -81,134 +80,155 @@
 
 
 <style>
-    .scroll-section {
+    .policy-section {
         background: #fdfaf6;
-        padding: 50px 20px 60px;
+        padding: 60px 20px 70px;
     }
 
-    .scroll-wrap {
-        max-width: 1320px;
+    .policy-card {
+        max-width: 900px;
         margin: 0 auto;
-        position: relative;
-        filter: drop-shadow(0 18px 30px rgba(80, 60, 30, 0.35));
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 50px 45px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
-    .scroll-body {
-        background-image: url("{% static 'images/scroll_mid.png' %}");
-        background-repeat: no-repeat;
-        background-size: 100% 100%;
-        padding: 70px 27% 60px;
-        clip-path: polygon(
-            0% 1.5%, 6% 0.3%, 13% 2.0%, 20% 0.5%, 27% 1.8%, 34% 0.2%, 41% 1.6%, 48% 0.6%, 55% 2.1%, 62% 0.3%, 69% 1.4%, 76% 0.7%, 83% 1.9%, 90% 0.4%, 97% 1.6%, 100% 0.8%,
-            100% 99.2%, 97% 98.4%, 90% 99.6%, 83% 98.1%, 76% 99.3%, 69% 98.6%, 62% 99.7%, 55% 97.9%, 48% 99.4%, 41% 98.4%, 34% 99.8%, 27% 98.2%, 20% 99.5%, 13% 98.0%, 6% 99.7%, 0% 98.5%
-        );
-    }
-
-    .story-title {
+    .policy-title {
         font-family: 'Playfair Display', serif;
         color: #6b1d2f;
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 700;
-        letter-spacing: 2px;
         text-align: center;
-        margin: 0 0 18px;
+        margin-bottom: 15px;
     }
 
-    .natsukashi-logo-text {
-        position: relative;
-        display: inline-block;
-        padding-bottom: 5px;
-    }
-
-    .natsukashi-logo-text::after {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        bottom: 0;
-        left: 0;
-        background-color: #6b1d2f;
-        transform: scaleX(0);
-        transform-origin: center;
-        animation: underline-animate 1.5s ease-out forwards;
-        animation-delay: 0.5s;
-    }
-
-    @keyframes underline-animate {
-        to {
-            transform: scaleX(1);
-        }
-    }
-
-    .story-content {
+    .policy-intro {
         font-family: 'Playfair Display', serif;
-        font-size: 1rem;
-        line-height: 1.85;
         color: #4a3f35;
-        text-align: left;
+        text-align: center;
+        line-height: 1.8;
+        margin-bottom: 35px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .story-content p {
-        margin-bottom: 25px;
-    }
-    
-    .story-content p:first-of-type::first-letter {
-        font-size: 3.5rem;
-        float: left;
-        line-height: 1;
-        margin-right: 10px;
-        color: #6b1d2f;
-        font-weight: 700;
-    }
-    
-    .story-signature {
+    .policy-card h2 {
         font-family: 'Playfair Display', serif;
-        font-style: italic;
-        font-size: 1.3rem;
         color: #6b1d2f;
-        text-align: center;
-        margin-top: 22px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 32px 0 12px;
+    }
+
+    .policy-card p {
+        color: #4a3f35;
+        line-height: 1.8;
+        margin-bottom: 12px;
+    }
+
+    .policy-card ul {
+        color: #4a3f35;
+        line-height: 1.8;
+        margin-bottom: 12px;
+        padding-left: 22px;
+    }
+
+    .policy-card a {
+        color: #6b1d2f;
+        font-weight: 600;
     }
 
     @media (max-width: 767px) {
-        .scroll-section { padding: 25px 8px 35px; }
-        .scroll-wrap { filter: drop-shadow(0 10px 18px rgba(80, 60, 30, 0.3)); }
-        .scroll-body { padding: 40px 27% 30px; }
-        .story-content { font-size: 0.82rem; line-height: 1.7; }
-        .story-title { margin-bottom: 10px; }
-        .story-title img { max-width: 130px !important; }
-        .story-signature { margin-top: 12px; }
+        .policy-section { padding: 30px 10px 40px; }
+        .policy-card { padding: 30px 22px; }
+        .policy-title { font-size: 1.6rem; }
     }
 </style>
 
-<div class="scroll-section">
-    <div class="scroll-wrap">
-        <div class="scroll-body">
-        <h1 class="story-title">
-            <span class="natsukashi-logo-text">
-                <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashii Logo" style="max-width: 190px; height: auto;">
-            </span>
-        </h1>
+<div class="policy-section">
+    <div class="policy-card">
+        <h1 class="policy-title">Refund, Return &amp; Exchange Policy</h1>
+        <p class="policy-intro">At Natsukashii, we are committed to delivering authentic, premium-quality traditional collections. Every product is carefully inspected, quality checked, and securely packed before dispatch to ensure it reaches you in perfect condition. Please read our Refund, Return &amp; Exchange Policy carefully before placing your order.</p>
 
-        <div class="story-content">
-            <p>Every beautiful journey begins with a dream. For as long as I can remember, sarees have held a special place in my heart. To me, they are more than garments—they are timeless expressions of culture, artistry, and the memories woven into every thread. My love for India’s traditional weaves inspired a dream that stayed with me for years: to create a brand that celebrates the richness of our textile heritage.</p>
-            
-            <p>In 2026, that dream became a reality with the birth of Natsukashii. Founded by a girl with an unwavering passion for sarees, Natsukashii was created to bring together thoughtfully curated collections from the traditional weaving traditions of India. From the timeless elegance of Kerala Kasavu to the artistry of handwoven treasures from across the country, every piece is carefully selected for its authenticity, craftsmanship, and enduring beauty.</p>
-            
-            <p>Like every dream, mine needed someone who believed in it before the world did. My husband became that unwavering support. He encouraged me to take the first step, believed in my vision even when it was just an idea, and gave me the confidence to turn a long-held dream into reality. Natsukashii is as much a journey of love, faith, and encouragement as it is a celebration of Indian textiles.</p>
-            
-            <p>The name Natsukashii comes from the Japanese word that evokes a warm sense of nostalgia—a beautiful memory that brings a smile. That feeling lies at the heart of our brand. We believe every saree becomes part of life’s most cherished moments—festivals, weddings, celebrations, and memories that last a lifetime.</p>
-            
-            <p>At Natsukashii, we honour the artisans and weavers whose craftsmanship keeps India’s rich textile traditions alive. Every collection is curated with care, celebrating authenticity, heritage, and timeless elegance.</p>
-            
-            <p>What began as a personal dream has become a heartfelt journey to share India’s finest traditional weaves with women who value beauty, culture, and craftsmanship.</p>
-        </div>
-        
-        <div class="story-signature">
-            Welcome to Natsukashii.<br>
-            Timeless Sarees. Beautiful Memories.
-        </div>
-        </div>
+        <h2>1. No Refund Policy</h2>
+        <p>All purchases made through Natsukashii are final. We do not offer refunds under any circumstances, including but not limited to:</p>
+        <ul>
+            <li>Change of mind</li>
+            <li>Personal preference</li>
+            <li>Colour variations due to screen or lighting differences</li>
+            <li>Slight weaving or printing irregularities that are natural characteristics of handcrafted products</li>
+        </ul>
+        <p>Once an order is placed, it cannot be refunded.</p>
+
+        <h2>2. Exchange Policy</h2>
+        <p>Exchange requests will be accepted only under the following circumstances:</p>
+        <ul>
+            <li>You receive a damaged product.</li>
+            <li>You receive an incorrect product.</li>
+            <li>The product has a manufacturing defect.</li>
+        </ul>
+        <p>Exchange requests for any other reason, including dislike, change of mind, or personal preference, will not be accepted.</p>
+
+        <h2>3. Mandatory Unboxing Video</h2>
+        <p>To be eligible for an exchange, customers must record a clear, continuous, unedited unboxing video while opening the package. The video must clearly show:</p>
+        <ul>
+            <li>The sealed package before opening.</li>
+            <li>The complete unboxing process.</li>
+            <li>The product received.</li>
+            <li>Any visible damage, defect, or incorrect item.</li>
+        </ul>
+        <p>Exchange requests submitted without an unboxing video will not be considered.</p>
+
+        <h2>4. Reporting Timeline</h2>
+        <p>If you receive a damaged or incorrect product:</p>
+        <ul>
+            <li>The issue must be reported on the same day of delivery.</li>
+            <li>Requests made after 24 hours of delivery will not be eligible for exchange.</li>
+        </ul>
+        <p>Please contact us immediately with:</p>
+        <ul>
+            <li>Your Order ID</li>
+            <li>Unboxing video</li>
+            <li>Clear photographs of the issue</li>
+        </ul>
+
+        <h2>5. Exchange Process</h2>
+        <p>Once your request is verified:</p>
+        <ul>
+            <li>Customers must ship the product back to us using any reliable courier service. We currently do not provide pickup services.</li>
+            <li>The product must be securely packed to avoid transit damage.</li>
+            <li>After we receive and inspect the returned product, a replacement will be dispatched if the claim is approved.</li>
+        </ul>
+
+        <h2>6. Product Condition for Exchange</h2>
+        <p>To qualify for an exchange, the product must be:</p>
+        <ul>
+            <li>Unused and unwashed.</li>
+            <li>Free from perfume, stains, makeup, or alterations.</li>
+            <li>Returned with all original tags, blouse piece, packaging, and accessories (if applicable).</li>
+        </ul>
+        <p>Products that have been worn, washed, damaged by the customer, or altered in any way will not be accepted.</p>
+
+        <h2>7. Handcrafted Products</h2>
+        <p>Many of our collections are handcrafted or handwoven. Minor variations in weave, texture, colour, print placement, or finishing are natural characteristics of artisan-made products and are not considered defects. Similarly, damages caused by improper handling, pinning, washing, ironing, or storage are not covered under this policy.</p>
+
+        <h2>8. Order Cancellation</h2>
+        <p>Orders may be cancelled only before dispatch. Once an order has been shipped, it cannot be cancelled.</p>
+
+        <h2>9. Shipping Charges</h2>
+        <p>Shipping charges are non-refundable. For approved exchanges due to an incorrect or damaged product sent by Natsukashii, we will dispatch the replacement after verifying the returned item.</p>
+
+        <h2>10. Acceptance of Policy</h2>
+        <p>By placing an order with Natsukashii, you confirm that you have read, understood, and agreed to this Refund, Return &amp; Exchange Policy.</p>
+
+        <h2>11. Contact Us</h2>
+        <p>For exchange requests or any order-related queries, please contact us:</p>
+        <ul>
+            <li>Email: <a href="mailto:natsukashii.traditional@gmail.com">natsukashii.traditional@gmail.com</a></li>
+            <li>WhatsApp: <a href="https://wa.me/917012009857" target="_blank" rel="noopener">+91 7012009857</a></li>
+        </ul>
     </div>
 </div>
 
@@ -216,9 +236,6 @@
 <!-- Footer -->
     <footer class="footer"
         style="background: #f7f1e6 url('{% static 'images/footer_bg.png' %}') no-repeat center center; background-size: cover; color: black; position: relative; overflow: hidden;">
-
-
-
 
         <div class="container" style="position: relative; z-index: 1;">
             <div class="row">
@@ -237,6 +254,7 @@
                     <a href="{% url 'our_story' %}" class="footer-link" style="color: black;">Our Story</a>
                     <a href="#" class="footer-link" style="color: black;">Collections</a>
                     <a href="#" class="footer-link" style="color: black;">Contact</a>
+                    <a href="{% url 'refund_policy' %}" class="footer-link" style="color: black;">Refund Policy</a>
                 </div>
                 <div class="col-lg-3 col-md-4">
                     <h5 class="footer-title" style="font-size: 1.2rem; color: #5C3A21;">Contact Us</h5>
@@ -260,20 +278,6 @@
     <script src="{% static 'js/cart.js' %}?v=6"></script>
     <script src="{% static 'js/wishlist.js' %}?v=3"></script>
     <script>
-        // IntersectionObserver to reveal paragraph on scroll
-        (function () {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('in-view');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.2 });
-
-            document.querySelectorAll('.reveal-left').forEach(el => observer.observe(el));
-        })();
-
         // Triple click on navbar logo to open admin panel
         const navbarBrand = document.querySelector('.navbar-brand');
         if (navbarBrand) {

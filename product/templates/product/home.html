@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link href="{% static 'css/style.css' %}?v=1.1" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
 </head>
 
 <body>
@@ -40,6 +40,15 @@
                     <li class="nav-item"><a class="nav-link" href="#">Sarees</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'my_orders' %}">My Orders</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Settings
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'refund_policy' %}">Refund Policy</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             ♥ Wishlist

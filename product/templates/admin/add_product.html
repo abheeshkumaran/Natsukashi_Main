@@ -27,28 +27,6 @@
                     </div>
                     {% endif %}
 
-                    
-                        <!-- Custom Category Selection UI -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Manage Category</label>
-                            <select id="manage_category_select" class="form-select">
-                                <option value="" disabled selected>-- Select a category to add --</option>
-                                {% for cat in all_categories %}
-                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Categories</label>
-                            <div id="selected_categories_badges" class="d-flex flex-wrap gap-2 p-3 border rounded bg-light" style="min-height: 50px;">
-                                <!-- Badges rendered by JS -->
-                            </div>
-                        </div>
-
-                        {{ form.categories }}
-
-
                     <div class="mb-3">
                         <label for="{{ form.collection_name.id_for_label }}" class="form-label fw-bold">Collection Name <span class="text-danger">*</span></label>
                         {{ form.collection_name }}
@@ -116,65 +94,3 @@
     </div>
 </div>
 {% endblock %}
-
-    <!-- Custom JS for Category UI -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const hiddenSelect = document.getElementById("hidden_category_select");
-            const manageSelect = document.getElementById("manage_category_select");
-            const badgesContainer = document.getElementById("selected_categories_badges");
-
-            if (!hiddenSelect || !manageSelect || !badgesContainer) return;
-
-            function renderBadges() {
-                badgesContainer.innerHTML = "";
-                let hasSelection = false;
-                Array.from(hiddenSelect.options).forEach(option => {
-                    if (option.selected) {
-                        hasSelection = true;
-                        const badge = document.createElement("span");
-                        badge.className = "badge bg-primary d-flex align-items-center py-2 px-3 fs-6";
-                        badge.innerHTML = `
-                            ${option.text}
-                            <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.6rem;" aria-label="Remove" data-value="${option.value}"></button>
-                        `;
-                        badgesContainer.appendChild(badge);
-                    }
-                });
-
-                if (!hasSelection) {
-                    badgesContainer.innerHTML = '<span class="text-muted">No categories selected</span>';
-                }
-
-                // Attach remove event
-                badgesContainer.querySelectorAll(".btn-close").forEach(btn => {
-                    btn.addEventListener("click", function() {
-                        const val = this.getAttribute("data-value");
-                        // Deselect in hidden select
-                        Array.from(hiddenSelect.options).forEach(opt => {
-                            if (opt.value === val) opt.selected = false;
-                        });
-                        renderBadges();
-                    });
-                });
-            }
-
-            manageSelect.addEventListener("change", function() {
-                const selectedVal = this.value;
-                if (!selectedVal) return;
-                
-                // Select in hidden select
-                Array.from(hiddenSelect.options).forEach(opt => {
-                    if (opt.value === selectedVal) opt.selected = true;
-                });
-                
-                renderBadges();
-                
-                // Reset dropdown
-                this.value = "";
-            });
-
-            // Initial render
-            renderBadges();
-        });
-    </script>
