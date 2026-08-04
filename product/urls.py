@@ -18,6 +18,7 @@ urlpatterns = [
     path('explore-colored-sarees/', views.colored_saree_explore, name='colored_saree_explore'),
     path('explore-onam-mund/', views.onam_mund_explore, name='onam_mund_explore'),
     path('modal/<str:product_type>/<int:pk>/', views.product_modal, name='product_modal'),
+    path('category/<int:pk>/', views.category_products, name='category_products'),
     path('register/', views.register_user, name='register'),
     path('login/', views.login_user, name='login'),
     path('guest-login/', views.guest_login, name='guest_login'),

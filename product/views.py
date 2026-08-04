@@ -13,7 +13,12 @@ from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem,
 def home(request):
     categories = Category.objects.all().prefetch_related('products', 'products__images').order_by('id')
     all_products = Product.objects.all().prefetch_related('images').order_by('-id')
-    return render(request, 'product/home.html', {'categories': categories, 'all_products': all_products})
+    onam_category = Category.objects.filter(name='Featured Onam Picks').first()
+    return render(request, 'product/home.html', {
+        'categories': categories,
+        'all_products': all_products,
+        'onam_category': onam_category,
+    })
 
 
 def admin_dashboard(request):
@@ -309,7 +314,21 @@ def onam_mund_explore(request):
     return render(request, 'product/onam_mund_explore.html', {'munds': munds})
 
 
-PRODUCT_MODEL_BY_TYPE = {'saree': Product, 'mund': Product, 'colored': Product}
+PRODUCT_MODEL_BY_TYPE = {'saree': Product, 'mund': Product, 'colored': Product, 'product': Product}
+
+
+def category_products(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    products = category.products.all().prefetch_related('images')
+    return render(request, 'product/category_products.html', {'category': category, 'products': products})
+
+
+def nav_categories_context(request):
+    try:
+        categories = Category.objects.all().order_by('name')
+    except Exception:
+        categories = []
+    return {'nav_categories': categories}
 
 
 def product_modal(request, product_type, pk):
