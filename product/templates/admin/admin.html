@@ -126,6 +126,22 @@ th,td{
 th{
     color:var(--gold);
 }
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 1.9rem;
+    }
+    .hero p {
+        font-size: 1rem;
+    }
+    .cards {
+        grid-template-columns: 1fr;
+    }
+    .section {
+        padding: 15px;
+        overflow-x: auto;
+    }
+}
 </style>
 {% endblock %}
 

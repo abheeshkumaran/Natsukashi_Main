@@ -14,7 +14,7 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
@@ -80,13 +80,13 @@
     </nav>
 
 	<section class="hero py-5" style="min-height: auto; align-items: flex-start; text-align: center; padding-top: 60px;">
-		<div class="container">
+		<div class="container-fluid">
 			<h1 class="heading-font mb-3">Explore FEATURED ONAM PICKS</h1>
 			<p class="text-muted">Browse the FEATURED ONAM PICKS collection with images loaded directly from the database.</p>
 		</div>
 	</section>
 
-	<section class="container pb-5 mt-5">
+	<section class="container-fluid pb-5 mt-5">
 		<div class="row gy-5">
 			{% for saree in sarees %}
 			<div class="col-md-4 col-sm-6">
@@ -134,7 +134,7 @@
 
 
 
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo" style="max-width: 280px; margin-bottom: 20px;">

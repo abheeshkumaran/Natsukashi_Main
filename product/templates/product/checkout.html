@@ -34,6 +34,12 @@
         .order-review-total span:first-child { font-weight: 600; font-size: 1.1rem; }
         .order-review-total span:last-child { font-weight: 700; font-size: 1.3rem; color: var(--primary-color); }
 
+        .coupon-box { background: #faf6ef; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; margin-top: 18px; }
+        .coupon-box label { font-size: 0.95rem; }
+        .coupon-msg-success { color: #1e7e34; }
+        .coupon-msg-error { color: #c0392b; }
+        .discount-row { display: flex; justify-content: space-between; padding: 8px 0; color: #1e7e34; font-weight: 600; }
+
         .refund-policy-box { background: #faf6ef; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px 18px; margin: 22px 0 16px; }
         .refund-policy-box h6 { font-weight: 700; color: var(--primary-color); margin-bottom: 8px; }
         .refund-policy-box p { font-size: 0.88rem; color: #666; margin-bottom: 8px; line-height: 1.6; }
@@ -44,7 +50,7 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
@@ -61,6 +67,8 @@
             <form action="{% url 'checkout' %}" method="POST" id="checkoutForm">
                 {% csrf_token %}
                 <input type="hidden" name="cart_data" id="cartDataInput">
+                <input type="hidden" name="coupon_code" id="appliedCouponCodeInput">
+                <input type="hidden" name="coupon_discount" id="appliedCouponDiscountInput" value="0">
                 
                 <h3 class="section-title mt-0">Personal Information</h3>
                 <div class="row g-3">
@@ -136,6 +144,28 @@
                 </div>
                 <div class="modal-body">
                     <div id="orderReviewItems"></div>
+
+                    <div class="coupon-box">
+                        <label class="form-label fw-bold mb-2">Have a coupon?</label>
+                        <div class="row g-2">
+                            <div class="col-sm-4">
+                                <input type="text" id="couponCodeInput" class="form-control" placeholder="Coupon Code">
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" id="couponNameDisplay" class="form-control" placeholder="Coupon Name" readonly>
+                            </div>
+                            <div class="col-sm-4">
+                                <button type="button" id="applyCouponBtn" class="btn btn-card-outline w-100">Apply Coupon</button>
+                            </div>
+                        </div>
+                        <div id="couponMsg" class="small mt-2" style="display: none;"></div>
+                    </div>
+
+                    <div id="discountRow" class="discount-row" style="display: none;">
+                        <span>Coupon Discount</span>
+                        <span id="discountAmount">-₹0.00</span>
+                    </div>
+
                     <div class="order-review-total">
                         <span>Total Amount</span>
                         <span id="orderReviewTotal">₹0.00</span>
@@ -173,7 +203,17 @@
         const orderConfirmModal = bootstrap.Modal.getOrCreateInstance(orderConfirmModalEl);
         const agreeCheckbox = document.getElementById('agreeRefundPolicy');
         const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+        const couponCodeInput = document.getElementById('couponCodeInput');
+        const couponNameDisplay = document.getElementById('couponNameDisplay');
+        const applyCouponBtn = document.getElementById('applyCouponBtn');
+        const couponMsg = document.getElementById('couponMsg');
+        const discountRow = document.getElementById('discountRow');
+        const discountAmountEl = document.getElementById('discountAmount');
+        const appliedCouponCodeInput = document.getElementById('appliedCouponCodeInput');
+        const appliedCouponDiscountInput = document.getElementById('appliedCouponDiscountInput');
         let orderConfirmed = false;
+        let cartSubtotal = 0;
+        let lookupTimer = null;
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -181,9 +221,42 @@
             return div.innerHTML;
         }
 
+        function fmt(amount) {
+            return typeof formatPrice === 'function' ? formatPrice(amount) : ('₹' + amount.toFixed(2));
+        }
+
+        function updateTotalsDisplay(discount) {
+            const finalTotal = Math.max(0, cartSubtotal - discount);
+            document.getElementById('orderReviewTotal').textContent = fmt(finalTotal);
+            document.getElementById('confirmOrderBtnAmount').textContent = fmt(finalTotal);
+
+            if (discount > 0) {
+                discountRow.style.display = 'flex';
+                discountAmountEl.textContent = '-' + fmt(discount);
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
+
+        function resetCouponState() {
+            couponCodeInput.value = '';
+            couponCodeInput.disabled = false;
+            couponNameDisplay.value = '';
+            applyCouponBtn.disabled = false;
+            couponMsg.style.display = 'none';
+            appliedCouponCodeInput.value = '';
+            appliedCouponDiscountInput.value = '0';
+            updateTotalsDisplay(0);
+        }
+
+        function showCouponMsg(text, isError) {
+            couponMsg.textContent = text;
+            couponMsg.className = 'small mt-2 ' + (isError ? 'coupon-msg-error' : 'coupon-msg-success');
+            couponMsg.style.display = 'block';
+        }
+
         function renderOrderReview(cartItems) {
             const itemsContainer = document.getElementById('orderReviewItems');
-            const totalEl = document.getElementById('orderReviewTotal');
             itemsContainer.innerHTML = '';
 
             let total = 0;
@@ -200,10 +273,10 @@
                         <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.name || '')}">
                         <div>
                             <div class="order-review-item-name">${escapeHtml(item.name || 'Product')}</div>
-                            <div class="order-review-item-meta">Qty: ${qty} × ${typeof formatPrice === 'function' ? formatPrice(price) : ('₹' + price.toFixed(2))}</div>
+                            <div class="order-review-item-meta">Qty: ${qty} × ${fmt(price)}</div>
                         </div>
                     </div>
-                    <div class="order-review-line-total">${typeof formatPrice === 'function' ? formatPrice(lineTotal) : ('₹' + lineTotal.toFixed(2))}</div>
+                    <div class="order-review-line-total">${fmt(lineTotal)}</div>
                 `;
                 itemsContainer.appendChild(row);
             });
@@ -212,10 +285,68 @@
                 itemsContainer.innerHTML = '<p class="text-muted mb-0">Your cart is empty.</p>';
             }
 
-            const formattedTotal = typeof formatPrice === 'function' ? formatPrice(total) : ('₹' + total.toFixed(2));
-            totalEl.textContent = formattedTotal;
-            document.getElementById('confirmOrderBtnAmount').textContent = formattedTotal;
+            cartSubtotal = total;
+            resetCouponState();
         }
+
+        couponCodeInput.addEventListener('input', function() {
+            const code = this.value.trim();
+            clearTimeout(lookupTimer);
+            if (!code) {
+                couponNameDisplay.value = '';
+                return;
+            }
+            lookupTimer = setTimeout(function() {
+                fetch("{% url 'lookup_coupon' %}?code=" + encodeURIComponent(code))
+                    .then(response => response.json())
+                    .then(data => {
+                        couponNameDisplay.value = data.found ? data.coupon_name : '';
+                    });
+            }, 350);
+        });
+
+        applyCouponBtn.addEventListener('click', function() {
+            const code = couponCodeInput.value.trim();
+            if (!code) return;
+
+            const key = (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID)
+                ? 'natsukashi_cart_' + window.SITE_USER_ID
+                : null;
+            const cartDataStr = key ? (localStorage.getItem(key) || '[]') : '[]';
+
+            fetch("{% url 'apply_coupon' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams({
+                    coupon_code: code,
+                    cart_data: cartDataStr,
+                    csrfmiddlewaretoken: document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    couponNameDisplay.value = data.coupon_name;
+                    appliedCouponCodeInput.value = code;
+                    appliedCouponDiscountInput.value = data.discount;
+                    updateTotalsDisplay(data.discount);
+                    showCouponMsg('Coupon applied! You saved ' + fmt(data.discount) + '.', false);
+                    couponCodeInput.disabled = true;
+                    applyCouponBtn.disabled = true;
+                } else {
+                    appliedCouponCodeInput.value = '';
+                    appliedCouponDiscountInput.value = '0';
+                    updateTotalsDisplay(0);
+                    showCouponMsg(data.error || 'Unable to apply coupon.', true);
+                }
+            })
+            .catch(function() {
+                showCouponMsg('Unable to apply coupon. Please try again.', true);
+            });
+        });
 
         checkoutForm.addEventListener('submit', function(e) {
             // Get cart from localStorage and put it in the hidden input

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Category, UpdationTask
+from .models import Product, Category, UpdationTask, ProductCoupon
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -8,6 +8,27 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category Name'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class ProductCouponForm(forms.ModelForm):
+    class Meta:
+        model = ProductCoupon
+        fields = [
+            'coupon_code', 'coupon_name', 'discount_type', 'discount_value',
+            'min_order_amount', 'min_qty', 'valid_from', 'valid_until', 'usage_limit', 'is_active',
+        ]
+        widgets = {
+            'coupon_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. SAREE20'}),
+            'coupon_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Onam Special Discount'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_discount_type'}),
+            'discount_value': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Discount value', 'step': '0.01'}),
+            'min_order_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Minimum order amount', 'step': '0.01'}),
+            'min_qty': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Minimum product quantity'}),
+            'valid_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'valid_until': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'usage_limit': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0 = unlimited'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 

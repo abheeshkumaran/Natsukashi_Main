@@ -10,6 +10,10 @@
     --body-font: 'Poppins', sans-serif;
 }
 
+html {
+    zoom: 1.1;
+}
+
 body {
     background-color: var(--bg-color);
     font-family: var(--body-font);
@@ -40,7 +44,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     transform: translateY(-100%);
 }
 
-.navbar > .container {
+.navbar > .container,
+.navbar > .container-fluid {
     height: 100%;
 }
 

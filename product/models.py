@@ -163,6 +163,59 @@ class OrderStatus(models.Model):
 
 
 
+class ProductCoupon(models.Model):
+    DISCOUNT_TYPE_CHOICES = (
+        ('flat', 'Flat Amount'),
+        ('product_qty', 'Product Qty'),
+    )
+
+    coupon_code = models.CharField(max_length=50, unique=True)
+    coupon_name = models.CharField(max_length=255)
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES, default='flat')
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    min_qty = models.PositiveIntegerField(default=0)
+    valid_from = models.DateField()
+    valid_until = models.DateField()
+    usage_limit = models.PositiveIntegerField(default=0, help_text='0 means unlimited')
+    used_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'product_coupon'
+        verbose_name = 'Product Coupon'
+        verbose_name_plural = 'Product Coupons'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.coupon_code
+
+    @property
+    def status(self):
+        import datetime
+        today = datetime.date.today()
+        if not self.is_active:
+            return 'Inactive'
+        if today < self.valid_from:
+            return 'Upcoming'
+        if today > self.valid_until:
+            return 'Expired'
+        if self.usage_limit and self.used_count >= self.usage_limit:
+            return 'Used Up'
+        return 'Active'
+
+    @property
+    def discount_display(self):
+        return f'₹{self.discount_value}'
+
+    @property
+    def condition_display(self):
+        if self.discount_type == 'product_qty':
+            return f'Min Qty: {self.min_qty} product(s)'
+        return f'₹{self.min_order_amount}'
+
+
 class UpdationTask(models.Model):
     STATUS_CHOICES = (
         ('Pending', 'Pending'),

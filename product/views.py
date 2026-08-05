@@ -1,13 +1,14 @@
 from django.http import Http404, JsonResponse, HttpResponse
 import csv
 import json
+import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.db.models import Sum, F, Q, Value
 from django.db.models.functions import Greatest
 from django.contrib import messages
-from .forms import ProductForm, CategoryForm, UpdationTaskForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask
+from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon
 
 # Create your views here.
 def home(request):
@@ -477,6 +478,68 @@ def download_user_data_csv(request):
 
     return response
 
+def lookup_coupon(request):
+    code = request.GET.get('code', '').strip()
+    if not code:
+        return JsonResponse({'found': False})
+    coupon = ProductCoupon.objects.filter(coupon_code__iexact=code).first()
+    if coupon:
+        return JsonResponse({'found': True, 'coupon_name': coupon.coupon_name})
+    return JsonResponse({'found': False})
+
+
+def apply_coupon(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+    code = request.POST.get('coupon_code', '').strip()
+    cart_data_str = request.POST.get('cart_data', '[]')
+    try:
+        cart_items = json.loads(cart_data_str)
+    except json.JSONDecodeError:
+        cart_items = []
+
+    total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
+    total_qty = sum(int(item.get('qty', 1)) for item in cart_items)
+
+    coupon = ProductCoupon.objects.filter(coupon_code__iexact=code).first()
+    if not coupon:
+        return JsonResponse({'success': False, 'error': 'Not existing coupon'})
+
+    if not coupon.is_active:
+        return JsonResponse({'success': False, 'error': 'Coupon expired'})
+
+    today = datetime.date.today()
+    if today < coupon.valid_from or today > coupon.valid_until:
+        return JsonResponse({'success': False, 'error': 'Coupon expired'})
+
+    if coupon.usage_limit and coupon.used_count >= coupon.usage_limit:
+        return JsonResponse({'success': False, 'error': 'Not existing coupon'})
+
+    if coupon.discount_type == 'flat':
+        if total_amount < float(coupon.min_order_amount):
+            return JsonResponse({'success': False, 'error': f"Can't apply the coupon. Purchase minimum ₹{coupon.min_order_amount}"})
+    elif coupon.discount_type == 'product_qty':
+        if total_qty < coupon.min_qty:
+            return JsonResponse({'success': False, 'error': f'Purchase minimum {coupon.min_qty} product(s)'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid coupon type'})
+
+    discount = min(float(coupon.discount_value), total_amount)
+    new_total = total_amount - discount
+
+    # Usage is only counted once the order is actually placed (see `checkout` view),
+    # not just when the coupon is applied/previewed here.
+
+    return JsonResponse({
+        'success': True,
+        'coupon_name': coupon.coupon_name,
+        'discount': discount,
+        'total_amount': total_amount,
+        'new_total': new_total,
+    })
+
+
 def checkout(request):
     user_id = request.session.get('site_user_id')
     if not user_id:
@@ -541,9 +604,22 @@ def checkout(request):
         # Ensure we have items (even if empty, we can create a record, but best if there are items)
         # We will calculate total amount manually from the parsed items
         total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
-        
+
+        try:
+            coupon_discount = float(request.POST.get('coupon_discount', 0) or 0)
+        except ValueError:
+            coupon_discount = 0
+        coupon_discount = max(0, min(coupon_discount, total_amount))
+        total_amount -= coupon_discount
+        applied_coupon_code = request.POST.get('coupon_code', '').strip()
+
         # Create Order Snapshot, Order Items, and reduce stock atomically
         with transaction.atomic():
+            if coupon_discount > 0 and applied_coupon_code:
+                ProductCoupon.objects.filter(coupon_code__iexact=applied_coupon_code).update(
+                    used_count=F('used_count') + 1
+                )
+
             order = Order.objects.create(
                 user=user,
                 total_amount=total_amount,
@@ -688,6 +764,40 @@ def update_category_permission(request):
             'show_in_collection_table': category.show_in_collection_table,
         })
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+# Product Coupon CRUD
+def list_coupons(request):
+    if request.method == 'POST':
+        form = ProductCouponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coupon created successfully.')
+            return redirect('list_coupons')
+    else:
+        form = ProductCouponForm()
+
+    coupons = ProductCoupon.objects.all()
+    return render(request, 'admin/list_coupons.html', {'form': form, 'coupons': coupons})
+
+def edit_coupon(request, pk):
+    coupon = get_object_or_404(ProductCoupon, pk=pk)
+    if request.method == 'POST':
+        form = ProductCouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coupon updated successfully.')
+            return redirect('list_coupons')
+    else:
+        form = ProductCouponForm(instance=coupon)
+    return render(request, 'admin/edit_coupon.html', {'form': form, 'coupon': coupon})
+
+def delete_coupon(request, pk):
+    coupon = get_object_or_404(ProductCoupon, pk=pk)
+    if request.method == 'POST':
+        coupon.delete()
+        messages.success(request, 'Coupon deleted successfully.')
+        return redirect('list_coupons')
+    return redirect('list_coupons')
 
 # Product CRUD
 def list_products(request):

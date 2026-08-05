@@ -19,6 +19,10 @@
             --sidebar-width: 260px;
         }
 
+        html {
+            zoom: 1.1;
+        }
+
         body {
             background: var(--bg);
             color: var(--text);
@@ -105,10 +109,12 @@
         /* Main Content */
         .main-content {
             flex: 1;
+            min-width: 0;
             margin-left: var(--sidebar-width);
             padding: 40px;
             background: var(--bg);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Responsive */
@@ -174,6 +180,11 @@
             </a>
             <a href="{% url 'category_permissions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'category_permissions' %}active{% endif %}">
                 Category Permission
+            </a>
+
+            <div class="nav-label">Coupons</div>
+            <a href="{% url 'list_coupons' %}" class="sidebar-link {% if request.resolver_match.url_name == 'list_coupons' or request.resolver_match.url_name == 'edit_coupon' %}active{% endif %}">
+                Product Coupon
             </a>
 
             <div class="nav-label">Make Updates</div>

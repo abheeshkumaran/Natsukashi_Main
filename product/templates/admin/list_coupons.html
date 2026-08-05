@@ -1,0 +1,160 @@
+{% extends 'admin/admin_base.html' %}
+{% block content %}
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Product Coupon</h2>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="bg-white rounded shadow-sm p-4 mb-4">
+        <h5 class="fw-bold mb-3">Create New Coupon</h5>
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="{{ form.coupon_code.id_for_label }}" class="form-label fw-bold">Coupon Code <span class="text-danger">*</span></label>
+                    {{ form.coupon_code }}
+                    {% if form.coupon_code.errors %}<div class="text-danger small mt-1">{{ form.coupon_code.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.coupon_name.id_for_label }}" class="form-label fw-bold">Coupon Name <span class="text-danger">*</span></label>
+                    {{ form.coupon_name }}
+                    {% if form.coupon_name.errors %}<div class="text-danger small mt-1">{{ form.coupon_name.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.discount_type.id_for_label }}" class="form-label fw-bold">Discount Type</label>
+                    {{ form.discount_type }}
+                </div>
+
+                <div class="col-md-4">
+                    <label for="{{ form.discount_value.id_for_label }}" class="form-label fw-bold">Discount Value <span class="text-danger">*</span></label>
+                    {{ form.discount_value }}
+                    {% if form.discount_value.errors %}<div class="text-danger small mt-1">{{ form.discount_value.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4" id="minOrderAmountField">
+                    <label for="{{ form.min_order_amount.id_for_label }}" class="form-label fw-bold">Minimum Order Amount</label>
+                    {{ form.min_order_amount }}
+                </div>
+                <div class="col-md-4" id="minQtyField" style="display: none;">
+                    <label for="{{ form.min_qty.id_for_label }}" class="form-label fw-bold">Minimum Product Qty</label>
+                    {{ form.min_qty }}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.usage_limit.id_for_label }}" class="form-label fw-bold">Usage Limit</label>
+                    {{ form.usage_limit }}
+                </div>
+
+                <div class="col-md-4">
+                    <label for="{{ form.valid_from.id_for_label }}" class="form-label fw-bold">Valid From <span class="text-danger">*</span></label>
+                    {{ form.valid_from }}
+                    {% if form.valid_from.errors %}<div class="text-danger small mt-1">{{ form.valid_from.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.valid_until.id_for_label }}" class="form-label fw-bold">Valid Until <span class="text-danger">*</span></label>
+                    {{ form.valid_until }}
+                    {% if form.valid_until.errors %}<div class="text-danger small mt-1">{{ form.valid_until.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label fw-bold">Active</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-4">Create Coupon</button>
+        </form>
+    </div>
+
+    <div class="table-responsive bg-white rounded shadow-sm p-4">
+        <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Coupon Code</th>
+                    <th>Coupon Name</th>
+                    <th>Discount</th>
+                    <th>Min Order</th>
+                    <th>Validity</th>
+                    <th>Usage</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                <tr>
+                    <td><strong>{{ coupon.coupon_code }}</strong></td>
+                    <td>{{ coupon.coupon_name }}</td>
+                    <td>{{ coupon.discount_display }}</td>
+                    <td>{{ coupon.condition_display }}</td>
+                    <td>{{ coupon.valid_from|date:"d M Y" }} - {{ coupon.valid_until|date:"d M Y" }}</td>
+                    <td>{{ coupon.used_count }} / {% if coupon.usage_limit %}{{ coupon.usage_limit }}{% else %}&infin;{% endif %}</td>
+                    <td>
+                        {% if coupon.status == 'Active' %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif coupon.status == 'Expired' %}
+                        <span class="badge bg-secondary">Expired</span>
+                        {% elif coupon.status == 'Upcoming' %}
+                        <span class="badge bg-info text-dark">Upcoming</span>
+                        {% elif coupon.status == 'Used Up' %}
+                        <span class="badge bg-warning text-dark">Used Up</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <a href="{% url 'edit_coupon' coupon.id %}" class="btn btn-sm btn-primary me-2">Update</a>
+                            <form action="{% url 'delete_coupon' coupon.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this coupon?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No coupons found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const discountType = document.getElementById('id_discount_type');
+        const minOrderField = document.getElementById('minOrderAmountField');
+        const minQtyField = document.getElementById('minQtyField');
+
+        function toggleFields() {
+            if (discountType.value === 'product_qty') {
+                minOrderField.style.display = 'none';
+                minQtyField.style.display = 'block';
+            } else {
+                minOrderField.style.display = 'block';
+                minQtyField.style.display = 'none';
+            }
+        }
+
+        if (discountType) {
+            toggleFields();
+            discountType.addEventListener('change', toggleFields);
+        }
+    })();
+</script>
+{% endblock %}

@@ -23,7 +23,7 @@
     <!-- Navbar -->
 
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
@@ -95,7 +95,7 @@
 
     <section class="hero"
         style="background: #fdfdfd url('{% static 'images/landing_bg.jpeg' %}') no-repeat right center; background-size: auto 100%;">
-        <div class="container">
+        <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-lg-8 hero-content text-start">
                     <h1 class="heading-font">Curated Onam Edit</h1> <br>
@@ -122,7 +122,7 @@
 
     <!-- SHOP BY COLLECTION (Categories) -->
     <section class="products bg-white mb-5">
-        <div class="container">
+        <div class="container-fluid">
             <div class="section-header mb-5">
                 <h3>SHOP BY COLLECTION</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
@@ -162,7 +162,7 @@
     <!-- Dynamic Category Product Sections -->
     {% for category in table_categories %}
     <section class="products bg-light py-5">
-        <div class="container">
+        <div class="container-fluid">
             <div class="section-header mb-5">
                 <h3>{{ category.name | upper }}</h3>
                 <div class="header-line ms-0" aria-hidden="true"></div>
@@ -234,7 +234,7 @@
     <!-- Features -->
 
     <section class="features py-4">
-        <div class="container">
+        <div class="container-fluid">
             <div class="row g-3">
                 <div class="col-md-3 col-sm-6">
                     <div class="feature-card p-3 h-100 shadow-sm" style="border-radius: 10px;">
@@ -279,7 +279,7 @@
 
 
 
-        <div class="container" style="position: relative; z-index: 1;">
+        <div class="container-fluid" style="position: relative; z-index: 1;">
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo"

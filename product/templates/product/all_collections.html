@@ -53,7 +53,7 @@
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
@@ -122,13 +122,13 @@
     </nav>
 
     <section class="hero py-5" style="min-height: auto; align-items: flex-start; text-align: center; padding-top: 60px;">
-        <div class="container">
+        <div class="container-fluid">
             <h1 class="heading-font mb-3">All Collections</h1>
             <p class="text-muted">Browse every product, or filter by a collection below.</p>
         </div>
     </section>
 
-    <section class="container pb-5 mt-4">
+    <section class="container-fluid pb-5 mt-4">
         <div class="category-filter-bar">
             <button type="button" class="category-filter-btn active" data-category-id="all">All</button>
             {% for cat in categories %}
@@ -200,7 +200,7 @@
     <footer class="footer"
         style="background: #f7f1e6 url('{% static 'images/footer_bg.png' %}') no-repeat center center; background-size: cover; color: black; position: relative; overflow: hidden;">
 
-        <div class="container" style="position: relative; z-index: 1;">
+        <div class="container-fluid" style="position: relative; z-index: 1;">
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi Logo"
