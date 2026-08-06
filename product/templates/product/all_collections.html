@@ -65,7 +65,6 @@
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'our_story' %}">Our Story</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="collectionsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -79,18 +78,9 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#">Sarees</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'new_arrivals' %}">New Arrivals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'our_story' %}">Our Story</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'my_orders' %}">My Orders</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Settings
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
-                            <li><a class="dropdown-item" href="{% url 'refund_policy' %}">Refund Policy</a></li>
-                        </ul>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             ♥ Wishlist
@@ -116,6 +106,16 @@
                         <a class="nav-link" href="javascript:void(0)" onclick="openAuthModal()">👤 Login</a>
                         {% endif %}
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Settings
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
+                            <li><a class="dropdown-item" href="{% url 'refund_policy' %}">Refund Policy</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -136,9 +136,9 @@
             {% endfor %}
         </div>
 
-        <div class="row gy-5" id="allCollectionsGrid">
+        <div class="card-grid" id="allCollectionsGrid">
             {% for product in products %}
-            <div class="col-lg-3 col-md-4 col-sm-6 filterable-product"
+            <div class="card-grid-item filterable-product"
                 data-categories="{% for c in product.categories.all %}{{ c.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
                 <div class="card product-card h-100">
                     <button type="button" class="wishlist-toggle-btn wishlist-icon"

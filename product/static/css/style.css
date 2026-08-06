@@ -160,6 +160,14 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     max-width: 600px;
 }
 
+@media (max-width: 767.98px) {
+    .hero-content {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.8) 55%, rgba(255, 255, 255, 0) 100%);
+        padding: 28px 20px 40px;
+        border-radius: 18px;
+    }
+}
+
 .logo {
     width: 400px;
     max-width: 95%;
@@ -495,6 +503,26 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     flex: 0 0 auto;
     width: 320px;
     scroll-snap-align: start;
+}
+
+/* Wrapping card grid - every card the same fixed size as the horizontal-scroll cards */
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+}
+
+.card-grid-item {
+    flex: 0 0 320px;
+    width: 320px;
+}
+
+@media (max-width: 359.98px) {
+    .card-grid-item {
+        flex: 1 1 100%;
+        width: 100%;
+    }
 }
 
 /* Footer */

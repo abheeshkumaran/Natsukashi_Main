@@ -24,7 +24,6 @@
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'our_story' %}">Our Story</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="collectionsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -38,18 +37,9 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#">Sarees</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'new_arrivals' %}">New Arrivals</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'our_story' %}">Our Story</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'my_orders' %}">My Orders</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Settings
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
-                            <li><a class="dropdown-item" href="{% url 'refund_policy' %}">Refund Policy</a></li>
-                        </ul>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             ♥ Wishlist
@@ -74,6 +64,16 @@
                             <a class="nav-link" href="javascript:void(0)" onclick="openAuthModal()">👤 Login</a>
                         {% endif %}
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Settings
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
+                            <li><a class="dropdown-item" href="{% url 'refund_policy' %}">Refund Policy</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -87,9 +87,9 @@
 	</section>
 
 	<section class="container-fluid pb-5 mt-5">
-		<div class="row gy-5">
+		<div class="card-grid">
 			{% for saree in sarees %}
-			<div class="col-md-4 col-sm-6">
+			<div class="card-grid-item">
                 <div class="card product-card h-100">
                     <span class="wishlist-icon">♥</span>
                     {% if saree.quantity == 0 or not saree.stock_available %}

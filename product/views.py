@@ -128,12 +128,12 @@ def add_colored_saree(request):
 
 
 def list_onam_sarees(request):
-    sarees = Product.objects.filter(category__name='Featured Onam Picks').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images')
     return render(request, 'admin/list_onam_sarees.html', {'sarees': sarees})
 
 
 def list_colored_sarees(request):
-    sarees = Product.objects.filter(category__name='Most Purchased Sarees').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images')
     return render(request, 'admin/list_colored_sarees.html', {'sarees': sarees})
 
 def register_user(request):
@@ -214,7 +214,7 @@ def logout_user(request):
 
 
 def list_onam_set_munds(request):
-    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')
+    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images')
     return render(request, 'admin/list_onam_set_munds.html', {'munds': munds})
 
 
@@ -303,17 +303,17 @@ def delete_onam_set_mund(request, pk):
 
 
 def onam_saree_explore(request):
-    sarees = Product.objects.filter(category__name='Featured Onam Picks').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images')
     return render(request, 'product/onam_saree_explore.html', {'sarees': sarees})
 
 
 def colored_saree_explore(request):
-    sarees = Product.objects.filter(category__name='Most Purchased Sarees').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images')
     return render(request, 'product/colored_saree_explore.html', {'sarees': sarees})
 
 
 def onam_mund_explore(request):
-    munds = Product.objects.filter(category__name='Shop By Collection').prefetch_related('images')
+    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images')
     return render(request, 'product/onam_mund_explore.html', {'munds': munds})
 
 
@@ -324,6 +324,10 @@ def category_products(request, pk):
     category = get_object_or_404(Category, pk=pk)
     products = category.products.all().prefetch_related('images')
     return render(request, 'product/category_products.html', {'category': category, 'products': products})
+
+def new_arrivals(request):
+    products = Product.objects.all().prefetch_related('images').order_by('-id')
+    return render(request, 'product/new_arrivals.html', {'products': products})
 
 def all_collections(request):
     categories = Category.objects.filter(show_in_collection_list=True).order_by('name')

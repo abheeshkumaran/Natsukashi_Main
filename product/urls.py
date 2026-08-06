@@ -27,6 +27,7 @@ urlpatterns = [
     path('modal/<str:product_type>/<int:pk>/', views.product_modal, name='product_modal'),
     path('category/<int:pk>/', views.category_products, name='category_products'),
     path('collections/', views.all_collections, name='all_collections'),
+    path('new-arrivals/', views.new_arrivals, name='new_arrivals'),
     path('register/', views.register_user, name='register'),
     path('login/', views.login_user, name='login'),
     path('guest-login/', views.guest_login, name='guest_login'),
