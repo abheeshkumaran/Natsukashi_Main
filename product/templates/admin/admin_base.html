@@ -137,6 +137,59 @@
             background: var(--bg);
             min-height: 100vh;
             overflow-x: hidden;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Sidebar collapse */
+        .sidebar-collapse-btn {
+            position: absolute;
+            top: 28px;
+            right: -14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #eaeaea;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--gold);
+            padding: 0;
+        }
+
+        .admin-sidebar.collapsed {
+            width: 80px;
+            transition: width 0.3s ease;
+        }
+
+        .admin-sidebar {
+            transition: width 0.3s ease;
+        }
+
+        .admin-sidebar.collapsed .sidebar-nav,
+        .admin-sidebar.collapsed .sidebar-footer {
+            display: none;
+        }
+
+        .admin-sidebar.collapsed .sidebar-header {
+            padding: 30px 10px 20px;
+        }
+
+        .admin-sidebar.collapsed .sidebar-logo {
+            display: inline-block;
+            font-size: 0;
+        }
+
+        .admin-sidebar.collapsed .sidebar-logo::first-letter {
+            font-size: 1.4rem;
+        }
+
+        .admin-sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
         }
 
         /* Responsive */
@@ -169,6 +222,12 @@
             .mobile-toggle {
                 display: block;
             }
+            .sidebar-collapse-btn {
+                display: none;
+            }
+            .admin-sidebar.collapsed ~ .main-content {
+                margin-left: 0;
+            }
         }
         
         {% block extra_css %}{% endblock %}
@@ -181,6 +240,7 @@
     </button>
 
     <div class="admin-sidebar">
+        <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Hide/show navbar">&lt;</button>
         <div class="sidebar-header">
             <a href="{% url 'admin_dashboard' %}" class="sidebar-logo">NATSUKASHII</a>
         </div>
@@ -260,6 +320,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleSidebarCollapse() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const btn = document.querySelector('.sidebar-collapse-btn');
+            sidebar.classList.toggle('collapsed');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '>' : '<';
+        }
+
         function togglePasswordVisibility(btn) {
             const input = btn.previousElementSibling;
             if (input.type === 'password') {

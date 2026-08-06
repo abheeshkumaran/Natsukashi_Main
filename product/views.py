@@ -304,18 +304,25 @@ def register_user(request):
 
 def login_user(request):
     if request.method == 'POST':
-        login_id = request.POST.get('email') # It comes from the name="email" input, but can be phone or email
+        login_id = request.POST.get('email', '').strip() # It comes from the name="email" input, but can be phone, email, or (for guest accounts) name
         password = request.POST.get('password')
-        try:
-            user = SiteUser.objects.get(Q(email=login_id) | Q(phone=login_id))
-            if user.check_password(password):
-                request.session['site_user_id'] = user.id
-                request.session['site_user_name'] = user.name
-                return JsonResponse({'success': True})
-            else:
-                return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
-        except SiteUser.DoesNotExist:
+
+        user = SiteUser.objects.filter(Q(email__iexact=login_id) | Q(phone=login_id)).first()
+        if not user:
+            # Guest checkout doesn't ask for a separate username, so also allow
+            # logging back in with the name that was entered during guest checkout.
+            name_matches = SiteUser.objects.filter(name__iexact=login_id)
+            if name_matches.count() == 1:
+                user = name_matches.first()
+
+        if not user:
             return JsonResponse({'success': False, 'error': 'failed to login invalid email or phone number'})
+
+        if user.check_password(password):
+            request.session['site_user_id'] = user.id
+            request.session['site_user_name'] = user.name
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 def guest_login(request):
@@ -338,7 +345,7 @@ def guest_login(request):
             user.save()
 
         request.session['site_user_id'] = user.id
-        request.session['site_user_name'] = 'Guest'
+        request.session['site_user_name'] = user.name
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
