@@ -35,6 +35,7 @@ urlpatterns = [
     path('login/', views.login_user, name='login'),
     path('guest-login/', views.guest_login, name='guest_login'),
     path('refund-policy/', views.refund_policy, name='refund_policy'),
+    path('report-issue/', views.report_issue, name='report_issue'),
     path('logout/', views.logout_user, name='logout'),
     path('admin-panel/users/', views.list_users, name='list_users'),
     path('admin-panel/users/edit/<int:pk>/', views.edit_user, name='edit_user'),

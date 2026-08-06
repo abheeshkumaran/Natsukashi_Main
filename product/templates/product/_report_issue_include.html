@@ -1,0 +1,147 @@
+{% load static %}
+<!-- Report an Issue floating tab + modal -->
+<style>
+    .report-issue-tab {
+        position: fixed;
+        top: 100px;
+        right: 0;
+        z-index: 1045;
+        background: var(--primary-color);
+        color: #fff;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px 0 0 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        box-shadow: -2px 3px 10px rgba(0, 0, 0, 0.15);
+        transition: all 0.25s ease;
+    }
+
+    .report-issue-tab:hover {
+        background: var(--hover-gold);
+        padding-right: 24px;
+    }
+
+    @media (max-width: 767.98px) {
+        .report-issue-tab {
+            top: auto;
+            bottom: 90px;
+            font-size: 0.75rem;
+            padding: 8px 14px;
+        }
+    }
+</style>
+
+<button type="button" class="report-issue-tab" onclick="openReportIssueModal()">Report a Issue</button>
+
+<div class="modal fade" id="reportIssueModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" style="font-family: var(--heading-font); color: var(--primary-color); font-weight: 700;">Report an Issue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reportIssueSuccessMsg" class="alert alert-success" style="display: none;">
+                    Thank you! Your issue has been reported.
+                </div>
+                <div id="reportIssueErrorMsg" class="alert alert-danger" style="display: none;"></div>
+
+                <form id="reportIssueForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Issue Related <span class="text-danger">*</span></label>
+                        <input type="text" name="issue_related" class="form-control" placeholder="Issue Related" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Raised By <span class="text-danger">*</span></label>
+                        <input type="text" name="raised_by" class="form-control" placeholder="Your Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Related Image</label>
+                        <input type="file" name="related_image" class="form-control" accept="image/*">
+                        <div class="form-text">Optional: Upload a screenshot or image related to the issue.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Description" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="reportIssueSubmitBtn">Log Updation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openReportIssueModal() {
+        const modalEl = document.getElementById('reportIssueModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('reportIssueForm');
+        if (!form) return;
+
+        const successMsg = document.getElementById('reportIssueSuccessMsg');
+        const errorMsg = document.getElementById('reportIssueErrorMsg');
+        const submitBtn = document.getElementById('reportIssueSubmitBtn');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            const formData = new FormData(form);
+
+            fetch("{% url 'report_issue' %}", {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    form.reset();
+                    successMsg.style.display = 'block';
+                    setTimeout(function () {
+                        const modalEl = document.getElementById('reportIssueModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                        successMsg.style.display = 'none';
+                    }, 1800);
+                } else {
+                    let text = 'Something went wrong. Please try again.';
+                    if (data.errors) {
+                        const parts = [];
+                        Object.keys(data.errors).forEach(function (field) {
+                            data.errors[field].forEach(function (err) {
+                                parts.push(err.message);
+                            });
+                        });
+                        if (parts.length) {
+                            text = parts.join(' ');
+                        }
+                    } else if (data.error) {
+                        text = data.error;
+                    }
+                    errorMsg.textContent = text;
+                    errorMsg.style.display = 'block';
+                }
+            })
+            .catch(function () {
+                errorMsg.textContent = 'Something went wrong. Please try again.';
+                errorMsg.style.display = 'block';
+            })
+            .finally(function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log Updation';
+            });
+        });
+    });
+</script>

@@ -1112,3 +1112,12 @@ def our_story(request):
 def refund_policy(request):
     return render(request, 'product/refund_policy.html')
 
+def report_issue(request):
+    if request.method == 'POST':
+        form = UpdationTaskForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+

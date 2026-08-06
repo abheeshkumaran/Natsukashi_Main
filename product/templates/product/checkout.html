@@ -154,13 +154,10 @@
                     <div class="coupon-box">
                         <label class="form-label fw-bold mb-2">Have a coupon?</label>
                         <div class="row g-2">
-                            <div class="col-sm-4">
+                            <div class="col-8">
                                 <input type="text" id="couponCodeInput" class="form-control" placeholder="Coupon Code">
                             </div>
-                            <div class="col-sm-4">
-                                <input type="text" id="couponNameDisplay" class="form-control" placeholder="Coupon Name" readonly>
-                            </div>
-                            <div class="col-sm-4">
+                            <div class="col-4">
                                 <button type="button" id="applyCouponBtn" class="btn btn-card-outline w-100">Apply Coupon</button>
                             </div>
                         </div>
@@ -215,7 +212,6 @@
         const agreeCheckbox = document.getElementById('agreeRefundPolicy');
         const confirmOrderBtn = document.getElementById('confirmOrderBtn');
         const couponCodeInput = document.getElementById('couponCodeInput');
-        const couponNameDisplay = document.getElementById('couponNameDisplay');
         const applyCouponBtn = document.getElementById('applyCouponBtn');
         const couponMsg = document.getElementById('couponMsg');
         const discountRow = document.getElementById('discountRow');
@@ -223,7 +219,6 @@
         const appliedCouponCodeInput = document.getElementById('appliedCouponCodeInput');
         const appliedCouponDiscountInput = document.getElementById('appliedCouponDiscountInput');
         let cartSubtotal = 0;
-        let lookupTimer = null;
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -251,7 +246,6 @@
         function resetCouponState() {
             couponCodeInput.value = '';
             couponCodeInput.disabled = false;
-            couponNameDisplay.value = '';
             applyCouponBtn.disabled = false;
             couponMsg.style.display = 'none';
             appliedCouponCodeInput.value = '';
@@ -299,22 +293,6 @@
             resetCouponState();
         }
 
-        couponCodeInput.addEventListener('input', function() {
-            const code = this.value.trim();
-            clearTimeout(lookupTimer);
-            if (!code) {
-                couponNameDisplay.value = '';
-                return;
-            }
-            lookupTimer = setTimeout(function() {
-                fetch("{% url 'lookup_coupon' %}?code=" + encodeURIComponent(code))
-                    .then(response => response.json())
-                    .then(data => {
-                        couponNameDisplay.value = data.found ? data.coupon_name : '';
-                    });
-            }, 350);
-        });
-
         applyCouponBtn.addEventListener('click', function() {
             const code = couponCodeInput.value.trim();
             if (!code) return;
@@ -339,11 +317,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    couponNameDisplay.value = data.coupon_name;
                     appliedCouponCodeInput.value = code;
                     appliedCouponDiscountInput.value = data.discount;
                     updateTotalsDisplay(data.discount);
-                    showCouponMsg('Coupon applied! You saved ' + fmt(data.discount) + '.', false);
+                    showCouponMsg('"' + data.coupon_name + '" applied! You saved ' + fmt(data.discount) + '.', false);
                     couponCodeInput.disabled = true;
                     applyCouponBtn.disabled = true;
                 } else {
@@ -495,5 +472,7 @@
             });
         }
     </script>
+
+    {% include 'product/_report_issue_include.html' %}
 </body>
 </html>
