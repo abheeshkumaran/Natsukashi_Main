@@ -2,6 +2,11 @@ from django.http import Http404, JsonResponse, HttpResponse
 import csv
 import json
 import datetime
+import razorpay
+import logging
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.db.models import Sum, F, Q, Value
@@ -9,6 +14,10 @@ from django.db.models.functions import Greatest
 from django.contrib import messages
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
 from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon
+
+
+def get_razorpay_client():
+    return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 # Create your views here.
 def home(request):
@@ -553,117 +562,6 @@ def checkout(request):
     user = get_object_or_404(SiteUser, id=user_id)
     user_data = getattr(user, 'user_data', None)
 
-    if request.method == 'POST':
-        full_name = request.POST.get('full_name')
-        mobile_number = request.POST.get('mobile_number')
-        email_address = request.POST.get('email_address')
-        house_flat_number = request.POST.get('house_flat_number')
-        street_area = request.POST.get('street_area')
-        landmark = request.POST.get('landmark', '')
-        city = request.POST.get('city')
-        district = request.POST.get('district')
-        state = request.POST.get('state')
-        country = request.POST.get('country', 'India')
-        pin_code = request.POST.get('pin_code')
-        order_notes = request.POST.get('order_notes', '')
-
-        if user_data:
-            user_data.full_name = full_name
-            user_data.mobile_number = mobile_number
-            user_data.email_address = email_address
-            user_data.house_flat_number = house_flat_number
-            user_data.street_area = street_area
-            user_data.landmark = landmark
-            user_data.city = city
-            user_data.district = district
-            user_data.state = state
-            user_data.country = country
-            user_data.pin_code = pin_code
-            user_data.order_notes = order_notes
-            user_data.save()
-        else:
-            UserData.objects.create(
-                user=user,
-                full_name=full_name,
-                mobile_number=mobile_number,
-                email_address=email_address,
-                house_flat_number=house_flat_number,
-                street_area=street_area,
-                landmark=landmark,
-                city=city,
-                district=district,
-                state=state,
-                country=country,
-                pin_code=pin_code,
-                order_notes=order_notes
-            )
-            
-        # Parse cart data and create Order
-        cart_data_str = request.POST.get('cart_data', '[]')
-        try:
-            cart_items = json.loads(cart_data_str)
-        except json.JSONDecodeError:
-            cart_items = []
-            
-        # Ensure we have items (even if empty, we can create a record, but best if there are items)
-        # We will calculate total amount manually from the parsed items
-        total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
-
-        try:
-            coupon_discount = float(request.POST.get('coupon_discount', 0) or 0)
-        except ValueError:
-            coupon_discount = 0
-        coupon_discount = max(0, min(coupon_discount, total_amount))
-        total_amount -= coupon_discount
-        applied_coupon_code = request.POST.get('coupon_code', '').strip()
-
-        # Create Order Snapshot, Order Items, and reduce stock atomically
-        with transaction.atomic():
-            if coupon_discount > 0 and applied_coupon_code:
-                ProductCoupon.objects.filter(coupon_code__iexact=applied_coupon_code).update(
-                    used_count=F('used_count') + 1
-                )
-
-            order = Order.objects.create(
-                user=user,
-                total_amount=total_amount,
-                status='Pending',
-                full_name=full_name,
-                mobile_number=mobile_number,
-                email_address=email_address,
-                house_flat_number=house_flat_number,
-                street_area=street_area,
-                landmark=landmark,
-                city=city,
-                district=district,
-                state=state,
-                country=country,
-                pin_code=pin_code,
-                order_notes=order_notes
-            )
-
-            for item in cart_items:
-                product_id = item.get('id')
-                qty = int(item.get('qty', 1))
-
-                OrderItem.objects.create(
-                    order=order,
-                    product_id=product_id,
-                    product_image=item.get('image'),
-                    product_name=item.get('name', 'Unknown Product'),
-                    product_type=item.get('type', 'Unknown Type'),
-                    price=item.get('price', 0),
-                    quantity=qty
-                )
-
-                if product_id:
-                    Product.objects.filter(pk=product_id).update(
-                        quantity=Greatest(F('quantity') - qty, Value(0))
-                    )
-
-        return redirect('order_success')
-
-    # For GET request, provide initial data if UserData exists
     context = {}
     if user_data:
         context['user_data'] = user_data
@@ -674,8 +572,175 @@ def checkout(request):
             'mobile_number': user.phone,
             'email_address': user.email
         }
+    context['razorpay_key_id'] = settings.RAZORPAY_KEY_ID
 
     return render(request, 'product/checkout.html', context)
+
+
+def checkout_create_payment(request):
+    """Creates a Razorpay order for the current cart and stashes the pending
+    order details in the session. No Order/OrderItem rows are created here -
+    those only get created once the payment is verified as successful."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue to checkout.'})
+
+    user = get_object_or_404(SiteUser, id=user_id)
+
+    cart_data_str = request.POST.get('cart_data', '[]')
+    try:
+        cart_items = json.loads(cart_data_str)
+    except json.JSONDecodeError:
+        cart_items = []
+
+    if not cart_items:
+        return JsonResponse({'success': False, 'error': 'Your cart is empty.'})
+
+    total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
+
+    try:
+        coupon_discount = float(request.POST.get('coupon_discount', 0) or 0)
+    except ValueError:
+        coupon_discount = 0
+    coupon_discount = max(0, min(coupon_discount, total_amount))
+    total_amount -= coupon_discount
+
+    if total_amount <= 0:
+        return JsonResponse({'success': False, 'error': 'Invalid order amount.'})
+
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return JsonResponse({'success': False, 'error': 'Online payment is not configured yet. Please contact support.'})
+
+    shipping = {
+        'full_name': request.POST.get('full_name', ''),
+        'mobile_number': request.POST.get('mobile_number', ''),
+        'email_address': request.POST.get('email_address', ''),
+        'house_flat_number': request.POST.get('house_flat_number', ''),
+        'street_area': request.POST.get('street_area', ''),
+        'landmark': request.POST.get('landmark', ''),
+        'city': request.POST.get('city', ''),
+        'district': request.POST.get('district', ''),
+        'state': request.POST.get('state', ''),
+        'country': request.POST.get('country', 'India'),
+        'pin_code': request.POST.get('pin_code', ''),
+        'order_notes': request.POST.get('order_notes', ''),
+    }
+
+    amount_paise = int(round(total_amount * 100))
+
+    try:
+        client = get_razorpay_client()
+        razorpay_order = client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'payment_capture': 1,
+        })
+    except Exception:
+        logger.exception('Razorpay order creation failed')
+        return JsonResponse({'success': False, 'error': 'Unable to start payment. Please try again.'})
+
+    request.session['pending_order'] = {
+        'razorpay_order_id': razorpay_order['id'],
+        'user_id': user.id,
+        'cart_items': cart_items,
+        'coupon_code': request.POST.get('coupon_code', '').strip(),
+        'coupon_discount': coupon_discount,
+        'total_amount': total_amount,
+        'shipping': shipping,
+    }
+
+    return JsonResponse({
+        'success': True,
+        'key_id': settings.RAZORPAY_KEY_ID,
+        'razorpay_order_id': razorpay_order['id'],
+        'amount': amount_paise,
+        'currency': 'INR',
+        'name': 'Natsukashii',
+        'description': 'Order Payment',
+        'prefill_name': shipping['full_name'],
+        'prefill_email': shipping['email_address'],
+        'prefill_contact': shipping['mobile_number'],
+    })
+
+
+def checkout_verify_payment(request):
+    """Verifies the Razorpay payment signature and only then creates the
+    Order, OrderItems, reduces stock and counts coupon usage."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+    pending = request.session.get('pending_order')
+    if not pending:
+        return JsonResponse({'success': False, 'error': 'Your checkout session has expired. Please try again.'})
+
+    razorpay_payment_id = request.POST.get('razorpay_payment_id', '')
+    razorpay_order_id = request.POST.get('razorpay_order_id', '')
+    razorpay_signature = request.POST.get('razorpay_signature', '')
+
+    if razorpay_order_id != pending.get('razorpay_order_id'):
+        return JsonResponse({'success': False, 'error': 'Order mismatch. Please try again.'})
+
+    client = get_razorpay_client()
+    try:
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature,
+        })
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'success': False, 'error': 'Payment verification failed.'})
+
+    user = get_object_or_404(SiteUser, id=pending['user_id'])
+    shipping = pending['shipping']
+    cart_items = pending['cart_items']
+    coupon_code = pending.get('coupon_code')
+    coupon_discount = pending.get('coupon_discount', 0)
+    total_amount = pending.get('total_amount', 0)
+
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=user,
+            total_amount=total_amount,
+            status='Order Placed',
+            purchase_type='Online',
+            payment_type='Razorpay',
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            **shipping
+        )
+
+        for item in cart_items:
+            product_id = item.get('id')
+            qty = int(item.get('qty', 1))
+
+            OrderItem.objects.create(
+                order=order,
+                product_id=product_id,
+                product_image=item.get('image'),
+                product_name=item.get('name', 'Unknown Product'),
+                product_type=item.get('type', 'Unknown Type'),
+                price=item.get('price', 0),
+                quantity=qty
+            )
+
+            if product_id:
+                Product.objects.filter(pk=product_id).update(
+                    quantity=Greatest(F('quantity') - qty, Value(0))
+                )
+
+        if coupon_discount > 0 and coupon_code:
+            ProductCoupon.objects.filter(coupon_code__iexact=coupon_code).update(
+                used_count=F('used_count') + 1
+            )
+
+        UserData.objects.update_or_create(user=user, defaults=shipping)
+
+    del request.session['pending_order']
+
+    return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
 
 
 def order_success(request):

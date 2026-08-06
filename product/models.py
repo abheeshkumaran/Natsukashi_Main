@@ -110,7 +110,9 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     purchase_type = models.CharField(max_length=50, default='Online')
     payment_type = models.CharField(max_length=50, blank=True, null=True)
-    
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+
     # Snapshot of shipping details for this specific order
     full_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=20)

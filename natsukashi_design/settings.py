@@ -97,6 +97,13 @@ DATABASES = {
 }
 
 
+# Razorpay
+# https://razorpay.com/docs/payments/server-integration/python/
+
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
