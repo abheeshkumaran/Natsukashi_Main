@@ -63,7 +63,7 @@ class SiteUser(models.Model):
     name = models.CharField(max_length=255)
     place = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, unique=True)
     password = models.CharField(max_length=255)
 
     class Meta:

@@ -47,6 +47,8 @@ def admin_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None and user.is_staff:
             login(request, user)
+            # Point 8: admin session must not survive a browser close.
+            request.session.set_expiry(0)
             return redirect(next_url or 'admin_dashboard')
         error = 'Invalid username or password.'
 
@@ -55,31 +57,100 @@ def admin_login(request):
 
 def admin_logout(request):
     logout(request)
+    return redirect('home')
+
+
+def admin_logout_all_devices(request):
+    from django.contrib.sessions.models import Session
+    from django.utils import timezone
+
+    user_id = request.user.id
+    for session in Session.objects.filter(expire_date__gte=timezone.now()):
+        data = session.get_decoded()
+        if str(data.get('_auth_user_id')) == str(user_id):
+            session.delete()
+
+    logout(request)
+    messages.success(request, 'Logged out from all devices. Please log in again.')
     return redirect('admin_login')
 
 
 def admin_profile(request):
+    site_user = None
+    site_user_id = request.session.get('site_user_id')
+    if site_user_id:
+        site_user = SiteUser.objects.filter(id=site_user_id).first()
+
+    details_error = None
+    details_success = False
+    site_password_error = None
+    site_password_success = False
     password_error = None
     password_success = False
 
     if request.method == 'POST':
-        old_password = request.POST.get('old_password', '')
-        new_password = request.POST.get('new_password', '')
-        confirm_password = request.POST.get('confirm_password', '')
+        form_type = request.POST.get('form_type')
 
-        if not request.user.check_password(old_password):
-            password_error = 'Current password is incorrect.'
-        elif len(new_password) < 8:
-            password_error = 'New password must be at least 8 characters.'
-        elif new_password != confirm_password:
-            password_error = 'New password and confirm password do not match.'
-        else:
-            request.user.set_password(new_password)
-            request.user.save()
-            update_session_auth_hash(request, request.user)
-            password_success = True
+        if form_type == 'site_details' and site_user:
+            name = request.POST.get('name', '').strip()
+            place = request.POST.get('place', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+
+            if not (name and place and email and phone):
+                details_error = 'All fields are required.'
+            elif SiteUser.objects.filter(email__iexact=email).exclude(id=site_user.id).exists():
+                details_error = 'This email is already used by another account.'
+            elif SiteUser.objects.filter(phone=phone).exclude(id=site_user.id).exists():
+                details_error = 'This phone number is already used by another account.'
+            else:
+                site_user.name = name
+                site_user.place = place
+                site_user.email = email
+                site_user.phone = phone
+                site_user.save()
+                request.session['site_user_name'] = site_user.name
+                details_success = True
+
+        elif form_type == 'site_password' and site_user:
+            old_password = request.POST.get('site_old_password', '')
+            new_password = request.POST.get('site_new_password', '')
+            confirm_password = request.POST.get('site_confirm_password', '')
+
+            if not site_user.check_password(old_password):
+                site_password_error = 'Current password is incorrect.'
+            elif len(new_password) < 8:
+                site_password_error = 'New password must be at least 8 characters.'
+            elif new_password != confirm_password:
+                site_password_error = 'New password and confirm password do not match.'
+            else:
+                site_user.set_password(new_password)
+                site_user.save()
+                site_password_success = True
+
+        elif form_type == 'admin_password':
+            old_password = request.POST.get('old_password', '')
+            new_password = request.POST.get('new_password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+
+            if not request.user.check_password(old_password):
+                password_error = 'Current password is incorrect.'
+            elif len(new_password) < 8:
+                password_error = 'New password must be at least 8 characters.'
+            elif new_password != confirm_password:
+                password_error = 'New password and confirm password do not match.'
+            else:
+                request.user.set_password(new_password)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                password_success = True
 
     return render(request, 'admin/admin_profile.html', {
+        'site_user': site_user,
+        'details_error': details_error,
+        'details_success': details_success,
+        'site_password_error': site_password_error,
+        'site_password_success': site_password_success,
         'password_error': password_error,
         'password_success': password_success,
     })
@@ -213,7 +284,11 @@ def register_user(request):
         if SiteUser.objects.filter(email=email).exists():
             messages.error(request, 'Email is already registered!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
-            
+
+        if SiteUser.objects.filter(phone=phone).exists():
+            messages.error(request, 'Phone number is already registered!')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
         user = SiteUser(name=name, place=place, email=email, phone=phone)
         user.set_password(password)
         user.save()

@@ -5,13 +5,88 @@
         <h2 class="mb-0">Profile</h2>
     </div>
 
+    {% if site_user %}
     <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
-        <h5 class="fw-bold mb-3">Account</h5>
+        <h5 class="fw-bold mb-3">Site Account Details</h5>
+        <p class="text-muted small">This is the customer-account login (name, place, email, phone) used to unlock the admin panel. It must always keep the email <strong>superadmin@123.com</strong> for admin access to keep working.</p>
+
+        {% if details_error %}
+        <div class="alert alert-danger">{{ details_error }}</div>
+        {% endif %}
+        {% if details_success %}
+        <div class="alert alert-success">Details updated successfully.</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="site_details">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Name</label>
+                <input type="text" name="name" class="form-control" value="{{ site_user.name }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Place</label>
+                <input type="text" name="place" class="form-control" value="{{ site_user.place }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <input type="email" name="email" class="form-control" value="{{ site_user.email }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Phone</label>
+                <input type="text" name="phone" class="form-control" value="{{ site_user.phone }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Details</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Site Account Password</h5>
+        <p class="text-muted small">This is the password used to log in as a customer on the main site.</p>
+
+        {% if site_password_error %}
+        <div class="alert alert-danger">{{ site_password_error }}</div>
+        {% endif %}
+        {% if site_password_success %}
+        <div class="alert alert-success">Site account password updated successfully.</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="site_password">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Old Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="site_old_password" class="form-control" required>
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">New Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="site_new_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Confirm New Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="site_confirm_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Site Password</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Admin Panel Account</h5>
         <p class="text-muted mb-0">Logged in as <strong>{{ request.user.username }}</strong></p>
     </div>
 
-    <div class="bg-white rounded shadow-sm p-4" style="max-width: 500px;">
-        <h5 class="fw-bold mb-3">Change Password</h5>
+    <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Admin Panel Password</h5>
 
         {% if password_error %}
         <div class="alert alert-danger">{{ password_error }}</div>
@@ -22,19 +97,38 @@
 
         <form method="POST">
             {% csrf_token %}
+            <input type="hidden" name="form_type" value="admin_password">
             <div class="mb-3">
                 <label class="form-label fw-bold">Old Password</label>
-                <input type="password" name="old_password" class="form-control" required>
+                <div class="pw-wrap">
+                    <input type="password" name="old_password" class="form-control" required>
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">New Password</label>
-                <input type="password" name="new_password" class="form-control" required minlength="8">
+                <div class="pw-wrap">
+                    <input type="password" name="new_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Confirm New Password</label>
-                <input type="password" name="confirm_password" class="form-control" required minlength="8">
+                <div class="pw-wrap">
+                    <input type="password" name="confirm_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Update Password</button>
+            <button type="submit" class="btn btn-primary">Update Admin Password</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded shadow-sm p-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Sessions</h5>
+        <p class="text-muted small">Force every device currently logged into the admin panel (including this one) to log in again.</p>
+        <form method="POST" action="{% url 'admin_logout_all_devices' %}" onsubmit="return confirm('Log out from all devices? You will need to log in again.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">Logout From All Devices</button>
         </form>
     </div>
 </div>

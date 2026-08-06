@@ -68,6 +68,28 @@
             overflow-y: auto;
         }
 
+        .pw-wrap {
+            position: relative;
+        }
+
+        .pw-wrap input {
+            padding-right: 42px;
+        }
+
+        .pw-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            line-height: 1;
+            color: #888;
+            cursor: pointer;
+            padding: 4px;
+        }
+
         .nav-label {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -237,6 +259,18 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePasswordVisibility(btn) {
+            const input = btn.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁';
+            }
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
