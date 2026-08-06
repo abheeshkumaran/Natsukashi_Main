@@ -213,9 +213,18 @@
                 Delivered Orders
             </a>
 
+            <div class="nav-label">Account</div>
+
+            <a href="{% url 'admin_profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}">
+                Profile
+            </a>
+
         </div>
-        
+
         <div class="sidebar-footer">
+            <a href="{% url 'admin_logout' %}" class="sidebar-link text-center mb-2" style="border: 1px solid #ddd; border-radius: 8px;">
+                Logout
+            </a>
             <a href="{% url 'home' %}" class="sidebar-link text-center" style="border: 1px solid #ddd; border-radius: 8px;">
                 View Site
             </a>

@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Sum, F, Q, Value
 from django.db.models.functions import Greatest
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
 from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon
 
@@ -30,6 +31,57 @@ def home(request):
         'table_categories': table_categories,
         'all_products': all_products,
         'onam_category': onam_category,
+    })
+
+
+def admin_login(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_dashboard')
+
+    error = None
+    next_url = request.POST.get('next') or request.GET.get('next') or ''
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            return redirect(next_url or 'admin_dashboard')
+        error = 'Invalid username or password.'
+
+    return render(request, 'admin/admin_login.html', {'error': error, 'next': next_url})
+
+
+def admin_logout(request):
+    logout(request)
+    return redirect('admin_login')
+
+
+def admin_profile(request):
+    password_error = None
+    password_success = False
+
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password', '')
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        if not request.user.check_password(old_password):
+            password_error = 'Current password is incorrect.'
+        elif len(new_password) < 8:
+            password_error = 'New password must be at least 8 characters.'
+        elif new_password != confirm_password:
+            password_error = 'New password and confirm password do not match.'
+        else:
+            request.user.set_password(new_password)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            password_success = True
+
+    return render(request, 'admin/admin_profile.html', {
+        'password_error': password_error,
+        'password_success': password_success,
     })
 
 

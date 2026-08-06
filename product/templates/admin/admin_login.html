@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Natsukashii</title>
+    <link rel="icon" type="image/png" href="{% static 'images/Natsukashii_logo.png' %}">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #7A1F1F 0%, #a6613b 50%, #2E2E2E 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 14s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Blurred decorative backdrop behind the login card */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: -10%;
+            backdrop-filter: blur(60px);
+            -webkit-backdrop-filter: blur(60px);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 380px;
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .login-logo {
+            display: block;
+            max-width: 160px;
+            margin: 0 auto 20px;
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #7A1F1F;
+            margin-bottom: 6px;
+        }
+
+        .login-sub {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            display: block;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 18px;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #B8863B;
+            box-shadow: 0 0 0 3px rgba(184, 134, 59, 0.15);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: #7A1F1F;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: #5c1717;
+        }
+
+        .error-msg {
+            background: #fdecea;
+            color: #c0392b;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashii" class="login-logo">
+        <div class="login-title">Admin Login</div>
+        <div class="login-sub">Sign in to manage Natsukashii</div>
+
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required autofocus>
+
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required>
+
+            <button type="submit" class="login-btn">Log In</button>
+        </form>
+    </div>
+</body>
+</html>
