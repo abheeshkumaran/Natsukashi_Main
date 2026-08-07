@@ -1336,10 +1336,14 @@ def manage_updations(request):
     pending_tasks = UpdationTask.objects.filter(status='Pending').order_by('-created_at')
     updated_tasks = UpdationTask.objects.filter(status='Updated').order_by('-created_at')
     completed_tasks = UpdationTask.objects.filter(status='Completed').order_by('-created_at')
+    high_priority_tasks = UpdationTask.objects.filter(priority='High').order_by('-created_at')
+    low_priority_tasks = UpdationTask.objects.filter(priority='Low').order_by('-created_at')
     return render(request, 'admin/manage_updations.html', {
         'pending_tasks': pending_tasks,
         'updated_tasks': updated_tasks,
-        'completed_tasks': completed_tasks
+        'completed_tasks': completed_tasks,
+        'high_priority_tasks': high_priority_tasks,
+        'low_priority_tasks': low_priority_tasks,
     })
 
 def add_updation(request):
@@ -1361,6 +1365,16 @@ def update_updation_status(request, pk):
             task.status = new_status
             task.save()
             messages.success(request, f'Updation status updated to {new_status}.')
+    return redirect('manage_updations')
+
+def update_updation_priority(request, pk):
+    task = get_object_or_404(UpdationTask, pk=pk)
+    if request.method == 'POST':
+        new_priority = request.POST.get('priority')
+        if new_priority in ['High', 'Low']:
+            task.priority = new_priority
+            task.save()
+            messages.success(request, f'Updation marked as {new_priority} Priority.')
     return redirect('manage_updations')
 
 

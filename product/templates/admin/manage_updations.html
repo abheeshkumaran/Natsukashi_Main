@@ -15,10 +15,12 @@
         {% endfor %}
     {% endif %}
 
-    <div class="btn-group mb-4" role="group" aria-label="Updation status filter">
-        <button type="button" class="btn btn-outline-primary active" data-target="pending-panel">Updations (Pending)</button>
-        <button type="button" class="btn btn-outline-primary" data-target="updated-panel">Updated</button>
-        <button type="button" class="btn btn-outline-primary" data-target="completed-panel">Updation Completed</button>
+    <div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Updation status filter">
+        <button type="button" class="btn btn-outline-secondary updation-filter-btn active" data-target="pending-panel">Updations (Pending)</button>
+        <button type="button" class="btn btn-outline-info updation-filter-btn" data-target="updated-panel">Updated</button>
+        <button type="button" class="btn btn-outline-success updation-filter-btn" data-target="completed-panel">Updation Completed</button>
+        <button type="button" class="btn btn-outline-danger updation-filter-btn" data-target="high-priority-panel">High Priority</button>
+        <button type="button" class="btn btn-outline-warning updation-filter-btn" data-target="low-priority-panel">Low Priority</button>
     </div>
 
     <!-- Pending Tasks -->
@@ -32,6 +34,7 @@
                         <th>Raised By</th>
                         <th>Description</th>
                         <th>Image</th>
+                        <th>Priority</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -49,16 +52,37 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form action="{% url 'update_updation_status' task.id %}" method="POST">
-                                {% csrf_token %}
-                                <input type="hidden" name="status" value="Updated">
-                                <button type="submit" class="btn btn-sm btn-info">Mark Updated</button>
-                            </form>
+                            {% if task.priority == 'High' %}
+                                <span class="badge bg-danger">High</span>
+                            {% elif task.priority == 'Low' %}
+                                <span class="badge bg-warning text-dark">Low</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="Updated">
+                                    <button type="submit" class="btn btn-sm btn-info">Mark Updated</button>
+                                </form>
+                                <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="priority" value="High">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">High Priority</button>
+                                </form>
+                                <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="priority" value="Low">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">Low Priority</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No pending updations.</td>
+                        <td colspan="6" class="text-center py-4 text-muted">No pending updations.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -94,16 +118,18 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="status" value="Completed">
-                                <button type="submit" class="btn btn-sm btn-success">Mark Completed</button>
-                            </form>
-                            <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="status" value="Pending">
-                                <button type="submit" class="btn btn-sm btn-warning">Revert to Pending</button>
-                            </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="Completed">
+                                    <button type="submit" class="btn btn-sm btn-success">Mark Completed</button>
+                                </form>
+                                <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="Pending">
+                                    <button type="submit" class="btn btn-sm btn-secondary">Revert to Pending</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
@@ -147,7 +173,7 @@
                             <form action="{% url 'update_updation_status' task.id %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="status" value="Pending">
-                                <button type="submit" class="btn btn-sm btn-warning">Reopen as Pending</button>
+                                <button type="submit" class="btn btn-sm btn-secondary">Reopen as Pending</button>
                             </form>
                         </td>
                     </tr>
@@ -160,11 +186,112 @@
             </table>
         </div>
     </div>
+
+    <!-- High Priority Tasks -->
+    <div id="high-priority-panel" class="updation-panel" style="display: none;">
+        <h4 class="mb-3">High Priority</h4>
+        <div class="table-responsive bg-white rounded shadow-sm p-4 mb-5">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Issue Related</th>
+                        <th>Raised By</th>
+                        <th>Description</th>
+                        <th>Image</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in high_priority_tasks %}
+                    <tr>
+                        <td><strong>{{ task.issue_related }}</strong></td>
+                        <td>{{ task.raised_by }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>
+                            {% if task.related_image %}
+                                <a href="{{ task.related_image.url }}" target="_blank">View Image</a>
+                            {% else %}
+                                <span class="text-muted">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ task.status }}</span></td>
+                        <td>
+                            <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="priority" value="Low">
+                                <button type="submit" class="btn btn-sm btn-outline-warning">Move to Low Priority</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No high priority updations.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Low Priority Tasks -->
+    <div id="low-priority-panel" class="updation-panel" style="display: none;">
+        <h4 class="mb-3">Low Priority</h4>
+        <div class="table-responsive bg-white rounded shadow-sm p-4">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Issue Related</th>
+                        <th>Raised By</th>
+                        <th>Description</th>
+                        <th>Image</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in low_priority_tasks %}
+                    <tr>
+                        <td><strong>{{ task.issue_related }}</strong></td>
+                        <td>{{ task.raised_by }}</td>
+                        <td>{{ task.description }}</td>
+                        <td>
+                            {% if task.related_image %}
+                                <a href="{{ task.related_image.url }}" target="_blank">View Image</a>
+                            {% else %}
+                                <span class="text-muted">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ task.status }}</span></td>
+                        <td>
+                            <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="priority" value="High">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Move to High Priority</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No low priority updations.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<style>
+    .updation-filter-btn {
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const filterBtns = document.querySelectorAll('.btn-group[aria-label="Updation status filter"] button');
+        const filterBtns = document.querySelectorAll('.updation-filter-btn');
         const panels = document.querySelectorAll('.updation-panel');
 
         filterBtns.forEach(function (btn) {

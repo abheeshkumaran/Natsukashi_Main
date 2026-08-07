@@ -255,11 +255,16 @@ class UpdationTask(models.Model):
         ('Updated', 'Updated'),
         ('Completed', 'Completed'),
     )
+    PRIORITY_CHOICES = (
+        ('High', 'High Priority'),
+        ('Low', 'Low Priority'),
+    )
     issue_related = models.CharField(max_length=255)
     raised_by = models.CharField(max_length=100)
     related_image = CloudinaryField('image', blank=True, null=True)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     purchase_type = models.CharField(max_length=50, default='Online')
     payment_type = models.CharField(max_length=50, blank=True, null=True)
