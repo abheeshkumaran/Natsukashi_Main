@@ -163,12 +163,15 @@ def admin_dashboard(request):
     orders_pending = Order.objects.filter(status__icontains='pending').count()
     orders_completed = Order.objects.filter(status__icontains='deliverd').count()
 
+    recent_completed_orders = Order.objects.filter(status__icontains='deliverd').prefetch_related('items').order_by('-created_at')[:10]
+
     context = {
         'total_product_stock': total_product_stock,
         'total_product_list': total_product_list,
         'total_orders': total_orders,
         'orders_pending': orders_pending,
         'orders_completed': orders_completed,
+        'recent_completed_orders': recent_completed_orders,
     }
     return render(request, 'admin/admin.html', context)
 

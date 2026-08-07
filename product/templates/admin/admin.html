@@ -198,7 +198,18 @@ th{
             </thead>
 
             <tbody>
-                <!-- recent order purchased  -->
+                {% for order in recent_completed_orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.full_name }}</td>
+                    <td>{% for item in order.items.all %}{{ item.product_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                    <td>{{ order.status }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #999;">No completed orders yet.</td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
