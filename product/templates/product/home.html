@@ -28,6 +28,11 @@
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
 
+            <div class="nav-search-wrap">
+                <i class="fa-solid fa-magnifying-glass nav-search-icon"></i>
+                <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Search products..." autocomplete="off">
+            </div>
+
             <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -41,6 +46,8 @@
                             Collections
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="collectionsDropdown">
+                            <li><a class="dropdown-item fw-semibold" href="{% url 'all_collections' %}">All Collections</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             {% for cat in nav_categories %}
                             <li><a class="dropdown-item" href="{% url 'category_products' cat.id %}">{{ cat.name }}</a></li>
                             {% empty %}
@@ -90,6 +97,21 @@
             </div>
         </div>
     </nav>
+
+    <!-- Search Results Modal -->
+    <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" id="searchResultsModalContent">
+                <div class="modal-header">
+                    <h5 class="modal-title">Search Results <span id="searchResultsQueryLabel" class="text-muted"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="searchResultsList" class="search-results-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero -->
 
@@ -374,6 +396,85 @@
                     requestAnimationFrame(onScroll);
                     ticking = true;
                 }
+            });
+        })();
+
+        // Navbar product search: debounced fetch to /search/, results shown
+        // in a modal, with a brief highlight on both the search bar and the
+        // modal so it's obvious the results just refreshed.
+        (function () {
+            const input = document.getElementById('navSearchInput');
+            const modalEl = document.getElementById('searchResultsModal');
+            const modalContent = document.getElementById('searchResultsModalContent');
+            const listEl = document.getElementById('searchResultsList');
+            const queryLabel = document.getElementById('searchResultsQueryLabel');
+            if (!input || !modalEl) return;
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            let debounceTimer = null;
+            let requestSeq = 0;
+
+            function highlight(el) {
+                el.classList.remove('search-highlight');
+                // Force reflow so the animation restarts on repeated searches.
+                void el.offsetWidth;
+                el.classList.add('search-highlight');
+            }
+
+            function renderResults(results, query) {
+                queryLabel.textContent = query ? `for "${query}"` : '';
+
+                if (!results.length) {
+                    listEl.innerHTML = '<p class="text-muted text-center py-4 mb-0">No products found.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = results.map((item) => {
+                    const priceText = typeof formatPrice === 'function' ? formatPrice(item.price) : `₹${item.price}`;
+                    const stockBadge = item.in_stock
+                        ? ''
+                        : '<span class="badge bg-secondary ms-2">Out of stock</span>';
+                    return `
+                        <div class="search-result-item" onclick="selectSearchResult(${item.id})">
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="search-result-info">
+                                <div class="search-result-name">${item.name}${stockBadge}</div>
+                                <div class="search-result-price">${priceText}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            window.selectSearchResult = function (productId) {
+                modal.hide();
+                if (typeof openProductModal === 'function') {
+                    openProductModal('product', productId);
+                }
+            };
+
+            input.addEventListener('input', function () {
+                const query = input.value.trim();
+                clearTimeout(debounceTimer);
+
+                if (!query) {
+                    modal.hide();
+                    return;
+                }
+
+                debounceTimer = setTimeout(function () {
+                    const seq = ++requestSeq;
+                    fetch(`/search/?q=${encodeURIComponent(query)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (seq !== requestSeq) return; // a newer keystroke already fired
+                            renderResults(data.results || [], query);
+                            if (!modalEl.classList.contains('show')) modal.show();
+                            highlight(modalContent);
+                            highlight(input);
+                        })
+                        .catch(() => {});
+                }, 300);
             });
         })();
     </script>

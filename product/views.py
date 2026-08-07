@@ -100,6 +100,32 @@ def home(request):
     })
 
 
+def product_search(request):
+    """Searches products by name/description, matching every word in the
+    query (so "red saree" only returns products containing both words,
+    in any order/field)."""
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'success': True, 'results': []})
+
+    words = query.split()
+    filters = Q()
+    for word in words:
+        filters &= (Q(collection_name__icontains=word) | Q(description__icontains=word))
+
+    products = Product.objects.filter(filters).prefetch_related('images').distinct().order_by('collection_name')[:20]
+
+    results = [{
+        'id': p.id,
+        'name': p.collection_name,
+        'price': float(p.price),
+        'image': p.first_image_url,
+        'in_stock': p.stock_available and p.quantity > 0,
+    } for p in products]
+
+    return JsonResponse({'success': True, 'results': results})
+
+
 def admin_login(request):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_dashboard')
