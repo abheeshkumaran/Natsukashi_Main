@@ -16,11 +16,21 @@
     {% endif %}
 
     <div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Updation status filter">
-        <button type="button" class="btn btn-outline-secondary updation-filter-btn active" data-target="pending-panel">Updations (Pending)</button>
-        <button type="button" class="btn btn-outline-info updation-filter-btn" data-target="updated-panel">Updated</button>
-        <button type="button" class="btn btn-outline-success updation-filter-btn" data-target="completed-panel">Updation Completed</button>
-        <button type="button" class="btn btn-outline-danger updation-filter-btn" data-target="high-priority-panel">High Priority</button>
-        <button type="button" class="btn btn-outline-warning updation-filter-btn" data-target="low-priority-panel">Low Priority</button>
+        <button type="button" class="btn btn-outline-secondary updation-filter-btn active" data-target="pending-panel">
+            Updations (Pending) <span class="badge bg-secondary rounded-pill">{{ pending_tasks|length }}</span>
+        </button>
+        <button type="button" class="btn btn-outline-info updation-filter-btn" data-target="updated-panel">
+            Updated <span class="badge bg-info rounded-pill">{{ updated_tasks|length }}</span>
+        </button>
+        <button type="button" class="btn btn-outline-success updation-filter-btn" data-target="completed-panel">
+            Updation Completed <span class="badge bg-success rounded-pill">{{ completed_tasks|length }}</span>
+        </button>
+        <button type="button" class="btn btn-outline-danger updation-filter-btn" data-target="high-priority-panel">
+            High Priority <span class="badge bg-danger rounded-pill">{{ high_priority_tasks|length }}</span>
+        </button>
+        <button type="button" class="btn btn-outline-warning updation-filter-btn" data-target="low-priority-panel">
+            Low Priority <span class="badge bg-warning text-dark rounded-pill">{{ low_priority_tasks|length }}</span>
+        </button>
     </div>
 
     <!-- Pending Tasks -->
@@ -217,11 +227,20 @@
                         </td>
                         <td><span class="badge bg-secondary">{{ task.status }}</span></td>
                         <td>
-                            <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="priority" value="Low">
-                                <button type="submit" class="btn btn-sm btn-outline-warning">Move to Low Priority</button>
-                            </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if task.status == 'Pending' %}
+                                <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="Updated">
+                                    <button type="submit" class="btn btn-sm btn-info">Mark Updated</button>
+                                </form>
+                                {% endif %}
+                                <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="priority" value="Low">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">Move to Low Priority</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
@@ -264,11 +283,20 @@
                         </td>
                         <td><span class="badge bg-secondary">{{ task.status }}</span></td>
                         <td>
-                            <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="priority" value="High">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Move to High Priority</button>
-                            </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if task.status == 'Pending' %}
+                                <form action="{% url 'update_updation_status' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="Updated">
+                                    <button type="submit" class="btn btn-sm btn-info">Mark Updated</button>
+                                </form>
+                                {% endif %}
+                                <form action="{% url 'update_updation_priority' task.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="priority" value="High">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Move to High Priority</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
