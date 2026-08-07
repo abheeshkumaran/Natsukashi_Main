@@ -20,6 +20,72 @@ from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem,
 def get_razorpay_client():
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
+
+def send_order_confirmation_email(order, cart_items, coupon_code, coupon_discount):
+    """Emails a full order summary to the store's own inbox after a payment
+    is confirmed. Failures here must never break the checkout response, since
+    the order/payment has already succeeded by the time this runs."""
+    from django.core.mail import send_mail
+
+    lines = [
+        f"New order placed - Order #{order.id}",
+        "",
+        f"Order date: {order.created_at.strftime('%d %b %Y, %I:%M %p')}",
+        f"Purchase type: {order.purchase_type}",
+        f"Payment type: {order.payment_type}",
+        f"Order status: {order.status}",
+        f"Razorpay order ID: {order.razorpay_order_id}",
+        f"Razorpay payment ID: {order.razorpay_payment_id}",
+        "",
+        "Customer details",
+        "-----------------",
+        f"Name: {order.full_name}",
+        f"Email: {order.email_address}",
+        f"Mobile: {order.mobile_number}",
+        "",
+        "Shipping address",
+        "-----------------",
+        f"{order.house_flat_number}, {order.street_area}",
+        f"{order.landmark}" if order.landmark else "",
+        f"{order.city}, {order.district}, {order.state} - {order.pin_code}",
+        f"{order.country}",
+        f"Order notes: {order.order_notes}" if order.order_notes else "",
+        "",
+        "Products",
+        "-----------------",
+    ]
+
+    subtotal = 0
+    for item in cart_items:
+        name = item.get('name', 'Unknown Product')
+        item_type = item.get('type', '')
+        qty = int(item.get('qty', 1))
+        price = float(item.get('price', 0))
+        line_total = price * qty
+        subtotal += line_total
+        lines.append(f"- {name} ({item_type}) x {qty} @ Rs.{price:.2f} = Rs.{line_total:.2f}")
+
+    lines += [
+        "",
+        f"Subtotal: Rs.{subtotal:.2f}",
+    ]
+    if coupon_discount:
+        lines.append(f"Coupon applied: {coupon_code} (-Rs.{float(coupon_discount):.2f})")
+    lines.append(f"Total paid: Rs.{order.total_amount}")
+
+    body = "\n".join(line for line in lines if line is not None)
+
+    try:
+        send_mail(
+            subject=f"New Order #{order.id} - {order.full_name}",
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.ORDER_NOTIFICATION_EMAIL],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception('Failed to send order confirmation email for order #%s', order.id)
+
 # Create your views here.
 def home(request):
     categories = Category.objects.filter(show_in_collection_list=True).prefetch_related('products', 'products__images').order_by('id')
@@ -876,6 +942,8 @@ def checkout_verify_payment(request):
         UserData.objects.update_or_create(user=user, defaults=shipping)
 
     del request.session['pending_order']
+
+    send_order_confirmation_email(order, cart_items, coupon_code, coupon_discount)
 
     return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
 
