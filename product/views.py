@@ -826,6 +826,7 @@ def _wishlist_item_json(item):
         'name': product.collection_name,
         'price': float(product.price),
         'image': product.first_image_url,
+        'in_stock': product.stock_available and product.quantity > 0,
     }
 
 

@@ -109,7 +109,7 @@ function moveWishlistItemToCart(id, type) {
     }
 
     const item = getWishlist().find((i) => i.id === id && i.type === type);
-    if (!item) return;
+    if (!item || item.in_stock === false) return;
 
     const addPromise = (typeof cartApiCall === 'function' && !getCart().some((i) => i.id === id && i.type === type))
         ? cartApiCall('/cart/add/', { product_id: id }).then(applyCartResponse)
@@ -178,8 +178,11 @@ function renderWishlistDrawer() {
                     <span class="item-price">${priceText}</span>
                 </div>
                 <div class="item-actions">
-                    <a href="javascript:void(0)" onclick="moveWishlistItemToCart('${item.id}','${item.type}')">MOVE TO CART</a>
-                    <a href="javascript:void(0)" onclick="removeFromWishlist('${item.id}','${item.type}')">REMOVE</a>
+                    ${item.in_stock === false
+                        ? '<span class="item-action-btn item-action-outofstock">Out of Stock</span>'
+                        : `<a href="javascript:void(0)" class="item-action-btn item-action-move" onclick="moveWishlistItemToCart('${item.id}','${item.type}')">MOVE TO CART</a>`
+                    }
+                    <a href="javascript:void(0)" class="item-action-btn item-action-remove" onclick="removeFromWishlist('${item.id}','${item.type}')">REMOVE</a>
                 </div>
             </div>
         </div>

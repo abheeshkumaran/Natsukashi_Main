@@ -257,6 +257,57 @@
         text-decoration: underline;
     }
 
+    /* Wishlist drawer action buttons: bordered/padded pills instead of bare
+       text links, with a visible gap so "Move to Cart" and "Remove" read as
+       two distinct actions rather than one run-on line. */
+    .item-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .item-action-btn {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: .75rem;
+        letter-spacing: .5px;
+        text-decoration: none !important;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        border: 1.5px solid transparent;
+    }
+
+    .item-action-move {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .item-action-move:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    .item-action-remove {
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .item-action-remove:hover {
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border-color: var(--hover-gold);
+    }
+
+    .item-action-outofstock {
+        color: #999;
+        border-color: var(--border-color);
+        background: var(--accent-color);
+        cursor: not-allowed;
+    }
+
     /* Section 2: price details */
 
     .cart-drawer-summary {
