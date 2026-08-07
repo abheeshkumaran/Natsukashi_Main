@@ -1,29 +1,87 @@
 const FAKE_MRP_MARKUP = 500;
 
-function getCartKey() {
-    return (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID) 
-        ? 'natsukashi_cart_' + window.SITE_USER_ID 
-        : null;
+// The cart now lives server-side (per account), so every browser/device the
+// same user logs into sees the same cart. `cartCache` is just an in-memory
+// mirror of the server state used for synchronous rendering; it's kept in
+// sync via refreshCart() and every mutating call below.
+let cartCache = [];
+
+function getCsrfToken() {
+    const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+function cartApiCall(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams(data || {}),
+    }).then((res) => res.json());
 }
 
 function getCart() {
-    const key = getCartKey();
-    if (!key) return [];
-    const cart = JSON.parse(localStorage.getItem(key) || '[]');
-    // Backfill items saved by an older version of the cart that stored an
-    // "images" array + "imgIndex" instead of a single "image" field.
-    cart.forEach((item) => {
-        if (!item.image && Array.isArray(item.images)) {
-            item.image = item.images[item.imgIndex || 0] || item.images[0];
-        }
-    });
-    return cart;
+    return cartCache;
 }
 
-function saveCart(cart) {
-    const key = getCartKey();
-    if (!key) return;
-    localStorage.setItem(key, JSON.stringify(cart));
+function applyCartResponse(data) {
+    if (data && data.success && Array.isArray(data.items)) {
+        cartCache = data.items;
+    }
+    renderAllCartUI();
+}
+
+function refreshCart() {
+    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
+        cartCache = [];
+        renderAllCartUI();
+        return Promise.resolve();
+    }
+    return fetch('/cart/list/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then((res) => res.json())
+        .then(applyCartResponse)
+        .catch(() => {
+            cartCache = [];
+            renderAllCartUI();
+        });
+}
+
+// One-time migration: carries over any cart items saved locally by an older,
+// browser-only version of the cart so switching to server-sync doesn't wipe
+// what someone already had queued up.
+function migrateLocalCartIfNeeded() {
+    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
+        return Promise.resolve();
+    }
+    const legacyKey = 'natsukashi_cart_' + window.SITE_USER_ID;
+    const migratedKey = 'natsukashi_cart_migrated_' + window.SITE_USER_ID;
+    if (localStorage.getItem(migratedKey)) {
+        return Promise.resolve();
+    }
+    const raw = localStorage.getItem(legacyKey);
+    localStorage.setItem(migratedKey, '1');
+    if (!raw) {
+        return Promise.resolve();
+    }
+    let legacyItems = [];
+    try {
+        legacyItems = JSON.parse(raw);
+    } catch (e) {
+        legacyItems = [];
+    }
+    if (!legacyItems.length) {
+        return Promise.resolve();
+    }
+    return cartApiCall('/cart/merge/', { items: JSON.stringify(legacyItems) }).then((data) => {
+        applyCartResponse(data);
+        localStorage.removeItem(legacyKey);
+    });
+}
+
+function renderAllCartUI() {
     updateCartBadge();
     renderCartDrawer();
     syncAddToCartButtons();
@@ -66,8 +124,7 @@ function addToCart(btn) {
         }
     }
 
-    const cart = getCart();
-    const existing = cart.find((item) => item.id === btn.dataset.id && item.type === btn.dataset.type);
+    const existing = getCart().find((item) => item.id === btn.dataset.id && item.type === btn.dataset.type);
     if (existing) {
         btn.disabled = false;
         btn.textContent = 'Go to Cart';
@@ -76,37 +133,25 @@ function addToCart(btn) {
         return;
     }
 
-    const newItem = {
-        id: btn.dataset.id,
-        type: btn.dataset.type,
-        name: btn.dataset.name,
-        price: parseFloat(btn.dataset.price),
-        image: btn.dataset.image,
-        qty: 1,
-    };
-
-    cart.push(newItem);
-    saveCart(cart);
-    btn.disabled = false;
-    btn.textContent = 'Go to Cart';
-    // Do not open the cart drawer immediately after adding.
-    // The drawer should open only when the user clicks the "Go to Cart" button.
+    btn.disabled = true;
+    cartApiCall('/cart/add/', { product_id: btn.dataset.id }).then((data) => {
+        applyCartResponse(data);
+        btn.disabled = false;
+        btn.textContent = 'Go to Cart';
+        // Do not open the cart drawer immediately after adding.
+        // The drawer should open only when the user clicks the "Go to Cart" button.
+    });
 }
 
 function changeQty(id, type, delta) {
-    let cart = getCart();
-    const item = cart.find((i) => i.id === id && i.type === type);
+    const item = getCart().find((i) => i.id === id && i.type === type);
     if (!item) return;
-    item.qty += delta;
-    if (item.qty <= 0) {
-        cart = cart.filter((i) => !(i.id === id && i.type === type));
-    }
-    saveCart(cart);
+    const newQty = item.qty + delta;
+    cartApiCall('/cart/update/', { product_id: id, qty: newQty }).then(applyCartResponse);
 }
 
 function removeFromCart(id, type) {
-    const cart = getCart().filter((i) => !(i.id === id && i.type === type));
-    saveCart(cart);
+    cartApiCall('/cart/remove/', { product_id: id }).then(applyCartResponse);
 }
 
 function formatPrice(amount) {
@@ -257,10 +302,7 @@ function renderCartPage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateCartBadge();
-    renderCartDrawer();
-    syncAddToCartButtons();
-    renderCartPage();
+    migrateLocalCartIfNeeded().then(refreshCart);
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeCartDrawer();

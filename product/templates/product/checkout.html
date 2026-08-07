@@ -297,10 +297,7 @@
             const code = couponCodeInput.value.trim();
             if (!code) return;
 
-            const key = (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID)
-                ? 'natsukashi_cart_' + window.SITE_USER_ID
-                : null;
-            const cartDataStr = key ? (localStorage.getItem(key) || '[]') : '[]';
+            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
 
             fetch("{% url 'apply_coupon' %}", {
                 method: 'POST',
@@ -353,11 +350,7 @@
         checkoutForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const key = (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID)
-                ? 'natsukashi_cart_' + window.SITE_USER_ID
-                : null;
-
-            const cartDataStr = key ? (localStorage.getItem(key) || '[]') : '[]';
+            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
             document.getElementById('cartDataInput').value = cartDataStr;
 
             let cartItems = [];
@@ -387,10 +380,7 @@
             setProcessing(true);
             hidePaymentError();
 
-            const key = (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID)
-                ? 'natsukashi_cart_' + window.SITE_USER_ID
-                : null;
-            const cartDataStr = key ? (localStorage.getItem(key) || '[]') : '[]';
+            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
 
             const formData = new FormData(checkoutForm);
             formData.set('cart_data', cartDataStr);

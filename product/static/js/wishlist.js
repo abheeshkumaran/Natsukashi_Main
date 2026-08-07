@@ -1,19 +1,79 @@
-function getWishlistKey() {
-    return (typeof window.SITE_USER_ID !== 'undefined' && window.SITE_USER_ID) 
-        ? 'natsukashi_wishlist_' + window.SITE_USER_ID 
-        : null;
+// The wishlist now lives server-side (per account), so every browser/device
+// the same user logs into sees the same wishlist. `wishlistCache` mirrors the
+// server state for synchronous rendering.
+let wishlistCache = [];
+
+function wishlistApiCall(url, data) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': typeof getCsrfToken === 'function' ? getCsrfToken() : '',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams(data || {}),
+    }).then((res) => res.json());
 }
 
 function getWishlist() {
-    const key = getWishlistKey();
-    if (!key) return [];
-    return JSON.parse(localStorage.getItem(key) || '[]');
+    return wishlistCache;
 }
 
-function saveWishlist(list) {
-    const key = getWishlistKey();
-    if (!key) return;
-    localStorage.setItem(key, JSON.stringify(list));
+function applyWishlistResponse(data) {
+    if (data && data.success && Array.isArray(data.items)) {
+        wishlistCache = data.items;
+    }
+    renderAllWishlistUI();
+}
+
+function refreshWishlist() {
+    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
+        wishlistCache = [];
+        renderAllWishlistUI();
+        return Promise.resolve();
+    }
+    return fetch('/wishlist/list/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then((res) => res.json())
+        .then(applyWishlistResponse)
+        .catch(() => {
+            wishlistCache = [];
+            renderAllWishlistUI();
+        });
+}
+
+// One-time migration: carries over any wishlist items saved locally by an
+// older, browser-only version so switching to server-sync doesn't wipe what
+// someone already had saved.
+function migrateLocalWishlistIfNeeded() {
+    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
+        return Promise.resolve();
+    }
+    const legacyKey = 'natsukashi_wishlist_' + window.SITE_USER_ID;
+    const migratedKey = 'natsukashi_wishlist_migrated_' + window.SITE_USER_ID;
+    if (localStorage.getItem(migratedKey)) {
+        return Promise.resolve();
+    }
+    const raw = localStorage.getItem(legacyKey);
+    localStorage.setItem(migratedKey, '1');
+    if (!raw) {
+        return Promise.resolve();
+    }
+    let legacyItems = [];
+    try {
+        legacyItems = JSON.parse(raw);
+    } catch (e) {
+        legacyItems = [];
+    }
+    if (!legacyItems.length) {
+        return Promise.resolve();
+    }
+    return wishlistApiCall('/wishlist/merge/', { items: JSON.stringify(legacyItems) }).then((data) => {
+        applyWishlistResponse(data);
+        localStorage.removeItem(legacyKey);
+    });
+}
+
+function renderAllWishlistUI() {
     syncWishlistButtons();
     updateWishlistBadge();
     renderWishlistDrawer();
@@ -31,21 +91,11 @@ function toggleWishlist(btn) {
         }
     }
 
-    const { id, type, name, price, image } = btn.dataset;
-    let list = getWishlist();
-    const exists = list.some((item) => item.id === id && item.type === type);
-
-    if (exists) {
-        list = list.filter((item) => !(item.id === id && item.type === type));
-    } else {
-        list.push({ id, type, name, price: parseFloat(price), image });
-    }
-
-    saveWishlist(list);
+    wishlistApiCall('/wishlist/toggle/', { product_id: btn.dataset.id }).then(applyWishlistResponse);
 }
 
 function removeFromWishlist(id, type) {
-    saveWishlist(getWishlist().filter((item) => !(item.id === id && item.type === type)));
+    wishlistApiCall('/wishlist/remove/', { product_id: id }).then(applyWishlistResponse);
 }
 
 // Wishlisted item -> cart, using cart.js's own storage helpers (loaded on
@@ -61,16 +111,16 @@ function moveWishlistItemToCart(id, type) {
     const item = getWishlist().find((i) => i.id === id && i.type === type);
     if (!item) return;
 
-    if (typeof getCart === 'function' && typeof saveCart === 'function') {
-        const cart = getCart();
-        if (!cart.some((i) => i.id === id && i.type === type)) {
-            cart.push({ id: item.id, type: item.type, name: item.name, price: item.price, image: item.image, qty: 1 });
-            saveCart(cart);
-        }
-    }
+    const addPromise = (typeof cartApiCall === 'function' && !getCart().some((i) => i.id === id && i.type === type))
+        ? cartApiCall('/cart/add/', { product_id: id }).then(applyCartResponse)
+        : Promise.resolve();
 
-    saveWishlist(getWishlist().filter((i) => !(i.id === id && i.type === type)));
-    if (typeof openCartDrawer === 'function') openCartDrawer();
+    addPromise
+        .then(() => wishlistApiCall('/wishlist/remove/', { product_id: id }))
+        .then(applyWishlistResponse)
+        .then(() => {
+            if (typeof openCartDrawer === 'function') openCartDrawer();
+        });
 }
 
 // Keeps every heart button on the page in sync with the wishlist. Called on
@@ -158,9 +208,7 @@ function closeWishlistDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    syncWishlistButtons();
-    updateWishlistBadge();
-    renderWishlistDrawer();
+    migrateLocalWishlistIfNeeded().then(refreshWishlist);
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeWishlistDrawer();

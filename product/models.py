@@ -218,9 +218,41 @@ class ProductCoupon(models.Model):
         return f'₹{self.min_order_amount}'
 
 
+class CartItem(models.Model):
+    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='cart_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cart_items')
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'cart_items'
+        verbose_name = 'Cart Item'
+        verbose_name_plural = 'Cart Items'
+        unique_together = ('user', 'product')
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.collection_name} ({self.user.email})"
+
+
+class WishlistItem(models.Model):
+    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='wishlist_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlist_items')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wishlist_items'
+        verbose_name = 'Wishlist Item'
+        verbose_name_plural = 'Wishlist Items'
+        unique_together = ('user', 'product')
+
+    def __str__(self):
+        return f"{self.product.collection_name} ({self.user.email})"
+
+
 class UpdationTask(models.Model):
     STATUS_CHOICES = (
         ('Pending', 'Pending'),
+        ('Updated', 'Updated'),
         ('Completed', 'Completed'),
     )
     issue_related = models.CharField(max_length=255)

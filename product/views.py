@@ -14,7 +14,7 @@ from django.db.models.functions import Greatest
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem
 
 
 def get_razorpay_client():
@@ -780,6 +780,189 @@ def checkout(request):
     return render(request, 'product/checkout.html', context)
 
 
+def _cart_item_json(item):
+    product = item.product
+    return {
+        'id': str(product.id),
+        'type': 'product',
+        'name': product.collection_name,
+        'price': float(product.price),
+        'image': product.first_image_url,
+        'qty': item.quantity,
+    }
+
+
+def _wishlist_item_json(item):
+    product = item.product
+    return {
+        'id': str(product.id),
+        'type': 'product',
+        'name': product.collection_name,
+        'price': float(product.price),
+        'image': product.first_image_url,
+    }
+
+
+def cart_list(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': True, 'items': []})
+    items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def cart_add(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    product = get_object_or_404(Product, pk=product_id)
+    CartItem.objects.get_or_create(user_id=user_id, product=product, defaults={'quantity': 1})
+
+    items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def cart_update(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    try:
+        qty = int(request.POST.get('qty', 1))
+    except ValueError:
+        qty = 1
+
+    if qty <= 0:
+        CartItem.objects.filter(user_id=user_id, product_id=product_id).delete()
+    else:
+        CartItem.objects.filter(user_id=user_id, product_id=product_id).update(quantity=qty)
+
+    items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def cart_remove(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    CartItem.objects.filter(user_id=user_id, product_id=product_id).delete()
+
+    items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def cart_merge(request):
+    """Merges a browser's locally-cached cart (from before server-side sync,
+    or an offline queue) into the account's server-side cart, without
+    dropping items already saved server-side from another browser."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    try:
+        incoming = json.loads(request.POST.get('items', '[]'))
+    except json.JSONDecodeError:
+        incoming = []
+
+    for entry in incoming:
+        product_id = entry.get('id')
+        try:
+            qty = int(entry.get('qty', 1))
+        except (TypeError, ValueError):
+            qty = 1
+        if not product_id or qty <= 0:
+            continue
+        if not Product.objects.filter(pk=product_id).exists():
+            continue
+
+        cart_item, created = CartItem.objects.get_or_create(
+            user_id=user_id, product_id=product_id, defaults={'quantity': qty}
+        )
+        if not created and qty > cart_item.quantity:
+            cart_item.quantity = qty
+            cart_item.save(update_fields=['quantity'])
+
+    items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def wishlist_list(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': True, 'items': []})
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
+def wishlist_toggle(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    product = get_object_or_404(Product, pk=product_id)
+
+    existing = WishlistItem.objects.filter(user_id=user_id, product=product).first()
+    if existing:
+        existing.delete()
+    else:
+        WishlistItem.objects.create(user_id=user_id, product=product)
+
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
+def wishlist_remove(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    WishlistItem.objects.filter(user_id=user_id, product_id=product_id).delete()
+
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
+def wishlist_merge(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    try:
+        incoming = json.loads(request.POST.get('items', '[]'))
+    except json.JSONDecodeError:
+        incoming = []
+
+    for entry in incoming:
+        product_id = entry.get('id')
+        if not product_id or not Product.objects.filter(pk=product_id).exists():
+            continue
+        WishlistItem.objects.get_or_create(user_id=user_id, product_id=product_id)
+
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
 def checkout_create_payment(request):
     """Creates a Razorpay order for the current cart and stashes the pending
     order details in the session. No Order/OrderItem rows are created here -
@@ -940,6 +1123,10 @@ def checkout_verify_payment(request):
             )
 
         UserData.objects.update_or_create(user=user, defaults=shipping)
+
+        purchased_product_ids = [item.get('id') for item in cart_items if item.get('id')]
+        if purchased_product_ids:
+            CartItem.objects.filter(user=user, product_id__in=purchased_product_ids).delete()
 
     del request.session['pending_order']
 
@@ -1147,9 +1334,11 @@ def delete_product_image(request, pk):
 # Updations Tracker
 def manage_updations(request):
     pending_tasks = UpdationTask.objects.filter(status='Pending').order_by('-created_at')
+    updated_tasks = UpdationTask.objects.filter(status='Updated').order_by('-created_at')
     completed_tasks = UpdationTask.objects.filter(status='Completed').order_by('-created_at')
     return render(request, 'admin/manage_updations.html', {
         'pending_tasks': pending_tasks,
+        'updated_tasks': updated_tasks,
         'completed_tasks': completed_tasks
     })
 
@@ -1168,7 +1357,7 @@ def update_updation_status(request, pk):
     task = get_object_or_404(UpdationTask, pk=pk)
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        if new_status in ['Pending', 'Completed']:
+        if new_status in ['Pending', 'Updated', 'Completed']:
             task.status = new_status
             task.save()
             messages.success(request, f'Updation status updated to {new_status}.')
