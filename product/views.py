@@ -564,7 +564,9 @@ def category_products(request, pk):
     return render(request, 'product/category_products.html', {'category': category, 'products': products})
 
 def new_arrivals(request):
-    products = Product.objects.all().prefetch_related('images').order_by('-id')
+    from django.utils import timezone
+    cutoff = timezone.now() - datetime.timedelta(days=15)
+    products = Product.objects.filter(created_at__gte=cutoff).prefetch_related('images').order_by('-created_at')
     return render(request, 'product/new_arrivals.html', {'products': products})
 
 def all_collections(request):

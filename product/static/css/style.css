@@ -197,11 +197,61 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 }
 
 @media (max-width: 991.98px) {
+    /* Mobile: the search bar collapses down to just a tappable "lens" icon
+       sitting in the main navbar row (next to the logo/toggler), instead of
+       a full text input pushed down among the nav links. Tapping it expands
+       a full-width search field as an overlay just below the navbar. */
     .nav-search-wrap {
-        order: 3;
-        flex-basis: 100%;
-        max-width: 100%;
-        margin: 12px 0 0;
+        position: static;
+        flex: 0 0 auto;
+        max-width: none;
+        margin: 0 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-search-icon {
+        position: static;
+        pointer-events: auto;
+        cursor: pointer;
+        color: var(--text-color);
+        font-size: 1.25rem;
+        line-height: 1;
+        padding: 8px;
+    }
+
+    .nav-search-input {
+        display: none;
+    }
+
+    .nav-search-wrap.expanded {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        background: #fff;
+        padding: 12px 16px;
+        margin: 0;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        border-bottom: 2px solid var(--border-color);
+        z-index: 1035;
+    }
+
+    .nav-search-wrap.expanded .nav-search-icon {
+        position: absolute;
+        left: 30px;
+        pointer-events: none;
+        padding: 0;
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+    }
+
+    .nav-search-wrap.expanded .nav-search-input {
+        display: block;
+        width: 100%;
+        padding-left: 36px;
     }
 }
 
@@ -559,24 +609,24 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 }
 
 .product-card .card-body {
-    padding: 20px;
+    padding: 14px;
     background: #fff;
     position: relative;
     z-index: 2;
 }
 
 .product-card .card-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-family: var(--heading-font);
 }
 
 .product-card .card-text {
-    font-size: 14px;
+    font-size: 12.5px;
     color: #666;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -584,7 +634,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 }
 
 .product-price {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--primary-color);
 }
@@ -595,8 +645,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: var(--primary-color);
     font-weight: 600;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 14px;
+    padding: 5px 8px;
+    font-size: 12.5px;
     transition: all 0.3s ease;
 }
 
@@ -611,8 +661,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: #fff;
     font-weight: 600;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 14px;
+    padding: 5px 8px;
+    font-size: 12.5px;
     transition: all 0.3s ease;
 }
 
@@ -635,8 +685,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: #8a8a8a;
     font-weight: 600;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 14px;
+    padding: 5px 8px;
+    font-size: 12.5px;
     opacity: 1;
 }
 
@@ -718,7 +768,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 .horizontal-scroll-item {
     flex: 0 0 auto;
-    width: 320px;
+    width: 240px;
     scroll-snap-align: start;
 }
 
@@ -731,8 +781,44 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 }
 
 .card-grid-item {
-    flex: 0 0 320px;
-    width: 320px;
+    flex: 0 0 240px;
+    width: 240px;
+}
+
+@media (max-width: 767.98px) {
+    .horizontal-scroll-item {
+        width: 170px;
+    }
+
+    .card-grid-item {
+        flex: 0 0 170px;
+        width: 170px;
+    }
+
+    .product-card .card-body {
+        padding: 10px;
+    }
+
+    .product-card .card-title {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .product-card .card-text {
+        font-size: 11px;
+        margin-bottom: 8px;
+    }
+
+    .product-price {
+        font-size: 0.95rem;
+    }
+
+    .btn-card-outline,
+    .btn-card-filled,
+    .btn-card-outofstock {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
 }
 
 @media (max-width: 359.98px) {

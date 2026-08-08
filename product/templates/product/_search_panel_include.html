@@ -42,6 +42,24 @@
         input.addEventListener('focus', updateSearchActive);
         input.addEventListener('blur', updateSearchActive);
 
+        // Mobile: the search bar is just a lens icon until tapped, then it
+        // expands into a full-width input overlay right below the navbar.
+        const searchWrap = input.closest('.nav-search-wrap');
+        const searchIcon = searchWrap ? searchWrap.querySelector('.nav-search-icon') : null;
+        if (searchIcon && searchWrap) {
+            searchIcon.addEventListener('click', function () {
+                const expanding = !searchWrap.classList.contains('expanded');
+                searchWrap.classList.toggle('expanded', expanding);
+                if (expanding) input.focus();
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!searchWrap.classList.contains('expanded')) return;
+                if (searchWrap.contains(e.target)) return;
+                searchWrap.classList.remove('expanded');
+            }, true);
+        }
+
         function openPanel() {
             overlay.classList.add('active');
             panel.classList.add('active');
