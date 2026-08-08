@@ -400,5 +400,21 @@
                 }
             });
         });
+
+        // Also close on: tapping/clicking anywhere outside the navbar, or
+        // scrolling the page - not just on picking a link.
+        const navbarEl = navbarCollapseEl.closest('.navbar');
+
+        document.addEventListener('click', function (e) {
+            if (!navbarCollapseEl.classList.contains('show')) return;
+            if (navbarEl && navbarEl.contains(e.target)) return; // click was inside the navbar itself
+            collapseInstance.hide();
+        }, true);
+
+        window.addEventListener('scroll', function () {
+            if (navbarCollapseEl.classList.contains('show')) {
+                collapseInstance.hide();
+            }
+        }, { passive: true });
     });
 </script>
