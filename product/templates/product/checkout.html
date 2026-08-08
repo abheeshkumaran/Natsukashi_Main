@@ -11,8 +11,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
     <style>
-        .checkout-container { max-width: 800px; margin: 60px auto; padding: 0 15px; }
+        .checkout-container { max-width: 1140px; margin: 60px auto; padding: 0 15px; }
         .checkout-card { background: #fff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+
+        .checkout-summary-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); position: sticky; top: 100px; }
+        .checkout-summary-title { font-family: var(--heading-font); color: var(--primary-color); font-weight: 700; margin-bottom: 20px; }
+        .checkout-summary-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .checkout-summary-item:last-child { border-bottom: none; }
+        .checkout-summary-item img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); flex-shrink: 0; }
+        .checkout-summary-item-info { flex: 1; }
+        .checkout-summary-item-name { font-weight: 500; color: var(--text-color); margin-bottom: 2px; }
+        .checkout-summary-item-meta { font-size: 0.85rem; color: #888; }
+        .checkout-summary-item-total { font-weight: 600; color: var(--primary-color); white-space: nowrap; }
+        .checkout-summary-total { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin-top: 8px; border-top: 2px solid var(--border-color); }
+        .checkout-summary-total span:first-child { font-weight: 600; font-size: 1.05rem; }
+        .checkout-summary-total span:last-child { font-weight: 700; font-size: 1.25rem; color: var(--primary-color); }
+
+        @media (max-width: 991.98px) {
+            .checkout-summary-card { position: static; margin-bottom: 24px; }
+        }
         .checkout-title { font-family: var(--heading-font); color: var(--primary-color); font-weight: 700; margin-bottom: 30px; text-align: center; }
         .form-label { font-weight: 500; color: var(--text-color); margin-bottom: 8px; font-size: 0.95rem; }
         .form-control { border-radius: 8px; border: 1px solid var(--border-color); padding: 12px 15px; font-size: 0.95rem; }
@@ -61,6 +78,8 @@
     </nav>
 
     <div class="checkout-container">
+        <div class="row g-4">
+        <div class="col-lg-7">
         <div class="checkout-card">
             <h1 class="checkout-title">Secure Checkout</h1>
 
@@ -137,6 +156,19 @@
 
                 <button type="submit" class="btn-checkout">Confirm & Place Order</button>
             </form>
+        </div>
+        </div>
+
+        <div class="col-lg-5">
+        <div class="checkout-summary-card">
+            <h3 class="checkout-summary-title">Order Summary</h3>
+            <div id="checkoutSummaryItems"></div>
+            <div class="checkout-summary-total">
+                <span>Total</span>
+                <span id="checkoutSummaryTotal">₹0.00</span>
+            </div>
+        </div>
+        </div>
         </div>
     </div>
 
@@ -220,11 +252,72 @@
         const appliedCouponDiscountInput = document.getElementById('appliedCouponDiscountInput');
         let cartSubtotal = 0;
 
+        // "Buy Now" links here with ?buy_now=1&id=...&price=... etc. so this
+        // checkout is for that single product only - the cart itself is
+        // never touched/added to, and existing cart items must not bleed in.
+        function getCheckoutItems() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('buy_now') === '1') {
+                return [{
+                    id: params.get('id'),
+                    type: params.get('type') || 'product',
+                    name: params.get('name') || 'Product',
+                    price: parseFloat(params.get('price')) || 0,
+                    image: params.get('image') || '',
+                    qty: parseInt(params.get('qty'), 10) || 1,
+                }];
+            }
+            return typeof getCart === 'function' ? getCart() : [];
+        }
+
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
         }
+
+        // Persistent order summary on the right of the checkout form -
+        // shows the selected product(s)/qty/price up front, not just inside
+        // the final confirm modal.
+        function renderCheckoutSummary() {
+            const items = getCheckoutItems();
+            const listEl = document.getElementById('checkoutSummaryItems');
+            let total = 0;
+
+            if (!items.length) {
+                listEl.innerHTML = '<p class="text-muted mb-0">Your cart is empty.</p>';
+            } else {
+                listEl.innerHTML = items.map(function (item) {
+                    const price = parseFloat(item.price) || 0;
+                    const qty = parseInt(item.qty, 10) || 1;
+                    const lineTotal = price * qty;
+                    total += lineTotal;
+                    return `
+                        <div class="checkout-summary-item">
+                            <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.name || '')}">
+                            <div class="checkout-summary-item-info">
+                                <div class="checkout-summary-item-name">${escapeHtml(item.name || 'Product')}</div>
+                                <div class="checkout-summary-item-meta">Qty: ${qty} &times; ${fmt(price)}</div>
+                            </div>
+                            <div class="checkout-summary-item-total">${fmt(lineTotal)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('checkoutSummaryTotal').textContent = fmt(total);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('buy_now') === '1' || typeof refreshCart !== 'function') {
+                renderCheckoutSummary();
+            } else {
+                // Cart mode: wait for the synced cart to actually load before
+                // rendering, instead of racing cart.js's own fetch.
+                refreshCart().then(renderCheckoutSummary);
+            }
+        });
 
         function fmt(amount) {
             return typeof formatPrice === 'function' ? formatPrice(amount) : ('₹' + amount.toFixed(2));
@@ -297,7 +390,7 @@
             const code = couponCodeInput.value.trim();
             if (!code) return;
 
-            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
+            const cartDataStr = JSON.stringify(getCheckoutItems());
 
             fetch("{% url 'apply_coupon' %}", {
                 method: 'POST',
@@ -350,7 +443,7 @@
         checkoutForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
+            const cartDataStr = JSON.stringify(getCheckoutItems());
             document.getElementById('cartDataInput').value = cartDataStr;
 
             let cartItems = [];
@@ -380,7 +473,7 @@
             setProcessing(true);
             hidePaymentError();
 
-            const cartDataStr = JSON.stringify(typeof getCart === 'function' ? getCart() : []);
+            const cartDataStr = JSON.stringify(getCheckoutItems());
 
             const formData = new FormData(checkoutForm);
             formData.set('cart_data', cartDataStr);

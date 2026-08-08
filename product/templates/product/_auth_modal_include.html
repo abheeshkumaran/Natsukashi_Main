@@ -351,17 +351,24 @@
                     if (!window.IS_USER_LOGGED_IN) {
                         openAuthModal();
                     } else {
-                        // User is logged in, process Buy Now
+                        // Go straight to checkout with only this product - the
+                        // cart itself is never touched, so existing cart items
+                        // are not merged into this purchase.
                         const container = btn.closest('.d-flex') || btn.closest('.pm-actions') || btn.parentElement;
-                        if (container) {
-                            const addToCartBtn = container.querySelector('.add-to-cart-btn') || container.querySelector('[onclick^="addToCart"]');
-                            if (addToCartBtn && typeof addToCart === 'function') {
-                                addToCart(addToCartBtn);
-                            }
-                        }
-                        // Open cart drawer
-                        if (typeof openCartDrawer === 'function') {
-                            openCartDrawer();
+                        const addToCartBtn = container
+                            ? (container.querySelector('.add-to-cart-btn') || container.querySelector('[onclick^="addToCart"]'))
+                            : null;
+                        if (addToCartBtn && addToCartBtn.dataset.id) {
+                            const params = new URLSearchParams({
+                                buy_now: '1',
+                                id: addToCartBtn.dataset.id,
+                                type: addToCartBtn.dataset.type || 'product',
+                                name: addToCartBtn.dataset.name || '',
+                                price: addToCartBtn.dataset.price || '0',
+                                image: addToCartBtn.dataset.image || '',
+                                qty: '1',
+                            });
+                            window.location.href = "{% url 'checkout' %}?" + params.toString();
                         }
                     }
                 }
