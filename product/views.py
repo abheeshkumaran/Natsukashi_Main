@@ -1360,15 +1360,24 @@ def delete_product_image(request, pk):
 
 # Updations Tracker
 def manage_updations(request):
-    pending_tasks = UpdationTask.objects.filter(status='Pending').order_by('-created_at')
+    # Each task belongs to exactly one panel - status takes precedence over
+    # priority, so once a task moves to Updated/Completed/Invalid it drops
+    # out of the priority panels instead of showing up in both places.
+    # Priority only matters to sort a still-Pending task into the Pending /
+    # High Priority / Low Priority bucket.
+    pending_tasks = UpdationTask.objects.filter(
+        status='Pending'
+    ).filter(Q(priority__isnull=True) | Q(priority='')).order_by('-created_at')
+    high_priority_tasks = UpdationTask.objects.filter(status='Pending', priority='High').order_by('-created_at')
+    low_priority_tasks = UpdationTask.objects.filter(status='Pending', priority='Low').order_by('-created_at')
     updated_tasks = UpdationTask.objects.filter(status='Updated').order_by('-created_at')
     completed_tasks = UpdationTask.objects.filter(status='Completed').order_by('-created_at')
-    high_priority_tasks = UpdationTask.objects.filter(priority='High').order_by('-created_at')
-    low_priority_tasks = UpdationTask.objects.filter(priority='Low').order_by('-created_at')
+    invalid_tasks = UpdationTask.objects.filter(status='Invalid').order_by('-created_at')
     return render(request, 'admin/manage_updations.html', {
         'pending_tasks': pending_tasks,
         'updated_tasks': updated_tasks,
         'completed_tasks': completed_tasks,
+        'invalid_tasks': invalid_tasks,
         'high_priority_tasks': high_priority_tasks,
         'low_priority_tasks': low_priority_tasks,
     })
@@ -1388,7 +1397,7 @@ def update_updation_status(request, pk):
     task = get_object_or_404(UpdationTask, pk=pk)
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        if new_status in ['Pending', 'Updated', 'Completed']:
+        if new_status in ['Pending', 'Updated', 'Completed', 'Invalid']:
             task.status = new_status
             task.save()
             messages.success(request, f'Updation status updated to {new_status}.')

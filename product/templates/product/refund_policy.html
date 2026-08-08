@@ -304,38 +304,6 @@
             });
         }
 
-        // Hide the navbar on scroll-down, reveal it again on scroll-up.
-        (function () {
-            const navbar = document.querySelector('.navbar');
-            const menu = document.getElementById('menu');
-            if (!navbar) return;
-
-            let lastScrollY = window.scrollY;
-            let ticking = false;
-
-            function onScroll() {
-                const currentScrollY = window.scrollY;
-                const menuOpen = menu && menu.classList.contains('show');
-
-                if (menuOpen || currentScrollY <= 0 || window.navSearchActive) {
-                    navbar.classList.remove('navbar-hidden');
-                } else if (currentScrollY > lastScrollY) {
-                    navbar.classList.add('navbar-hidden');
-                } else {
-                    navbar.classList.remove('navbar-hidden');
-                }
-
-                lastScrollY = currentScrollY;
-                ticking = false;
-            }
-
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
-                    requestAnimationFrame(onScroll);
-                    ticking = true;
-                }
-            });
-        })();
     </script>
 
 </body>

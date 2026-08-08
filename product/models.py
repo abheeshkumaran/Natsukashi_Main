@@ -254,6 +254,7 @@ class UpdationTask(models.Model):
         ('Pending', 'Pending'),
         ('Updated', 'Updated'),
         ('Completed', 'Completed'),
+        ('Invalid', 'Invalid'),
     )
     PRIORITY_CHOICES = (
         ('High', 'High Priority'),

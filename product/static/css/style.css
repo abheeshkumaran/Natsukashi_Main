@@ -40,10 +40,6 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     padding-bottom: 0;
 }
 
-.navbar.navbar-hidden {
-    transform: translateY(-100%);
-}
-
 .navbar > .container,
 .navbar > .container-fluid {
     height: 100%;
