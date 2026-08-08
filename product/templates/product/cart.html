@@ -53,9 +53,9 @@
             </button>
             <div class="collapse navbar-collapse" id="menu">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'home' %}">Home</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="collectionsDropdown" role="button"
+                        <a class="nav-link dropdown-toggle{% if request.resolver_match.url_name == 'all_collections' or request.resolver_match.url_name == 'category_products' %} active{% endif %}" href="#" id="collectionsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Collections
                         </a>
@@ -69,8 +69,8 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'new_arrivals' %}">New Arrivals</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'our_story' %}">Our Story</a></li>
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'new_arrivals' %} active{% endif %}" href="{% url 'new_arrivals' %}">New Arrivals</a></li>
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'our_story' %} active{% endif %}" href="{% url 'our_story' %}">Our Story</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">

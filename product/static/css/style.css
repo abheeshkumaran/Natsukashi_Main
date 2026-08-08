@@ -77,6 +77,19 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     border-color: var(--border-color);
 }
 
+/* Persistent "you are here" state for the current page's nav link, distinct
+   from the hover-only highlight above. */
+.nav-link.active {
+    color: var(--hover-gold) !important;
+    background-color: var(--accent-color);
+    border-color: var(--hover-gold);
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    transform: scaleX(1);
+}
+
 .nav-link::after {
     content: '';
     position: absolute;
