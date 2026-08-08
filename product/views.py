@@ -185,11 +185,10 @@ def admin_profile(request):
 
         if form_type == 'site_details' and site_user:
             name = request.POST.get('name', '').strip()
-            place = request.POST.get('place', '').strip()
             email = request.POST.get('email', '').strip()
             phone = request.POST.get('phone', '').strip()
 
-            if not (name and place and email and phone):
+            if not (name and email and phone):
                 details_error = 'All fields are required.'
             elif SiteUser.objects.filter(email__iexact=email).exclude(id=site_user.id).exists():
                 details_error = 'This email is already used by another account.'
@@ -197,7 +196,6 @@ def admin_profile(request):
                 details_error = 'This phone number is already used by another account.'
             else:
                 site_user.name = name
-                site_user.place = place
                 site_user.email = email
                 site_user.phone = phone
                 site_user.save()
@@ -366,7 +364,6 @@ def list_colored_sarees(request):
 def register_user(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        place = request.POST.get('place')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         password = request.POST.get('password')
@@ -375,7 +372,7 @@ def register_user(request):
         if password != confirm_password:
             messages.error(request, 'Passwords do not match!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
-            
+
         if SiteUser.objects.filter(email=email).exists():
             messages.error(request, 'Email is already registered!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
@@ -384,7 +381,7 @@ def register_user(request):
             messages.error(request, 'Phone number is already registered!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        user = SiteUser(name=name, place=place, email=email, phone=phone)
+        user = SiteUser(name=name, email=email, phone=phone)
         user.set_password(password)
         user.save()
         
@@ -435,7 +432,7 @@ def guest_login(request):
             user.set_password(password)
             user.save(update_fields=['name', 'password'])
         else:
-            user = SiteUser(name=name, place='', email=f'guest_{phone}@guest.natsukashii.local', phone=phone)
+            user = SiteUser(name=name, email=f'guest_{phone}@guest.natsukashii.local', phone=phone)
             user.set_password(password)
             user.save()
 
@@ -603,7 +600,6 @@ def edit_user(request, pk):
     user = get_object_or_404(SiteUser, pk=pk)
     if request.method == 'POST':
         user.name = request.POST.get('name')
-        user.place = request.POST.get('place')
         user.email = request.POST.get('email')
         user.phone = request.POST.get('phone')
         user.save()
