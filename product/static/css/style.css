@@ -412,7 +412,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 @media (max-width: 767.98px) {
     .hero-content {
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 35%, rgba(255, 255, 255, 0) 65%);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.3) 35%, rgba(255, 255, 255, 0) 65%);
         padding: 28px 20px 40px;
         border-radius: 18px;
     }
@@ -843,7 +843,7 @@ footer {
     font-family: var(--heading-font);
     color: #4A3C31;
     font-size: 1.3rem;
-    margin-bottom: 25px;
+    margin-bottom: 14px;
     position: relative;
     display: inline-block;
 }
@@ -858,12 +858,17 @@ footer {
     background-color: #DCC8A5;
 }
 
+.text-center .footer-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .footer-link {
     color: #6F665E;
     text-decoration: none;
     transition: color 0.3s ease;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .footer-link:hover {
@@ -872,8 +877,8 @@ footer {
 }
 
 .footer-bottom {
-    margin-top: 50px;
-    padding-top: 25px;
+    margin-top: 24px;
+    padding-top: 16px;
     border-top: 1px solid #E8DFD1;
     text-align: center;
     font-size: 0.9rem;
