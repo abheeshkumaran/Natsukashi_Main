@@ -97,9 +97,9 @@ function syncAddToCartButtons() {
         if (!btn.dataset.defaultLabel) {
             btn.dataset.defaultLabel = btn.textContent.trim() || 'Add to Cart';
         }
-        if (btn.dataset.outOfStock === 'true') {
-            btn.disabled = true;
-            btn.textContent = btn.dataset.defaultLabel;
+        if (btn.dataset.outOfStock === 'true' || btn.disabled || !btn.dataset.id) {
+            // Already rendered as permanently disabled (out of stock) server-side,
+            // or missing the data it needs to function - never re-enable it here.
             return;
         }
         const inCart = cart.some((item) => item.id === btn.dataset.id && item.type === btn.dataset.type);

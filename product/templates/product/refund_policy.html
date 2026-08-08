@@ -27,6 +27,8 @@
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
 
+            {% include 'product/_search_bar_include.html' %}
+
             <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -90,6 +92,7 @@
         </div>
     </nav>
 
+    {% include 'product/_search_panel_include.html' %}
 
 <style>
     .policy-section {
@@ -314,7 +317,7 @@
                 const currentScrollY = window.scrollY;
                 const menuOpen = menu && menu.classList.contains('show');
 
-                if (menuOpen || currentScrollY <= 0) {
+                if (menuOpen || currentScrollY <= 0 || window.navSearchActive) {
                     navbar.classList.remove('navbar-hidden');
                 } else if (currentScrollY > lastScrollY) {
                     navbar.classList.add('navbar-hidden');

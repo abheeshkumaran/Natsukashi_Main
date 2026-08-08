@@ -26,6 +26,8 @@
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
 
+            {% include 'product/_search_bar_include.html' %}
+
             <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -88,6 +90,8 @@
             </div>
         </div>
     </nav>
+
+    {% include 'product/_search_panel_include.html' %}
 
     <section class="hero py-5" style="min-height: auto; align-items: flex-start; text-align: center; padding-top: 60px;">
         <div class="container-fluid">

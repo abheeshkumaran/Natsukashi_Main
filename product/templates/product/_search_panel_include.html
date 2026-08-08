@@ -1,0 +1,131 @@
+<!-- Search results panel: a custom overlay (deliberately NOT a Bootstrap
+     modal - Bootstrap's modal traps keyboard focus inside itself, which
+     made it impossible to keep typing in the search box once it opened).
+     Pairs with _search_bar_include.html. Include this once anywhere in the
+     page (after the navbar is fine). -->
+<div id="searchResultsOverlay" class="search-overlay"></div>
+<div id="searchResultsPanel" class="search-panel" aria-hidden="true">
+    <div class="search-panel-header">
+        <h5 class="search-panel-title">Search Results <span id="searchResultsQueryLabel" class="text-muted"></span></h5>
+        <button type="button" class="search-panel-close" id="searchResultsCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div class="search-panel-body">
+        <div id="searchResultsList" class="search-results-list"></div>
+    </div>
+</div>
+
+<script>
+    // Navbar product search: fetches from /search/ on every keyup, results
+    // shown in the custom overlay panel above. The panel opens instantly
+    // (before the network response even arrives) so there's no perceived
+    // delay, and only closes via its own X button, or automatically once
+    // the search box is emptied - never on an outside click, and never
+    // just because a product's detail popup (opened from a result) closed.
+    (function () {
+        const input = document.getElementById('navSearchInput');
+        const overlay = document.getElementById('searchResultsOverlay');
+        const panel = document.getElementById('searchResultsPanel');
+        const closeBtn = document.getElementById('searchResultsCloseBtn');
+        const listEl = document.getElementById('searchResultsList');
+        const queryLabel = document.getElementById('searchResultsQueryLabel');
+        if (!input || !panel) return;
+
+        let requestSeq = 0;
+
+        // Keep the sticky navbar from auto-hiding on scroll while the
+        // search box is focused or its results panel is open - otherwise
+        // the navbar (and the search input inside it) slides off-screen
+        // mid-search and typing appears to "stop working".
+        function updateSearchActive() {
+            window.navSearchActive = document.activeElement === input || panel.classList.contains('active');
+        }
+        input.addEventListener('focus', updateSearchActive);
+        input.addEventListener('blur', updateSearchActive);
+
+        function openPanel() {
+            overlay.classList.add('active');
+            panel.classList.add('active');
+            panel.setAttribute('aria-hidden', 'false');
+            updateSearchActive();
+        }
+
+        function closePanel() {
+            overlay.classList.remove('active');
+            panel.classList.remove('active');
+            panel.setAttribute('aria-hidden', 'true');
+            input.value = '';
+            updateSearchActive();
+        }
+
+        closeBtn.addEventListener('click', closePanel);
+        // Deliberately no click-to-close on the overlay/backdrop - the
+        // panel should only close via the X button, or an emptied search box.
+
+        function highlight(el) {
+            el.classList.remove('search-highlight');
+            // Force reflow so the animation restarts on repeated searches.
+            void el.offsetWidth;
+            el.classList.add('search-highlight');
+        }
+
+        function renderResults(results, query) {
+            queryLabel.textContent = query ? `for "${query}"` : '';
+
+            if (!results.length) {
+                listEl.innerHTML = '<p class="text-muted text-center py-4 mb-0">No products found.</p>';
+                return;
+            }
+
+            listEl.innerHTML = results.map((item) => {
+                const priceText = typeof formatPrice === 'function' ? formatPrice(item.price) : `₹${item.price}`;
+                const stockBadge = item.in_stock
+                    ? ''
+                    : '<span class="badge bg-secondary ms-2">Out of stock</span>';
+                return `
+                    <div class="search-result-item" onclick="selectSearchResult(${item.id})">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="search-result-info">
+                            <div class="search-result-name">${item.name}${stockBadge}</div>
+                            <div class="search-result-price">${priceText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Opens the product's own detail popup on top of the search panel.
+        // The search panel stays open underneath - closing the product
+        // popup should never also close the search results.
+        window.selectSearchResult = function (productId) {
+            if (typeof openProductModal === 'function') {
+                openProductModal('product', productId);
+            }
+        };
+
+        input.addEventListener('keyup', function () {
+            const query = input.value.trim();
+
+            if (!query) {
+                closePanel();
+                return;
+            }
+
+            // Open immediately and show a loading state - don't wait on the
+            // network round-trip just to reveal the panel.
+            openPanel();
+            highlight(panel);
+            highlight(input);
+            queryLabel.textContent = `for "${query}"`;
+            listEl.innerHTML = '<p class="text-muted text-center py-4 mb-0">Searching...</p>';
+
+            const seq = ++requestSeq;
+            fetch(`/search/?q=${encodeURIComponent(query)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (seq !== requestSeq) return; // a newer keystroke already fired
+                    renderResults(data.results || [], query);
+                })
+                .catch(() => {});
+        });
+    })();
+</script>
