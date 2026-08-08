@@ -28,8 +28,6 @@
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
 
-            {% include 'product/_search_bar_include.html' %}
-
             <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -43,6 +41,8 @@
                             Collections
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="collectionsDropdown">
+                            <li><a class="dropdown-item fw-semibold" href="{% url 'all_collections' %}">All Collections</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             {% for cat in nav_categories %}
                             <li><a class="dropdown-item" href="{% url 'category_products' cat.id %}">{{ cat.name }}</a></li>
                             {% empty %}
@@ -92,8 +92,6 @@
             </div>
         </div>
     </nav>
-
-    {% include 'product/_search_panel_include.html' %}
 
 <style>
     .scroll-section {

@@ -73,6 +73,8 @@
                             Collections
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="collectionsDropdown">
+                            <li><a class="dropdown-item fw-semibold" href="{% url 'all_collections' %}">All Collections</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             {% for cat in nav_categories %}
                             <li><a class="dropdown-item" href="{% url 'category_products' cat.id %}">{{ cat.name }}</a></li>
                             {% empty %}
