@@ -111,6 +111,77 @@ def send_order_confirmation_email(order, cart_items, coupon_code, coupon_discoun
     except Exception:
         logger.exception('Failed to send order confirmation email for order #%s', order.id)
 
+
+def send_order_acknowledgment_email(order, cart_items):
+    """Emails the customer (order.email_address) an acknowledgment that
+    their order was received. Failures here must never break the checkout
+    response, since the order/payment has already succeeded by the time
+    this runs."""
+    from django.core.mail import send_mail
+
+    product_list = "\n".join(
+        f"- {item.get('name', 'Unknown Product')} x {int(item.get('qty', 1))} - "
+        f"₹{float(item.get('price', 0)) * int(item.get('qty', 1)):.2f}"
+        for item in cart_items
+    )
+    subtotal = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
+
+    address_lines = [f"{order.house_flat_number}, {order.street_area}"]
+    if order.landmark:
+        address_lines.append(order.landmark)
+    address_lines.append(f"{order.city}, {order.district}, {order.state} - {order.pin_code}")
+    address_lines.append(order.country)
+    shipping_address = "\n".join(address_lines)
+
+    subject = f"Order Confirmed ✨ | Natsukashii by Pradhama | Order #{order.id}"
+
+    body = f"""Dear {order.full_name},
+
+Thank you for choosing Natsukashii by Pradhama. \U0001f90d
+
+We're delighted to confirm that we've received your order.
+
+Your Order
+
+Order ID: #{order.id}
+Order Date: {order.created_at.strftime('%d %b %Y')}
+
+Items:
+{product_list}
+
+Subtotal: ₹{subtotal:.2f}
+Shipping: FREE
+Total Paid: ₹{order.total_amount}
+
+Delivery Details
+
+{order.full_name}
+{shipping_address}
+Phone: {order.mobile_number}
+
+Your order is now being carefully prepared and packed. Once it is dispatched, we'll share the courier partner and tracking details with you by email/SMS.
+
+We hope your Natsukashii piece becomes a beautiful part of your celebrations and cherished moments. ✨
+
+Thank you for supporting our small business.
+
+Warmly,
+Pradhama
+Natsukashii by Pradhama
+Traditional Collections
+"""
+
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.email_address],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception('Failed to send order acknowledgment email for order #%s', order.id)
+
 # Create your views here.
 def home(request):
     categories = Category.objects.filter(show_in_collection_list=True).prefetch_related('products', 'products__images').order_by('id')
@@ -1264,6 +1335,7 @@ def checkout_verify_payment(request):
     del request.session['pending_order']
 
     send_order_confirmation_email(order, cart_items, coupon_code, coupon_discount)
+    send_order_acknowledgment_email(order, cart_items)
 
     return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
 
