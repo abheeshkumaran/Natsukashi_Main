@@ -779,6 +779,37 @@ def lookup_coupon(request):
     return JsonResponse({'found': False})
 
 
+def _validate_coupon(code, total_amount, total_qty):
+    """Server-side coupon validation shared by apply_coupon (preview) and
+    checkout_create_payment (authoritative, at charge time). Returns
+    (discount, error) - error is None on success."""
+    coupon = ProductCoupon.objects.filter(coupon_code__iexact=code).first()
+    if not coupon:
+        return 0, 'Not existing coupon'
+
+    if not coupon.is_active:
+        return 0, 'Coupon expired'
+
+    today = datetime.date.today()
+    if today < coupon.valid_from or today > coupon.valid_until:
+        return 0, 'Coupon expired'
+
+    if coupon.usage_limit and coupon.used_count >= coupon.usage_limit:
+        return 0, 'Not existing coupon'
+
+    if coupon.discount_type == 'flat':
+        if total_amount < float(coupon.min_order_amount):
+            return 0, f"Can't apply the coupon. Purchase minimum ₹{coupon.min_order_amount}"
+    elif coupon.discount_type == 'product_qty':
+        if total_qty < coupon.min_qty:
+            return 0, f'Purchase minimum {coupon.min_qty} product(s)'
+    else:
+        return 0, 'Invalid coupon type'
+
+    discount = min(float(coupon.discount_value), total_amount)
+    return discount, None
+
+
 def apply_coupon(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request'})
@@ -793,30 +824,11 @@ def apply_coupon(request):
     total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
     total_qty = sum(int(item.get('qty', 1)) for item in cart_items)
 
+    discount, error = _validate_coupon(code, total_amount, total_qty)
+    if error:
+        return JsonResponse({'success': False, 'error': error})
+
     coupon = ProductCoupon.objects.filter(coupon_code__iexact=code).first()
-    if not coupon:
-        return JsonResponse({'success': False, 'error': 'Not existing coupon'})
-
-    if not coupon.is_active:
-        return JsonResponse({'success': False, 'error': 'Coupon expired'})
-
-    today = datetime.date.today()
-    if today < coupon.valid_from or today > coupon.valid_until:
-        return JsonResponse({'success': False, 'error': 'Coupon expired'})
-
-    if coupon.usage_limit and coupon.used_count >= coupon.usage_limit:
-        return JsonResponse({'success': False, 'error': 'Not existing coupon'})
-
-    if coupon.discount_type == 'flat':
-        if total_amount < float(coupon.min_order_amount):
-            return JsonResponse({'success': False, 'error': f"Can't apply the coupon. Purchase minimum ₹{coupon.min_order_amount}"})
-    elif coupon.discount_type == 'product_qty':
-        if total_qty < coupon.min_qty:
-            return JsonResponse({'success': False, 'error': f'Purchase minimum {coupon.min_qty} product(s)'})
-    else:
-        return JsonResponse({'success': False, 'error': 'Invalid coupon type'})
-
-    discount = min(float(coupon.discount_value), total_amount)
     new_total = total_amount - discount
 
     # Usage is only counted once the order is actually placed (see `checkout` view),
@@ -1061,13 +1073,45 @@ def checkout_create_payment(request):
     if not cart_items:
         return JsonResponse({'success': False, 'error': 'Your cart is empty.'})
 
-    total_amount = sum(float(item.get('price', 0)) * int(item.get('qty', 1)) for item in cart_items)
+    # Re-price every line item from the database - never trust price/qty
+    # supplied by the client (cart_data, or the Buy Now flow's ?price= URL
+    # param). This is what actually gets charged, so it must come from the
+    # DB, not the request.
+    verified_items = []
+    for entry in cart_items:
+        product_id = entry.get('id')
+        try:
+            qty = int(entry.get('qty', 1))
+        except (TypeError, ValueError):
+            qty = 1
+        if not product_id or qty <= 0:
+            continue
+        product = Product.objects.filter(pk=product_id).first()
+        if not product:
+            return JsonResponse({'success': False, 'error': 'One or more items in your cart are no longer available. Please refresh and try again.'})
+        verified_items.append({
+            'id': str(product.id),
+            'type': entry.get('type', 'product'),
+            'name': product.collection_name,
+            'price': float(product.price),
+            'image': product.first_image_url,
+            'qty': qty,
+        })
 
-    try:
-        coupon_discount = float(request.POST.get('coupon_discount', 0) or 0)
-    except ValueError:
-        coupon_discount = 0
-    coupon_discount = max(0, min(coupon_discount, total_amount))
+    if not verified_items:
+        return JsonResponse({'success': False, 'error': 'Your cart is empty.'})
+
+    cart_items = verified_items
+    total_amount = sum(item['price'] * item['qty'] for item in verified_items)
+    total_qty = sum(item['qty'] for item in verified_items)
+
+    coupon_code = request.POST.get('coupon_code', '').strip()
+    coupon_discount = 0
+    if coupon_code:
+        coupon_discount, coupon_error = _validate_coupon(coupon_code, total_amount, total_qty)
+        if coupon_error:
+            return JsonResponse({'success': False, 'error': coupon_error})
+
     total_amount -= coupon_discount
 
     if total_amount <= 0:
@@ -1121,7 +1165,7 @@ def checkout_create_payment(request):
         'razorpay_order_id': razorpay_order['id'],
         'user_id': user.id,
         'cart_items': cart_items,
-        'coupon_code': request.POST.get('coupon_code', '').strip(),
+        'coupon_code': coupon_code,
         'coupon_discount': coupon_discount,
         'total_amount': total_amount,
         'shipping': shipping,
