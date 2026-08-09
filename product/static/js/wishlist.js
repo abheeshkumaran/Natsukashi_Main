@@ -41,38 +41,6 @@ function refreshWishlist() {
         });
 }
 
-// One-time migration: carries over any wishlist items saved locally by an
-// older, browser-only version so switching to server-sync doesn't wipe what
-// someone already had saved.
-function migrateLocalWishlistIfNeeded() {
-    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
-        return Promise.resolve();
-    }
-    const legacyKey = 'natsukashi_wishlist_' + window.SITE_USER_ID;
-    const migratedKey = 'natsukashi_wishlist_migrated_' + window.SITE_USER_ID;
-    if (localStorage.getItem(migratedKey)) {
-        return Promise.resolve();
-    }
-    const raw = localStorage.getItem(legacyKey);
-    localStorage.setItem(migratedKey, '1');
-    if (!raw) {
-        return Promise.resolve();
-    }
-    let legacyItems = [];
-    try {
-        legacyItems = JSON.parse(raw);
-    } catch (e) {
-        legacyItems = [];
-    }
-    if (!legacyItems.length) {
-        return Promise.resolve();
-    }
-    return wishlistApiCall('/wishlist/merge/', { items: JSON.stringify(legacyItems) }).then((data) => {
-        applyWishlistResponse(data);
-        localStorage.removeItem(legacyKey);
-    });
-}
-
 function renderAllWishlistUI() {
     syncWishlistButtons();
     updateWishlistBadge();
@@ -211,9 +179,18 @@ function closeWishlistDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    migrateLocalWishlistIfNeeded().then(refreshWishlist);
+    refreshWishlist();
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeWishlistDrawer();
     });
+});
+
+// iOS/Safari can restore a page from its back-forward cache without firing
+// DOMContentLoaded again, leaving heart icons showing whatever state they
+// were in when the page was frozen (which can be stale or, after a login
+// change, wrong for the current account entirely). Force a fresh fetch
+// whenever a bfcache restore happens.
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) refreshWishlist();
 });

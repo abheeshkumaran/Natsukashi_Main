@@ -49,38 +49,6 @@ function refreshCart() {
         });
 }
 
-// One-time migration: carries over any cart items saved locally by an older,
-// browser-only version of the cart so switching to server-sync doesn't wipe
-// what someone already had queued up.
-function migrateLocalCartIfNeeded() {
-    if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
-        return Promise.resolve();
-    }
-    const legacyKey = 'natsukashi_cart_' + window.SITE_USER_ID;
-    const migratedKey = 'natsukashi_cart_migrated_' + window.SITE_USER_ID;
-    if (localStorage.getItem(migratedKey)) {
-        return Promise.resolve();
-    }
-    const raw = localStorage.getItem(legacyKey);
-    localStorage.setItem(migratedKey, '1');
-    if (!raw) {
-        return Promise.resolve();
-    }
-    let legacyItems = [];
-    try {
-        legacyItems = JSON.parse(raw);
-    } catch (e) {
-        legacyItems = [];
-    }
-    if (!legacyItems.length) {
-        return Promise.resolve();
-    }
-    return cartApiCall('/cart/merge/', { items: JSON.stringify(legacyItems) }).then((data) => {
-        applyCartResponse(data);
-        localStorage.removeItem(legacyKey);
-    });
-}
-
 function renderAllCartUI() {
     updateCartBadge();
     renderCartDrawer();
@@ -324,9 +292,17 @@ function renderCartPage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    migrateLocalCartIfNeeded().then(refreshCart);
+    refreshCart();
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeCartDrawer();
     });
+});
+
+// iOS/Safari can restore a page from its back-forward cache without firing
+// DOMContentLoaded again, leaving "Add to Cart" buttons showing whatever
+// state they were in when the page was frozen (stale, or wrong entirely
+// after switching accounts). Force a fresh fetch on bfcache restore.
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) refreshCart();
 });
