@@ -25,6 +25,19 @@ from django.core.exceptions import ValidationError
 PHONE_RE = re.compile(r'^\d{10}$')
 PINCODE_RE = re.compile(r'^\d{6}$')
 
+# The five order-progress stages shown on the customer-facing order detail
+# stepper and offered in the admin "Update Status" / "Filter by Status"
+# dropdowns. 'value' matches the raw (sometimes misspelled, e.g. 'shiped',
+# 'deliverd') strings already stored in Order.status so existing data keeps
+# working; 'label' is the corrected display text.
+ORDER_STATUS_STAGES = [
+    {'value': 'order placed', 'label': 'Order Placed'},
+    {'value': 'packed', 'label': 'Packed'},
+    {'value': 'shiped', 'label': 'Shipped'},
+    {'value': 'out of delivery', 'label': 'Out for Delivery'},
+    {'value': 'deliverd', 'label': 'Delivered'},
+]
+
 
 def is_valid_phone(value):
     return bool(value) and bool(PHONE_RE.fullmatch(value.strip()))
@@ -849,11 +862,10 @@ def list_user_data(request):
         orders = orders_query.filter(status_lower=status_filter.lower()).order_by('-created_at')
     else:
         orders = orders_query.order_by('-created_at')
-    
-    statuses = OrderStatus.objects.filter(status_name__in=allowed_statuses)
+
     return render(request, 'admin/list_user_data.html', {
-        'orders': orders, 
-        'statuses': statuses,
+        'orders': orders,
+        'statuses': ORDER_STATUS_STAGES,
         'current_filter': status_filter
     })
 
@@ -1619,6 +1631,30 @@ def my_orders(request):
         'active_orders': active_orders,
         'previous_orders': previous_orders,
         'site_user_name': request.session.get('site_user_name')
+    })
+
+
+def order_detail(request, order_id):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        messages.error(request, 'Please login to view your order.')
+        return redirect('home')
+
+    user = get_object_or_404(SiteUser, id=user_id)
+    order = get_object_or_404(Order.objects.prefetch_related('items'), id=order_id, mobile_number=user.phone)
+
+    status_lower = (order.status or '').strip().lower()
+    current_step = 1
+    for stage in ORDER_STATUS_STAGES:
+        if stage['value'] == status_lower:
+            current_step = ORDER_STATUS_STAGES.index(stage) + 1
+            break
+
+    return render(request, 'product/order_detail.html', {
+        'order': order,
+        'stages': ORDER_STATUS_STAGES,
+        'current_step': current_step,
+        'site_user_name': request.session.get('site_user_name'),
     })
 
 # Category CRUD

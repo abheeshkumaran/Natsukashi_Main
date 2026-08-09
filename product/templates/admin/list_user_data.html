@@ -9,7 +9,7 @@
                     <select name="status_filter" id="status_filter" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 180px;">
                         <option value="">All Orders</option>
                         {% for s in statuses %}
-                        <option value="{{ s.status_name }}" {% if current_filter == s.status_name %}selected{% endif %}>{{ s.status_name|title }}</option>
+                        <option value="{{ s.value }}" {% if current_filter == s.value %}selected{% endif %}>{{ s.label }}</option>
                         {% endfor %}
                     </select>
                 </form>
@@ -65,7 +65,7 @@
                                 {% csrf_token %}
                                 <select name="status" class="form-select form-select-sm me-2" style="width: 130px;">
                                     {% for s in statuses %}
-                                    <option value="{{ s.status_name }}" {% if order.status|lower == s.status_name|lower %}selected{% endif %}>{{ s.status_name|title }}</option>
+                                    <option value="{{ s.value }}" {% if order.status|lower == s.value %}selected{% endif %}>{{ s.label }}</option>
                                     {% endfor %}
                                 </select>
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>

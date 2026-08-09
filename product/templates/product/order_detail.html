@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #{{ order.id }} - Natsukashi</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
+    <style>
+        .order-detail-container { max-width: 1000px; margin: 60px auto; padding: 0 15px; }
+        .order-detail-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+        .order-detail-id { font-family: var(--heading-font); color: var(--primary-color); font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+        .order-detail-date { color: #777; font-size: 0.95rem; }
+
+        .order-detail-grid { display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start; }
+        @media (max-width: 850px) {
+            .order-detail-grid { grid-template-columns: 1fr; }
+        }
+
+        .order-detail-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
+
+        .order-item { display: flex; align-items: center; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border-color); }
+        .order-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .item-image { width: 80px; height: 100px; object-fit: cover; border-radius: 10px; margin-right: 18px; border: 1px solid var(--border-color); }
+        .item-details h5 { margin: 0 0 6px 0; font-size: 1.05rem; font-weight: 600; }
+        .item-price { color: var(--primary-color); font-weight: 700; }
+
+        .order-total { text-align: right; font-weight: 700; font-size: 1.15rem; color: var(--primary-color); border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px; }
+
+        .shipping-info p { margin-bottom: 6px; font-size: 0.95rem; color: #444; }
+        .shipping-info h6 { font-family: var(--heading-font); color: var(--primary-color); font-weight: 700; margin-bottom: 12px; }
+
+        /* Vertical status stepper - same active/completed language as the
+           checkout page's horizontal stepper, just laid out top-to-bottom. */
+        .v-stepper { display: flex; flex-direction: column; }
+        .v-stepper-step { display: flex; align-items: flex-start; gap: 14px; }
+        .v-stepper-marker { display: flex; flex-direction: column; align-items: center; }
+        .v-stepper-circle {
+            width: 34px; height: 34px; border-radius: 50%; background: #fff;
+            border: 2px solid var(--border-color); color: #aaa;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.95rem; flex-shrink: 0; transition: all 0.3s ease;
+        }
+        .v-stepper-line { width: 2px; flex: 1; min-height: 34px; background: var(--border-color); margin: 4px 0; transition: background 0.3s ease; }
+        .v-stepper-step:last-child .v-stepper-line { display: none; }
+        .v-stepper-content { padding-top: 4px; padding-bottom: 34px; }
+        .v-stepper-step:last-child .v-stepper-content { padding-bottom: 0; }
+        .v-stepper-label { font-weight: 600; color: #aaa; font-size: 0.95rem; transition: color 0.3s ease; }
+
+        .v-stepper-step.completed .v-stepper-circle,
+        .v-stepper-step.active .v-stepper-circle { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+        .v-stepper-step.completed .v-stepper-line { background: var(--primary-color); }
+        .v-stepper-step.completed .v-stepper-label,
+        .v-stepper-step.active .v-stepper-label { color: var(--primary-color); }
+
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary-color); font-weight: 600; text-decoration: none; }
+        .back-link:hover { color: var(--hover-gold); }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar (simplified for this page, usually you would include it) -->
+    <nav class="navbar navbar-expand-lg bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" height="40">
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="me-3">Hello, {{ site_user_name }}</span>
+                <a href="{% url 'home' %}" class="btn-primary-custom" style="padding: 8px 20px; font-size: 0.9rem;">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="order-detail-container">
+        <a href="{% url 'my_orders' %}" class="back-link">&larr; Back to My Orders</a>
+
+        <div class="order-detail-header">
+            <div>
+                <div class="order-detail-id">Order #{{ order.id }}</div>
+                <div class="order-detail-date">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</div>
+            </div>
+        </div>
+
+        <div class="order-detail-grid">
+            <!-- Left: product details + shipping info -->
+            <div>
+                <div class="order-detail-card mb-4">
+                    {% for item in order.items.all %}
+                        <div class="order-item">
+                            {% if item.product_image %}
+                                <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="item-image">
+                            {% else %}
+                                <div class="item-image" style="background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#999; font-size:0.8rem;">No Image</div>
+                            {% endif %}
+                            <div class="item-details">
+                                <h5>
+                                    {% if item.product_id %}
+                                    <a href="{% url 'home' %}?product={{ item.product_id }}" style="color: inherit; text-decoration: underline;">{{ item.product_name }}</a>
+                                    {% else %}
+                                    {{ item.product_name }}
+                                    {% endif %}
+                                </h5>
+                                <div style="font-size: 0.9rem; color: #666;">Qty: {{ item.quantity }} | Type: {{ item.product_type }}</div>
+                                <div class="item-price">₹{{ item.price }}</div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted mb-0">No items found for this order.</p>
+                    {% endfor %}
+
+                    <div class="order-total">Total Amount: ₹{{ order.total_amount }}</div>
+                </div>
+
+                <div class="order-detail-card shipping-info">
+                    <h6>Shipping Address</h6>
+                    <p><strong>{{ order.full_name }}</strong></p>
+                    <p>{{ order.house_flat_number }}, {{ order.street_area }}</p>
+                    {% if order.landmark %}<p>Landmark: {{ order.landmark }}</p>{% endif %}
+                    <p>{{ order.city }}, {{ order.district }}, {{ order.state }} - {{ order.pin_code }}</p>
+                    <p>{{ order.country }}</p>
+                    <p>Mobile: {{ order.mobile_number }}</p>
+                </div>
+            </div>
+
+            <!-- Right: vertical order-progress stepper -->
+            <div class="order-detail-card">
+                <h6 style="font-family: var(--heading-font); color: var(--primary-color); font-weight: 700; margin-bottom: 20px;">Order Status</h6>
+                <div class="v-stepper">
+                    {% for stage in stages %}
+                        {% with step_num=forloop.counter %}
+                        <div class="v-stepper-step {% if step_num < current_step %}completed{% elif step_num == current_step %}active{% endif %}">
+                            <div class="v-stepper-marker">
+                                <div class="v-stepper-circle">{{ step_num }}</div>
+                                <div class="v-stepper-line"></div>
+                            </div>
+                            <div class="v-stepper-content">
+                                <div class="v-stepper-label">{{ stage.label }}</div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'product/_report_issue_include.html' %}
+</body>
+</html>

@@ -149,14 +149,11 @@ function formatPrice(amount) {
 }
 
 function openCartDrawer() {
-    if (typeof closeWishlistDrawer === 'function') closeWishlistDrawer();
-
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
     if (!drawer || !overlay) return;
     drawer.classList.add('active');
     overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 
 function closeCartDrawer() {
@@ -165,6 +162,8 @@ function closeCartDrawer() {
     if (!drawer || !overlay) return;
     drawer.classList.remove('active');
     overlay.classList.remove('active');
+    // Always reset in case a stale inline style survived from before this
+    // lock was removed (e.g. a page restored from iOS Safari's bfcache).
     document.body.style.overflow = '';
 }
 

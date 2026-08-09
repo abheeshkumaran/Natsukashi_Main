@@ -134,8 +134,9 @@
                         {% endfor %}
                     </div>
                     
-                    <div class="order-total">
-                        Total Amount: ₹{{ order.total_amount }}
+                    <div class="order-total d-flex justify-content-between align-items-center">
+                        <a href="{% url 'order_detail' order.id %}" class="btn-primary-custom" style="padding: 8px 20px; font-size: 0.9rem;">View More</a>
+                        <span>Total Amount: ₹{{ order.total_amount }}</span>
                     </div>
                 </div>
             {% endfor %}
@@ -191,8 +192,9 @@
                         {% endfor %}
                     </div>
                     
-                    <div class="order-total">
-                        Total Amount: ₹{{ order.total_amount }}
+                    <div class="order-total d-flex justify-content-between align-items-center">
+                        <a href="{% url 'order_detail' order.id %}" class="btn-primary-custom" style="padding: 8px 20px; font-size: 0.9rem;">View More</a>
+                        <span>Total Amount: ₹{{ order.total_amount }}</span>
                     </div>
                 </div>
             {% endfor %}
