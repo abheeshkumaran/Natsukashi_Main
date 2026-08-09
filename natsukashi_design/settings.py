@@ -106,6 +106,10 @@ SUPERADMIN_EMAIL = 'superadmin@123.com'
 
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+# Set from Razorpay Dashboard > Settings > Webhooks after creating a webhook
+# pointing at /razorpay/webhook/ subscribed to payment.captured. Left empty,
+# the webhook endpoint just no-ops (200 OK, does nothing) rather than erroring.
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
 
 # Email (order confirmation notifications)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -114,6 +114,13 @@ class Order(models.Model):
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
 
+    # Set the moment a checkout attempt starts (status='Payment Pending'),
+    # not just once it succeeds - needed so the Razorpay webhook (which has
+    # no browser session to read) and the stale-pending cleanup routine can
+    # both see/reverse what coupon a given attempt claimed.
+    coupon_code = models.CharField(max_length=50, blank=True, null=True)
+    coupon_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     # Snapshot of shipping details for this specific order
     full_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=20)
