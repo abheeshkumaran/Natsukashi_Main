@@ -43,7 +43,7 @@
                     </li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact ✉️</a></li>
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
+                        <a class="nav-link position-relative{% if request.resolver_match.url_name == 'wishlist_page' %} active{% endif %}" href="{% url 'wishlist_page' %}">
                             Wishlist ♥
                             <span class="wishlist-count badge rounded-pill">0</span>
                         </a>
@@ -92,7 +92,9 @@
 			{% for mund in munds %}
 			<div class="card-grid-item">
                 <div class="card product-card h-100">
-                    <span class="wishlist-icon">♥</span>
+                    <button type="button" class="wishlist-heart-btn js-wishlist-btn"
+                        data-id="{{ mund.id }}" data-type="product"
+                        onclick="toggleWishlist(this)" aria-label="Add to Wishlist">♡</button>
                     {% if mund.quantity == 0 or not mund.stock_available %}
                     <span class="stock-badge stock-out">Out of Stock</span>
                     {% else %}
@@ -166,7 +168,6 @@
     </footer>
 
 	{% include 'product/_cart_drawer_include.html' %}
-	{% include 'product/_wishlist_drawer_include.html' %}
 	{% include 'product/_product_modal_include.html' %}
 	{% include 'product/_auth_modal_include.html' %}
     {% include 'product/_report_issue_include.html' %}

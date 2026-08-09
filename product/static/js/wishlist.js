@@ -1,6 +1,9 @@
-// The wishlist now lives server-side (per account), so every browser/device
-// the same user logs into sees the same wishlist. `wishlistCache` mirrors the
-// server state for synchronous rendering.
+// Wishlist: a small heart button in the top-right corner of each product
+// card. Deliberately never uses color to show state (that's what caused
+// hearts to appear red for products nobody actually wishlisted) - instead
+// the glyph itself swaps outline <-> filled, and only ever changes on an
+// explicit click. The full list of wishlisted products lives on its own
+// page (see wishlist_page view), not a drawer.
 let wishlistCache = [];
 
 function wishlistApiCall(url, data) {
@@ -23,13 +26,15 @@ function applyWishlistResponse(data) {
     if (data && data.success && Array.isArray(data.items)) {
         wishlistCache = data.items;
     }
-    renderAllWishlistUI();
+    syncWishlistButtons();
+    updateWishlistBadge();
 }
 
 function refreshWishlist() {
     if (typeof window.SITE_USER_ID === 'undefined' || !window.SITE_USER_ID) {
         wishlistCache = [];
-        renderAllWishlistUI();
+        syncWishlistButtons();
+        updateWishlistBadge();
         return Promise.resolve();
     }
     return fetch('/wishlist/list/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -37,20 +42,17 @@ function refreshWishlist() {
         .then(applyWishlistResponse)
         .catch(() => {
             wishlistCache = [];
-            renderAllWishlistUI();
+            syncWishlistButtons();
+            updateWishlistBadge();
         });
-}
-
-function renderAllWishlistUI() {
-    syncWishlistButtons();
-    updateWishlistBadge();
-    renderWishlistDrawer();
 }
 
 function isInWishlist(id, type) {
     return getWishlist().some((item) => item.id === id && item.type === type);
 }
 
+// Only ever called from an explicit click on the heart button - never
+// automatically, never on page load.
 function toggleWishlist(btn) {
     if (typeof window.IS_USER_LOGGED_IN !== 'undefined' && !window.IS_USER_LOGGED_IN) {
         if (typeof openAuthModal === 'function') {
@@ -58,7 +60,6 @@ function toggleWishlist(btn) {
             return;
         }
     }
-
     wishlistApiCall('/wishlist/toggle/', { product_id: btn.dataset.id }).then(applyWishlistResponse);
 }
 
@@ -66,40 +67,22 @@ function removeFromWishlist(id, type) {
     wishlistApiCall('/wishlist/remove/', { product_id: id }).then(applyWishlistResponse);
 }
 
-// Wishlisted item -> cart, using cart.js's own storage helpers (loaded on
-// the same pages), then drops it out of the wishlist and opens the cart.
-function moveWishlistItemToCart(id, type) {
-    if (typeof window.IS_USER_LOGGED_IN !== 'undefined' && !window.IS_USER_LOGGED_IN) {
-        if (typeof openAuthModal === 'function') {
-            openAuthModal();
-            return;
-        }
-    }
-
-    const item = getWishlist().find((i) => i.id === id && i.type === type);
-    if (!item || item.in_stock === false) return;
-
-    const addPromise = (typeof cartApiCall === 'function' && !getCart().some((i) => i.id === id && i.type === type))
-        ? cartApiCall('/cart/add/', { product_id: id }).then(applyCartResponse)
-        : Promise.resolve();
-
-    addPromise
-        .then(() => wishlistApiCall('/wishlist/remove/', { product_id: id }))
-        .then(applyWishlistResponse)
-        .then(() => {
-            if (typeof openCartDrawer === 'function') openCartDrawer();
-        });
-}
-
-// Keeps every heart button on the page in sync with the wishlist. Called on
-// load and again whenever the product-modal popup swaps in new content.
+// Keeps every heart button on the page in sync with the wishlist: filled
+// (♥) if the product is in it, outline (♡) if not. No color change ever -
+// just the shape/glyph, and only ever updated from a real server response.
 function syncWishlistButtons() {
     const list = getWishlist();
-    document.querySelectorAll('.wishlist-toggle-btn').forEach((btn) => {
+    document.querySelectorAll('.js-wishlist-btn').forEach((btn) => {
         const active = list.some((item) => item.id === btn.dataset.id && item.type === btn.dataset.type);
         btn.classList.toggle('active', active);
         btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         btn.title = active ? 'Remove from Wishlist' : 'Add to Wishlist';
+        // Plain product-card hearts are just a text glyph; the product
+        // detail popup's heart is an SVG icon whose fill is handled by CSS
+        // off the .active class instead (see _product_modal_include.html).
+        if (btn.classList.contains('wishlist-heart-btn')) {
+            btn.textContent = active ? '♥' : '♡';
+        }
     });
 }
 
@@ -111,86 +94,13 @@ function updateWishlistBadge() {
     });
 }
 
-function typeLabel(type) {
-    if (type === 'mund') return 'SHOP BY COLLECTION';
-    if (type === 'colored') return 'MOST PURCHASED SAREE';
-    return 'FEATURED ONAM PICKS';
-}
-
-function renderWishlistDrawer() {
-    const itemsEl = document.getElementById('wishlistItems');
-    if (!itemsEl) return;
-
-    const list = getWishlist();
-    const emptyEl = document.getElementById('wishlistEmpty');
-    const countEl = document.getElementById('wishlistItemCount');
-    if (countEl) countEl.textContent = list.length;
-
-    if (list.length === 0) {
-        itemsEl.innerHTML = '';
-        if (emptyEl) emptyEl.style.display = 'block';
-        return;
-    }
-
-    if (emptyEl) emptyEl.style.display = 'none';
-
-    itemsEl.innerHTML = list.map((item) => {
-        const priceText = typeof formatPrice === 'function' ? formatPrice(item.price) : `₹${item.price}`;
-        return `
-        <div class="cart-row">
-            <img src="${item.image}" alt="${item.name}" class="cart-item-img">
-            <div class="cart-item-info">
-                <h6 class="item-name">${item.name}</h6>
-                <div class="item-type">${typeLabel(item.type)}</div>
-                <div class="price-block">
-                    <span class="item-price">${priceText}</span>
-                </div>
-                <div class="item-actions">
-                    ${item.in_stock === false
-                        ? '<span class="item-action-btn item-action-outofstock">Out of Stock</span>'
-                        : `<a href="javascript:void(0)" class="item-action-btn item-action-move" onclick="moveWishlistItemToCart('${item.id}','${item.type}')">MOVE TO CART</a>`
-                    }
-                    <a href="javascript:void(0)" class="item-action-btn item-action-remove" onclick="removeFromWishlist('${item.id}','${item.type}')">REMOVE</a>
-                </div>
-            </div>
-        </div>
-    `;
-    }).join('');
-}
-
-function openWishlistDrawer() {
-    if (typeof closeCartDrawer === 'function') closeCartDrawer();
-
-    const drawer = document.getElementById('wishlistDrawer');
-    const overlay = document.getElementById('wishlistOverlay');
-    if (!drawer || !overlay) return;
-    drawer.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeWishlistDrawer() {
-    const drawer = document.getElementById('wishlistDrawer');
-    const overlay = document.getElementById('wishlistOverlay');
-    if (!drawer || !overlay) return;
-    drawer.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     refreshWishlist();
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeWishlistDrawer();
-    });
 });
 
 // iOS/Safari can restore a page from its back-forward cache without firing
 // DOMContentLoaded again, leaving heart icons showing whatever state they
-// were in when the page was frozen (which can be stale or, after a login
-// change, wrong for the current account entirely). Force a fresh fetch
-// whenever a bfcache restore happens.
+// were in when the page was frozen. Force a fresh fetch on bfcache restore.
 window.addEventListener('pageshow', (e) => {
     if (e.persisted) refreshWishlist();
 });

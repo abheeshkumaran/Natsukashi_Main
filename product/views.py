@@ -1252,6 +1252,16 @@ def wishlist_list(request):
     return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
 
 
+def wishlist_page(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        messages.error(request, 'Please login to view your wishlist.')
+        return redirect('home')
+
+    products = Product.objects.filter(wishlist_items__user_id=user_id).prefetch_related('images').order_by('-wishlist_items__added_at')
+    return render(request, 'product/wishlist_page.html', {'products': products})
+
+
 def wishlist_toggle(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request'})

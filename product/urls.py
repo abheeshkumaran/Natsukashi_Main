@@ -32,6 +32,7 @@ urlpatterns = [
     path('cart/remove/', views.cart_remove, name='cart_remove'),
     path('cart/merge/', views.cart_merge, name='cart_merge'),
     path('wishlist/list/', views.wishlist_list, name='wishlist_list'),
+    path('wishlist/', views.wishlist_page, name='wishlist_page'),
     path('wishlist/toggle/', views.wishlist_toggle, name='wishlist_toggle'),
     path('wishlist/remove/', views.wishlist_remove, name='wishlist_remove'),
     path('wishlist/merge/', views.wishlist_merge, name='wishlist_merge'),

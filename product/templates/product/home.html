@@ -55,7 +55,7 @@
                     </li>
                     <li class="nav-item"><a class="nav-link" href="#">Contact ✉️</a></li>
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
+                        <a class="nav-link position-relative{% if request.resolver_match.url_name == 'wishlist_page' %} active{% endif %}" href="{% url 'wishlist_page' %}">
                             Wishlist ♥
                             <span class="wishlist-count badge rounded-pill">0</span>
                         </a>
@@ -173,12 +173,9 @@
                 {% for product in category.products.all %}
                 <div class="horizontal-scroll-item">
                     <div class="card product-card h-100">
-                        <button type="button" class="wishlist-toggle-btn wishlist-icon"
-                            style="background:transparent; border:none; z-index:10; color: #ccc;"
-                            data-id="{{ product.id }}" data-type="product" data-name="{{ product.collection_name }}"
-                            data-price="{{ product.price }}"
-                            data-image="{% if product.first_image_url %}{{ product.first_image_url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
-                            onclick="toggleWishlist(this)">♥</button>
+                        <button type="button" class="wishlist-heart-btn js-wishlist-btn"
+                            data-id="{{ product.id }}" data-type="product"
+                            onclick="toggleWishlist(this)" aria-label="Add to Wishlist">♡</button>
                         {% if product.quantity == 0 or not product.stock_available %}
                         <span class="stock-badge stock-out">Out of Stock</span>
                         {% else %}
@@ -309,7 +306,6 @@
     </footer>
 
     {% include 'product/_cart_drawer_include.html' %}
-    {% include 'product/_wishlist_drawer_include.html' %}
     {% include 'product/_product_modal_include.html' %}
     {% include 'product/_auth_modal_include.html' %}
     {% include 'product/_report_issue_include.html' %}

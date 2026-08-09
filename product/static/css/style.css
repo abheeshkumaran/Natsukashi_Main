@@ -718,28 +718,32 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     opacity: 1;
 }
 
-.wishlist-icon {
+/* Small top-right wishlist heart. Deliberately a single fixed color at all
+   times (never red/never recolored on state change) - state is shown only
+   by the glyph itself swapping outline (not wishlisted) <-> filled
+   (wishlisted), never by color, and only ever changes on an explicit click. */
+.wishlist-heart-btn {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.9);
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-color);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #333;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
     z-index: 10;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-size: 1.2rem;
+    transition: transform 0.2s ease;
 }
 
-.wishlist-icon:hover {
-    color: var(--primary-color);
-    transform: scale(1.1);
+.wishlist-heart-btn:hover {
+    transform: scale(1.12);
 }
 
 .stock-badge {
@@ -963,19 +967,3 @@ footer {
     color: var(--primary-color);
 }
 
-.wishlist-toggle-btn {
-    color: #bbb; /* clearly "not wishlisted yet" - hollow/grey heart */
-    font-size: 2rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.wishlist-toggle-btn:hover {
-    transform: scale(1.15);
-    color: #ffb6b6;
-}
-
-.wishlist-toggle-btn.active {
-    color: #e74c3c !important; /* solid red once wishlisted - clear variation from the grey default */
-    transform: scale(1.1);
-}

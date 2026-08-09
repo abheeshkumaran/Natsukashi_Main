@@ -100,12 +100,10 @@
     }
 
     #productModalBody .pm-wishlist-btn:hover {
-        color: var(--primary-color);
         transform: scale(1.12);
     }
 
     #productModalBody .pm-wishlist-btn.active {
-        color: var(--primary-color);
         animation: pmHeartPop .3s ease;
     }
 
@@ -305,11 +303,9 @@
         document.querySelectorAll('#productModalBody .pm-thumbs img').forEach((t) => t.classList.remove('active'));
         thumbEl.classList.add('active');
 
-        // Whichever image is on display becomes the one saved to the cart/wishlist.
+        // Whichever image is on display becomes the one saved to the cart.
         const cartBtn = document.querySelector('#productModalBody .cart-toggle-btn');
         if (cartBtn) cartBtn.dataset.image = thumbEl.src;
-        const wishlistBtn = document.querySelector('#productModalBody .wishlist-toggle-btn');
-        if (wishlistBtn) wishlistBtn.dataset.image = thumbEl.src;
     }
 
 

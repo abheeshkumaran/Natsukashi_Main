@@ -28,12 +28,9 @@
             <h2 class="pm-product-title">{{ product.collection_name }}</h2>
             <button
                 type="button"
-                class="pm-wishlist-btn wishlist-toggle-btn"
+                class="pm-wishlist-btn js-wishlist-btn"
                 data-id="{{ product.id }}"
                 data-type="{{ product_type }}"
-                data-name="{{ product.collection_name }}"
-                data-price="{{ product.price }}"
-                data-image="{% if images|length > 0 %}{{ images.0.image.url }}{% else %}https://via.placeholder.com/300x300?text=No+Image{% endif %}"
                 onclick="toggleWishlist(this)"
                 aria-label="Add to Wishlist"
                 aria-pressed="false"
