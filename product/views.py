@@ -16,7 +16,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress
 
 import re
 from django.core.validators import validate_email
@@ -1031,8 +1031,92 @@ def checkout(request):
             'email_address': user.email
         }
     context['razorpay_key_id'] = settings.RAZORPAY_KEY_ID
+    context['saved_addresses'] = user.saved_addresses.all()
 
     return render(request, 'product/checkout.html', context)
+
+
+MAX_SAVED_ADDRESSES = 3
+
+
+def _saved_address_json(addr):
+    return {
+        'id': addr.id,
+        'label': addr.label,
+        'full_name': addr.full_name,
+        'mobile_number': addr.mobile_number,
+        'house_flat_number': addr.house_flat_number,
+        'street_area': addr.street_area,
+        'landmark': addr.landmark or '',
+        'city': addr.city,
+        'district': addr.district,
+        'state': addr.state,
+        'country': addr.country,
+        'pin_code': addr.pin_code,
+    }
+
+
+def save_address(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    user = get_object_or_404(SiteUser, id=user_id)
+
+    if user.saved_addresses.count() >= MAX_SAVED_ADDRESSES:
+        return JsonResponse({
+            'success': False,
+            'error': f'You can only save up to {MAX_SAVED_ADDRESSES} addresses. Delete one to save a new one.',
+        })
+
+    full_name = request.POST.get('full_name', '').strip()
+    mobile_number = request.POST.get('mobile_number', '').strip()
+    house_flat_number = request.POST.get('house_flat_number', '').strip()
+    street_area = request.POST.get('street_area', '').strip()
+    landmark = request.POST.get('landmark', '').strip()
+    city = request.POST.get('city', '').strip()
+    district = request.POST.get('district', '').strip()
+    state = request.POST.get('state', '').strip()
+    country = request.POST.get('country', 'India').strip() or 'India'
+    pin_code = request.POST.get('pin_code', '').strip()
+    label = request.POST.get('label', '').strip()
+
+    if not all([full_name, mobile_number, house_flat_number, street_area, city, district, state]):
+        return JsonResponse({'success': False, 'error': 'Please fill in the shipping address fields before saving.'})
+
+    if not is_valid_phone(mobile_number):
+        return JsonResponse({'success': False, 'error': 'Mobile number must be exactly 10 digits.'})
+
+    if not is_valid_pincode(pin_code):
+        return JsonResponse({'success': False, 'error': 'PIN code must be exactly 6 digits.'})
+
+    if not label:
+        label = f'Address {user.saved_addresses.count() + 1}'
+
+    addr = SavedAddress.objects.create(
+        user=user, label=label, full_name=full_name, mobile_number=mobile_number,
+        house_flat_number=house_flat_number, street_area=street_area, landmark=landmark,
+        city=city, district=district, state=state, country=country, pin_code=pin_code,
+    )
+
+    addresses = user.saved_addresses.all()
+    return JsonResponse({'success': True, 'address': _saved_address_json(addr), 'addresses': [_saved_address_json(a) for a in addresses]})
+
+
+def delete_address(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    SavedAddress.objects.filter(id=pk, user_id=user_id).delete()
+    addresses = SavedAddress.objects.filter(user_id=user_id)
+    return JsonResponse({'success': True, 'addresses': [_saved_address_json(a) for a in addresses]})
 
 
 def _cart_item_json(item):

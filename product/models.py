@@ -104,6 +104,33 @@ class UserData(models.Model):
     def __str__(self):
         return f"{self.full_name} ({self.user.email})"
 
+
+class SavedAddress(models.Model):
+    """Up to 3 addresses a user can save at checkout and pick between later,
+    instead of retyping shipping details for every order."""
+    user = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='saved_addresses')
+    label = models.CharField(max_length=50, blank=True)
+    full_name = models.CharField(max_length=255)
+    mobile_number = models.CharField(max_length=20)
+    house_flat_number = models.CharField(max_length=255)
+    street_area = models.CharField(max_length=255)
+    landmark = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100, default='India')
+    pin_code = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'saved_addresses'
+        verbose_name = 'Saved Address'
+        verbose_name_plural = 'Saved Addresses'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.label or self.full_name} ({self.user.email})"
+
 class Order(models.Model):
     user = models.ForeignKey(SiteUser, on_delete=models.CASCADE, related_name='orders')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

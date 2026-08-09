@@ -14,8 +14,14 @@
         .checkout-container { max-width: 1140px; margin: 60px auto; padding: 0 15px; }
         .checkout-card { background: #fff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
 
-        .checkout-summary-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); position: sticky; top: 100px; }
+        .checkout-summary-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
         .checkout-summary-title { font-family: var(--heading-font); color: var(--primary-color); font-weight: 700; margin-bottom: 20px; }
+
+        .saved-address-item { border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .saved-address-item:last-child { margin-bottom: 0; }
+        .saved-address-label { font-weight: 700; color: var(--primary-color); margin-bottom: 6px; }
+        .saved-address-text { font-size: 0.88rem; color: var(--text-color); line-height: 1.5; margin-bottom: 10px; }
+        .saved-address-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .checkout-summary-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .checkout-summary-item:last-child { border-bottom: none; }
         .checkout-summary-item img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); flex-shrink: 0; }
@@ -105,11 +111,11 @@
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="full_name" class="form-control" required value="{{ user_data.full_name|default:'' }}">
+                        <input type="text" name="full_name" id="fullNameInput" class="form-control" required value="{{ user_data.full_name|default:'' }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Mobile Number</label>
-                        <input type="tel" name="mobile_number" class="form-control" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter a 10-digit mobile number" required value="{{ user_data.mobile_number|default:'' }}">
+                        <input type="tel" name="mobile_number" id="mobileNumberInput" class="form-control" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter a 10-digit mobile number" required value="{{ user_data.mobile_number|default:'' }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email Address</label>
@@ -122,36 +128,41 @@
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label class="form-label">House/Flat Number</label>
-                        <input type="text" name="house_flat_number" class="form-control" required value="{{ user_data.house_flat_number|default:'' }}">
+                        <input type="text" name="house_flat_number" id="houseFlatNumberInput" class="form-control" required value="{{ user_data.house_flat_number|default:'' }}">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label">Street/Area</label>
-                        <input type="text" name="street_area" class="form-control" required value="{{ user_data.street_area|default:'' }}">
+                        <input type="text" name="street_area" id="streetAreaInput" class="form-control" required value="{{ user_data.street_area|default:'' }}">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label">Landmark (Optional)</label>
-                        <input type="text" name="landmark" class="form-control" value="{{ user_data.landmark|default:'' }}">
+                        <input type="text" name="landmark" id="landmarkInput" class="form-control" value="{{ user_data.landmark|default:'' }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">City</label>
-                        <input type="text" name="city" class="form-control" required value="{{ user_data.city|default:'' }}">
+                        <input type="text" name="city" id="cityInput" class="form-control" required value="{{ user_data.city|default:'' }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">District</label>
-                        <input type="text" name="district" class="form-control" required value="{{ user_data.district|default:'' }}">
+                        <input type="text" name="district" id="districtInput" class="form-control" required value="{{ user_data.district|default:'' }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">State</label>
-                        <input type="text" name="state" class="form-control" required value="{{ user_data.state|default:'' }}">
+                        <input type="text" name="state" id="stateInput" class="form-control" required value="{{ user_data.state|default:'' }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Country</label>
-                        <input type="text" name="country" class="form-control" required value="{{ user_data.country|default:'India' }}">
+                        <input type="text" name="country" id="countryInput" class="form-control" required value="{{ user_data.country|default:'India' }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">PIN Code</label>
-                        <input type="text" name="pin_code" class="form-control" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" title="Enter a 6-digit PIN code" required value="{{ user_data.pin_code|default:'' }}">
+                        <input type="text" name="pin_code" id="pinCodeInput" class="form-control" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" title="Enter a 6-digit PIN code" required value="{{ user_data.pin_code|default:'' }}">
                     </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="button" id="saveAddressBtn" class="btn btn-outline-standalone">+ Save this address</button>
+                    <span id="saveAddressMsg" class="small ms-2"></span>
                 </div>
 
                 <h3 class="section-title">Order Notes (Optional)</h3>
@@ -167,6 +178,35 @@
         </div>
 
         <div class="col-lg-5">
+        <div class="checkout-summary-card mb-4">
+            <h3 class="checkout-summary-title">Saved Addresses</h3>
+            <div id="savedAddressList">
+                {% for addr in saved_addresses %}
+                <div class="saved-address-item" data-address-id="{{ addr.id }}"
+                    data-full-name="{{ addr.full_name }}" data-mobile-number="{{ addr.mobile_number }}"
+                    data-house-flat-number="{{ addr.house_flat_number }}" data-street-area="{{ addr.street_area }}"
+                    data-landmark="{{ addr.landmark|default:'' }}" data-city="{{ addr.city }}"
+                    data-district="{{ addr.district }}" data-state="{{ addr.state }}"
+                    data-country="{{ addr.country }}" data-pin-code="{{ addr.pin_code }}">
+                    <div class="saved-address-label">{{ addr.label }}</div>
+                    <div class="saved-address-text">
+                        {{ addr.full_name }}<br>
+                        {{ addr.house_flat_number }}, {{ addr.street_area }}{% if addr.landmark %}, {{ addr.landmark }}{% endif %}<br>
+                        {{ addr.city }}, {{ addr.district }}, {{ addr.state }} - {{ addr.pin_code }}<br>
+                        Phone: {{ addr.mobile_number }}
+                    </div>
+                    <div class="saved-address-actions">
+                        <button type="button" class="btn btn-sm btn-outline-standalone use-address-btn">Use this address</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary delete-address-btn">Remove</button>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0" id="savedAddressEmptyMsg">No saved addresses yet. Fill in the shipping address and click "Save this address" to reuse it next time.</p>
+                {% endfor %}
+            </div>
+            <p class="small text-muted mt-2 mb-0">You can save up to 3 addresses. Remove one to save a new one.</p>
+        </div>
+
         <div class="checkout-summary-card">
             <h3 class="checkout-summary-title">Order Summary</h3>
             <div id="checkoutSummaryItems"></div>
@@ -325,6 +365,135 @@
                 refreshCart().then(renderCheckoutSummary);
             }
         });
+
+        // Saved addresses: pick one to fill the shipping form, save the
+        // current form as a new address, or remove one to free up a slot.
+        function csrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        function fillAddressForm(data) {
+            document.getElementById('fullNameInput').value = data.fullName || '';
+            document.getElementById('mobileNumberInput').value = data.mobileNumber || '';
+            document.getElementById('houseFlatNumberInput').value = data.houseFlatNumber || '';
+            document.getElementById('streetAreaInput').value = data.streetArea || '';
+            document.getElementById('landmarkInput').value = data.landmark || '';
+            document.getElementById('cityInput').value = data.city || '';
+            document.getElementById('districtInput').value = data.district || '';
+            document.getElementById('stateInput').value = data.state || '';
+            document.getElementById('countryInput').value = data.country || 'India';
+            document.getElementById('pinCodeInput').value = data.pinCode || '';
+        }
+
+        function renderSavedAddresses(addresses) {
+            const listEl = document.getElementById('savedAddressList');
+            if (!addresses.length) {
+                listEl.innerHTML = '<p class="text-muted mb-0" id="savedAddressEmptyMsg">No saved addresses yet. Fill in the shipping address and click "Save this address" to reuse it next time.</p>';
+                return;
+            }
+            listEl.innerHTML = addresses.map(function (addr) {
+                const landmarkPart = addr.landmark ? ', ' + escapeHtml(addr.landmark) : '';
+                return `
+                    <div class="saved-address-item" data-address-id="${addr.id}"
+                        data-full-name="${escapeHtml(addr.full_name)}" data-mobile-number="${escapeHtml(addr.mobile_number)}"
+                        data-house-flat-number="${escapeHtml(addr.house_flat_number)}" data-street-area="${escapeHtml(addr.street_area)}"
+                        data-landmark="${escapeHtml(addr.landmark || '')}" data-city="${escapeHtml(addr.city)}"
+                        data-district="${escapeHtml(addr.district)}" data-state="${escapeHtml(addr.state)}"
+                        data-country="${escapeHtml(addr.country)}" data-pin-code="${escapeHtml(addr.pin_code)}">
+                        <div class="saved-address-label">${escapeHtml(addr.label)}</div>
+                        <div class="saved-address-text">
+                            ${escapeHtml(addr.full_name)}<br>
+                            ${escapeHtml(addr.house_flat_number)}, ${escapeHtml(addr.street_area)}${landmarkPart}<br>
+                            ${escapeHtml(addr.city)}, ${escapeHtml(addr.district)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pin_code)}<br>
+                            Phone: ${escapeHtml(addr.mobile_number)}
+                        </div>
+                        <div class="saved-address-actions">
+                            <button type="button" class="btn btn-sm btn-outline-standalone use-address-btn">Use this address</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary delete-address-btn">Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const savedAddressListEl = document.getElementById('savedAddressList');
+        if (savedAddressListEl) {
+            savedAddressListEl.addEventListener('click', function (e) {
+                const item = e.target.closest('.saved-address-item');
+                if (!item) return;
+
+                if (e.target.classList.contains('use-address-btn')) {
+                    fillAddressForm({
+                        fullName: item.dataset.fullName,
+                        mobileNumber: item.dataset.mobileNumber,
+                        houseFlatNumber: item.dataset.houseFlatNumber,
+                        streetArea: item.dataset.streetArea,
+                        landmark: item.dataset.landmark,
+                        city: item.dataset.city,
+                        district: item.dataset.district,
+                        state: item.dataset.state,
+                        country: item.dataset.country,
+                        pinCode: item.dataset.pinCode,
+                    });
+                } else if (e.target.classList.contains('delete-address-btn')) {
+                    fetch(`/checkout/address/delete/${item.dataset.addressId}/`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (data.success) renderSavedAddresses(data.addresses);
+                        });
+                }
+            });
+        }
+
+        const saveAddressBtn = document.getElementById('saveAddressBtn');
+        if (saveAddressBtn) {
+            saveAddressBtn.addEventListener('click', function () {
+                const msgEl = document.getElementById('saveAddressMsg');
+                msgEl.textContent = '';
+                msgEl.className = 'small ms-2';
+
+                const formData = new URLSearchParams({
+                    full_name: document.getElementById('fullNameInput').value,
+                    mobile_number: document.getElementById('mobileNumberInput').value,
+                    house_flat_number: document.getElementById('houseFlatNumberInput').value,
+                    street_area: document.getElementById('streetAreaInput').value,
+                    landmark: document.getElementById('landmarkInput').value,
+                    city: document.getElementById('cityInput').value,
+                    district: document.getElementById('districtInput').value,
+                    state: document.getElementById('stateInput').value,
+                    country: document.getElementById('countryInput').value,
+                    pin_code: document.getElementById('pinCodeInput').value,
+                });
+
+                fetch("{% url 'save_address' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData,
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        if (data.success) {
+                            renderSavedAddresses(data.addresses);
+                            msgEl.textContent = 'Saved!';
+                            msgEl.className = 'small ms-2 text-success';
+                        } else {
+                            msgEl.textContent = data.error || 'Unable to save address.';
+                            msgEl.className = 'small ms-2 text-danger';
+                        }
+                    })
+                    .catch(function () {
+                        msgEl.textContent = 'Unable to save address.';
+                        msgEl.className = 'small ms-2 text-danger';
+                    });
+            });
+        }
 
         function fmt(amount) {
             return typeof formatPrice === 'function' ? formatPrice(amount) : ('₹' + amount.toFixed(2));
