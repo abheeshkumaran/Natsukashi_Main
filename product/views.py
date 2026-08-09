@@ -25,16 +25,14 @@ from django.core.exceptions import ValidationError
 PHONE_RE = re.compile(r'^\d{10}$')
 PINCODE_RE = re.compile(r'^\d{6}$')
 
-# The five order-progress stages shown on the customer-facing order detail
+# The order-progress stages shown on the customer-facing order detail
 # stepper and offered in the admin "Update Status" / "Filter by Status"
 # dropdowns. 'value' matches the raw (sometimes misspelled, e.g. 'shiped',
 # 'deliverd') strings already stored in Order.status so existing data keeps
 # working; 'label' is the corrected display text.
 ORDER_STATUS_STAGES = [
     {'value': 'order placed', 'label': 'Order Placed'},
-    {'value': 'packed', 'label': 'Packed'},
     {'value': 'shiped', 'label': 'Shipped'},
-    {'value': 'out of delivery', 'label': 'Out for Delivery'},
     {'value': 'deliverd', 'label': 'Delivered'},
 ]
 
