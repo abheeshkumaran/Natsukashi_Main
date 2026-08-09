@@ -11,6 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
     <style>
+        /* style.css sets html { zoom: 1.1 } site-wide. Safari (iOS + macOS) mispositions
+           fixed-position overlays under a zoomed html — Razorpay's checkout modal is a
+           fixed-position overlay, so it renders shifted below the visible viewport.
+           Neutralize the zoom on this page only, ahead of the Razorpay script running. */
+        html { zoom: 1; }
+
         .checkout-container { max-width: 1140px; margin: 60px auto; padding: 0 15px; }
         .checkout-card { background: #fff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
 
