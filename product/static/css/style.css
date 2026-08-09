@@ -72,6 +72,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     border: 1px solid transparent;
     border-radius: 6px;
     font-weight: 500;
+    font-size: 0.85rem;
     position: relative;
     transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -723,8 +724,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     right: 15px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -963,17 +964,18 @@ footer {
 }
 
 .wishlist-toggle-btn {
-    color: #ccc;
-    font-size: 1.5rem;
+    color: #bbb; /* clearly "not wishlisted yet" - hollow/grey heart */
+    font-size: 2rem;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
 .wishlist-toggle-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
     color: #ffb6b6;
 }
 
 .wishlist-toggle-btn.active {
-    color: #e74c3c !important; /* solid red when active */
+    color: #e74c3c !important; /* solid red once wishlisted - clear variation from the grey default */
+    transform: scale(1.1);
 }
