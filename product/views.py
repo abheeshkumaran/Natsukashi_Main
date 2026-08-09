@@ -16,6 +16,31 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
 from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem
 
+import re
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
+PHONE_RE = re.compile(r'^\d{10}$')
+PINCODE_RE = re.compile(r'^\d{6}$')
+
+
+def is_valid_phone(value):
+    return bool(value) and bool(PHONE_RE.fullmatch(value.strip()))
+
+
+def is_valid_pincode(value):
+    return bool(value) and bool(PINCODE_RE.fullmatch(value.strip()))
+
+
+def is_valid_email(value):
+    if not value:
+        return False
+    try:
+        validate_email(value.strip())
+        return True
+    except ValidationError:
+        return False
+
 
 def get_razorpay_client():
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -190,6 +215,10 @@ def admin_profile(request):
 
             if not (name and email and phone):
                 details_error = 'All fields are required.'
+            elif not is_valid_email(email):
+                details_error = 'Please enter a valid email address.'
+            elif not is_valid_phone(phone):
+                details_error = 'Phone number must be exactly 10 digits.'
             elif SiteUser.objects.filter(email__iexact=email).exclude(id=site_user.id).exists():
                 details_error = 'This email is already used by another account.'
             elif SiteUser.objects.filter(phone=phone).exclude(id=site_user.id).exists():
@@ -373,6 +402,14 @@ def register_user(request):
             messages.error(request, 'Passwords do not match!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
+        if not is_valid_email(email):
+            messages.error(request, 'Please enter a valid email address.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        if not is_valid_phone(phone):
+            messages.error(request, 'Phone number must be exactly 10 digits.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
         if SiteUser.objects.filter(email=email).exists():
             messages.error(request, 'Email is already registered!')
             return redirect(request.META.get('HTTP_REFERER', '/'))
@@ -425,6 +462,9 @@ def guest_login(request):
 
         if not name or not phone or not password:
             return JsonResponse({'success': False, 'error': 'Name, phone number and password are required.'})
+
+        if not is_valid_phone(phone):
+            return JsonResponse({'success': False, 'error': 'Phone number must be exactly 10 digits.'})
 
         user = SiteUser.objects.filter(phone=phone).first()
         if user:
@@ -599,9 +639,20 @@ def list_users(request):
 def edit_user(request, pk):
     user = get_object_or_404(SiteUser, pk=pk)
     if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+
+        if not is_valid_email(email):
+            messages.error(request, 'Please enter a valid email address.')
+            return render(request, 'admin/edit_user.html', {'site_user': user})
+
+        if not is_valid_phone(phone):
+            messages.error(request, 'Phone number must be exactly 10 digits.')
+            return render(request, 'admin/edit_user.html', {'site_user': user})
+
         user.name = request.POST.get('name')
-        user.email = request.POST.get('email')
-        user.phone = request.POST.get('phone')
+        user.email = email
+        user.phone = phone
         user.save()
         messages.success(request, 'User updated successfully.')
         return redirect('list_users')
@@ -1025,10 +1076,23 @@ def checkout_create_payment(request):
     if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
         return JsonResponse({'success': False, 'error': 'Online payment is not configured yet. Please contact support.'})
 
+    mobile_number = request.POST.get('mobile_number', '').strip()
+    email_address = request.POST.get('email_address', '').strip()
+    pin_code = request.POST.get('pin_code', '').strip()
+
+    if not is_valid_phone(mobile_number):
+        return JsonResponse({'success': False, 'error': 'Mobile number must be exactly 10 digits.'})
+
+    if not is_valid_email(email_address):
+        return JsonResponse({'success': False, 'error': 'Please enter a valid email address.'})
+
+    if not is_valid_pincode(pin_code):
+        return JsonResponse({'success': False, 'error': 'PIN code must be exactly 6 digits.'})
+
     shipping = {
         'full_name': request.POST.get('full_name', ''),
-        'mobile_number': request.POST.get('mobile_number', ''),
-        'email_address': request.POST.get('email_address', ''),
+        'mobile_number': mobile_number,
+        'email_address': email_address,
         'house_flat_number': request.POST.get('house_flat_number', ''),
         'street_area': request.POST.get('street_area', ''),
         'landmark': request.POST.get('landmark', ''),
@@ -1036,7 +1100,7 @@ def checkout_create_payment(request):
         'district': request.POST.get('district', ''),
         'state': request.POST.get('state', ''),
         'country': request.POST.get('country', 'India'),
-        'pin_code': request.POST.get('pin_code', ''),
+        'pin_code': pin_code,
         'order_notes': request.POST.get('order_notes', ''),
     }
 
@@ -1442,10 +1506,22 @@ def manual_selling(request):
         order_notes = request.POST.get('order_notes', '')
         
         payment_type = request.POST.get('payment_type')
-        
+
+        if not is_valid_phone(mobile_number):
+            messages.error(request, 'Mobile number must be exactly 10 digits.')
+            return redirect('manual_selling')
+
+        if not is_valid_email(email_address):
+            messages.error(request, 'Please enter a valid email address.')
+            return redirect('manual_selling')
+
+        if not is_valid_pincode(pin_code):
+            messages.error(request, 'PIN code must be exactly 6 digits.')
+            return redirect('manual_selling')
+
         site_user = get_object_or_404(SiteUser, id=user_id)
         product = get_object_or_404(Product, id=product_id)
-        
+
         total_amount = product.price * quantity
 
         with transaction.atomic():

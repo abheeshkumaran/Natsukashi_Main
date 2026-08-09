@@ -103,7 +103,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Mobile Number</label>
-                        <input type="tel" name="mobile_number" class="form-control" required value="{{ user_data.mobile_number|default:'' }}">
+                        <input type="tel" name="mobile_number" class="form-control" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter a 10-digit mobile number" required value="{{ user_data.mobile_number|default:'' }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email Address</label>
@@ -143,7 +143,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">PIN Code</label>
-                        <input type="text" name="pin_code" class="form-control" required value="{{ user_data.pin_code|default:'' }}">
+                        <input type="text" name="pin_code" class="form-control" pattern="[0-9]{6}" maxlength="6" inputmode="numeric" title="Enter a 6-digit PIN code" required value="{{ user_data.pin_code|default:'' }}">
                     </div>
                 </div>
 
@@ -185,12 +185,12 @@
 
                     <div class="coupon-box">
                         <label class="form-label fw-bold mb-2">Have a coupon?</label>
-                        <div class="row g-2">
+                        <div class="row g-2 align-items-stretch">
                             <div class="col-8">
-                                <input type="text" id="couponCodeInput" class="form-control" placeholder="Coupon Code">
+                                <input type="text" id="couponCodeInput" class="form-control h-100" placeholder="Coupon Code">
                             </div>
                             <div class="col-4">
-                                <button type="button" id="applyCouponBtn" class="btn btn-card-outline w-100">Apply Coupon</button>
+                                <button type="button" id="applyCouponBtn" class="btn btn-outline-standalone w-100">Apply Coupon</button>
                             </div>
                         </div>
                         <div id="couponMsg" class="small mt-2" style="display: none;"></div>

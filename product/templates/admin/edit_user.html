@@ -25,7 +25,7 @@
                             
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Phone Number</label>
-                                <input type="text" name="phone" class="form-control" value="{{ site_user.phone }}" required>
+                                <input type="tel" name="phone" class="form-control" value="{{ site_user.phone }}" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Enter a 10-digit phone number" required>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100 py-2">Update User Details</button>
