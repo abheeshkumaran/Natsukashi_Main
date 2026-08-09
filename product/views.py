@@ -539,9 +539,15 @@ def guest_login(request):
 
         user = SiteUser.objects.filter(phone=phone).first()
         if user:
-            user.name = name
-            user.set_password(password)
-            user.save(update_fields=['name', 'password'])
+            # This phone number already belongs to an existing account - never
+            # silently overwrite its name/password just because a guest
+            # checkout form was submitted with a matching number. Only let
+            # them in if the password they typed actually matches.
+            if not user.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'This phone number is already registered. Please log in with your password instead.',
+                })
         else:
             user = SiteUser(name=name, email=f'guest_{phone}@guest.natsukashii.local', phone=phone)
             user.set_password(password)
@@ -1192,6 +1198,8 @@ def checkout_create_payment(request):
         return JsonResponse({'success': False, 'error': 'Online payment is not configured yet. Please contact support.'})
 
     mobile_number = request.POST.get('mobile_number', '').strip()
+    # Asked fresh at checkout every time - not pre-filled/reused from the
+    # account's registration email or any saved shipping profile.
     email_address = request.POST.get('email_address', '').strip()
     pin_code = request.POST.get('pin_code', '').strip()
 
