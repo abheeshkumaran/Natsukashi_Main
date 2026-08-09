@@ -48,7 +48,9 @@ Two concurrent buyers of the last unit can both pay successfully, causing an ove
 
 **Fix direction:** validate requested quantity against current stock in `checkout_create_payment` before creating the Razorpay order, and re-check inside the `transaction.atomic()` block in `checkout_verify_payment` (with a `select_for_update()` or similar) before decrementing, so a losing concurrent request fails instead of overselling.
 
-**Status:** Not fixed.
+**Status:** Mostly fixed. `checkout_create_payment` now rejects the request up front if `product.quantity < qty` or the product isn't `stock_available`, so a Razorpay order is never created for something that's already out of stock. `checkout_verify_payment` now takes a `select_for_update()` row lock on each product before decrementing, so two verify calls racing on the same product serialize instead of both reading the same starting quantity.
+
+Not fully closed: there's still a window between `checkout_create_payment`'s check and the customer actually completing payment in the Razorpay popup. If two people are mid-payment for the last unit at the same time, both can still succeed (each already paid Razorpay before either verify call runs) - avoiding that completely requires reserving stock at order-creation time (with a release-on-timeout) or moving to Razorpay's manual-capture flow, which is a bigger change than this fix. This is the same underlying gap as issue #3.
 
 ---
 
@@ -60,7 +62,11 @@ Order creation only happens client-side, triggered by Razorpay's JS `handler` ca
 
 **Fix direction:** add a Razorpay webhook endpoint (e.g. `payment.captured` event) that creates the Order server-side independent of the browser session, using the same logic as `checkout_verify_payment`. Requires configuring a webhook secret and signature verification.
 
-**Status:** Not fixed.
+A real fix needs the Order to be creatable without the browser's session (Razorpay's servers call the webhook, not the customer's browser, so `request.session['pending_order']` isn't available to it). The clean way to do that: create the `Order` immediately when payment starts (status `'Payment Pending'`), then have both the browser callback (`checkout_verify_payment`) and the new webhook flip it to `'Order Placed'` - whichever fires first, guarded by the same idempotency check added for issue #4.
+
+Trade-off discussed with the team: this means an abandoned checkout (customer closes the Razorpay popup without paying) leaves a permanent `'Payment Pending'` row instead of vanishing like today, which would show up in `my_orders.html` and the admin order lists unless explicitly filtered out. Decided to **defer this** until there's a decision on how pending/abandoned orders should be surfaced to customers vs. admins, rather than ship that UX change bundled into a bug fix.
+
+**Status:** Deliberately deferred (2026-08-09). Not fixed. Revisit once the pending-order UX question above is decided.
 
 ---
 
@@ -72,4 +78,6 @@ Order creation only happens client-side, triggered by Razorpay's JS `handler` ca
 
 **Fix direction:** add a unique constraint on `razorpay_payment_id` (nullable, so it doesn't affect non-Razorpay orders), and have `checkout_verify_payment` check for an existing order with that payment ID first and short-circuit if found.
 
-**Status:** Not fixed.
+**Status:** Mostly fixed. `checkout_verify_payment` now checks `Order.objects.filter(razorpay_order_id=razorpay_order_id).first()` at the top of its atomic block and, if found, returns success without creating a second `Order`/`OrderItem`s or decrementing stock again - this covers double-clicks and client-side retries, which is the realistic case today (the confirm button is also disabled client-side while a request is in flight).
+
+Not fully closed: this is an application-level check, not a DB-level guarantee - a genuine simultaneous race (two requests hitting the check at the same instant, before either has committed its `Order.objects.create()`) could theoretically still slip through. Closing that fully needs a `unique=True` constraint on `Order.razorpay_order_id`, which requires a migration against the shared database - deferred alongside issue #3 since it's the same "needs a schema change" category, and the two are easiest to do together once the webhook design is settled.

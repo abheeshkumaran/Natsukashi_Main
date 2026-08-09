@@ -1166,6 +1166,8 @@ def checkout_create_payment(request):
         product = Product.objects.filter(pk=product_id).first()
         if not product:
             return JsonResponse({'success': False, 'error': 'One or more items in your cart are no longer available. Please refresh and try again.'})
+        if not product.stock_available or product.quantity < qty:
+            return JsonResponse({'success': False, 'error': f'"{product.collection_name}" only has {product.quantity} left in stock. Please update your cart.'})
         verified_items.append({
             'id': str(product.id),
             'type': entry.get('type', 'product'),
@@ -1299,6 +1301,14 @@ def checkout_verify_payment(request):
     total_amount = pending.get('total_amount', 0)
 
     with transaction.atomic():
+        # Idempotency guard: if this Razorpay order was already turned into
+        # an Order (e.g. a retried/duplicated verify call), don't create a
+        # second one - just report success again.
+        existing_order = Order.objects.filter(razorpay_order_id=razorpay_order_id).first()
+        if existing_order:
+            request.session.pop('pending_order', None)
+            return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
+
         order = Order.objects.create(
             user=user,
             total_amount=total_amount,
@@ -1325,6 +1335,12 @@ def checkout_verify_payment(request):
             )
 
             if product_id:
+                # select_for_update locks the row for the rest of this
+                # transaction, so two verify calls racing on the same
+                # product (e.g. a retry firing concurrently) decrement
+                # stock one after another instead of both reading the same
+                # starting quantity.
+                Product.objects.select_for_update().filter(pk=product_id).first()
                 Product.objects.filter(pk=product_id).update(
                     quantity=Greatest(F('quantity') - qty, Value(0))
                 )
