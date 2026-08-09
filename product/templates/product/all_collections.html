@@ -103,6 +103,8 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
                             {% if request.session.site_user_name %}
+                            <li><span class="dropdown-item-text text-muted">👤 {{ request.session.site_user_name }}</span></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                             {% else %}
                             <li><a class="dropdown-item" href="javascript:void(0)" onclick="openAuthModal()">Login</a></li>

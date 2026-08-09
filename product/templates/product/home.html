@@ -73,6 +73,8 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
                             {% if request.session.site_user_name %}
+                            <li><span class="dropdown-item-text text-muted">👤 {{ request.session.site_user_name }}</span></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                             {% else %}
                             <li><a class="dropdown-item" href="javascript:void(0)" onclick="openAuthModal()">Login</a></li>
@@ -328,6 +330,25 @@
             }, { threshold: 0.2 });
 
             document.querySelectorAll('.reveal-left').forEach(el => observer.observe(el));
+        })();
+
+        // Auto-open a product's detail popup when arriving via a
+        // "?product=<id>" link (e.g. from My Orders, to reorder something).
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('product');
+            if (!productId) return;
+
+            if (typeof openProductModal === 'function') {
+                openProductModal('product', productId);
+            }
+
+            // Drop the param from the URL so refreshing/sharing the link
+            // doesn't keep reopening the popup.
+            params.delete('product');
+            const newQuery = params.toString();
+            const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '') + window.location.hash;
+            window.history.replaceState({}, '', newUrl);
         })();
 
         // Triple click on navbar logo to open admin panel
