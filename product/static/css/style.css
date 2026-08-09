@@ -11,7 +11,12 @@
 }
 
 html {
-    zoom: 1.1;
+    /* Was `zoom: 1.1`. `zoom` is non-standard and Safari (iOS + macOS)
+       mispositions position:fixed overlays (cart/wishlist drawers, search
+       panel, auth modal, Razorpay checkout) under a zoomed html — they
+       render shifted off-viewport. font-size scaling gets the same overall
+       size bump via rem-based spacing without that bug. */
+    font-size: 110%;
 }
 
 body {
@@ -105,13 +110,6 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 .nav-link:hover::after {
     transform: scaleX(1);
-}
-
-@media (min-width: 992px) {
-    .navbar-nav .dropdown:hover > .dropdown-menu {
-        display: block;
-        margin-top: 0;
-    }
 }
 
 @media (max-width: 991.98px) {

@@ -143,11 +143,33 @@ function addToCart(btn) {
     });
 }
 
+let cartRequestSeq = 0;
+
 function changeQty(id, type, delta) {
     const item = getCart().find((i) => i.id === id && i.type === type);
     if (!item) return;
     const newQty = item.qty + delta;
-    cartApiCall('/cart/update/', { product_id: id, qty: newQty }).then(applyCartResponse);
+
+    // Reflect the change immediately instead of waiting on the network
+    // round-trip, then reconcile with the server's response below.
+    if (newQty <= 0) {
+        cartCache = cartCache.filter((i) => !(i.id === id && i.type === type));
+    } else {
+        item.qty = newQty;
+    }
+    renderAllCartUI();
+
+    const requestId = ++cartRequestSeq;
+    cartApiCall('/cart/update/', { product_id: id, qty: newQty }).then((data) => {
+        if (requestId !== cartRequestSeq) return; // superseded by a later change
+        if (data && data.success) {
+            applyCartResponse(data);
+        } else {
+            refreshCart();
+        }
+    }).catch(() => {
+        if (requestId === cartRequestSeq) refreshCart();
+    });
 }
 
 function removeFromCart(id, type) {

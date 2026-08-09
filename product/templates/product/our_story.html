@@ -107,6 +107,7 @@
     }
 
     .scroll-body {
+        position: relative;
         background-image: url("{% static 'images/scroll_mid.png' %}");
         background-repeat: no-repeat;
         background-size: 100% 100%;
@@ -186,11 +187,49 @@
     @media (max-width: 767px) {
         .scroll-section { padding: 25px 8px 35px; }
         .scroll-wrap { filter: drop-shadow(0 10px 18px rgba(80, 60, 30, 0.3)); }
-        .scroll-body { padding: 40px 27% 30px; }
+        /* Bottom edge of .scroll-body is a jagged clip-path (torn-paper look);
+           its shallowest notch sits ~97% down the box. 27% side padding
+           squeezed the signature line onto extra wrapped lines, pushing the
+           last line into that notch zone and clipping it. Narrower side
+           padding (the decorative border in scroll_mid.png is much thinner
+           than 27%) shortens the wrap and leaves a clear gap before the
+           border art, and more bottom padding adds clearance above the
+           notches. */
+        .scroll-body { padding: 40px 19% 65px; }
         .story-content { font-size: 0.82rem; line-height: 1.7; }
         .story-title { margin-bottom: 10px; }
         .story-title img { max-width: 130px !important; }
         .story-signature { margin-top: 12px; }
+
+        /* Widen the leaf border on mobile: the border art is baked into
+           scroll_mid.png at ~15% of its width, so a plain wider padding
+           alone wouldn't make it look thicker (background-size: 100% 100%
+           always renders that same 15% slice). These strips re-crop just
+           the border edge of the same image and stretch it across a wider
+           column instead, so it reads as a thicker leaf pattern. Text
+           padding above is kept past 20% so it never sits under them. */
+        .scroll-body::before,
+        .scroll-body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 17%;
+            background-image: url("{% static 'images/scroll_mid.png' %}");
+            background-repeat: no-repeat;
+            background-size: 667% 100%;
+            pointer-events: none;
+        }
+
+        .scroll-body::before {
+            left: 0;
+            background-position: left top;
+        }
+
+        .scroll-body::after {
+            right: 0;
+            background-position: right top;
+        }
     }
 </style>
 
