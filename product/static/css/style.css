@@ -914,6 +914,20 @@ footer {
     color: #6F665E;
 }
 
+@media (max-width: 767.98px) {
+    /* Smaller footer text on mobile so long lines (the contact email in
+       particular) fit on a single line instead of wrapping awkwardly. */
+    .footer-title {
+        font-size: 1.1rem;
+    }
+
+    .footer-link,
+    .footer-text,
+    .footer-bottom {
+        font-size: 0.75rem;
+    }
+}
+
 
 /* Modal styling */
 .modal-content {
