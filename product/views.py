@@ -16,7 +16,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, SavedAddress
 
 import re
 from django.core.validators import validate_email
@@ -1148,18 +1148,6 @@ def _cart_item_json(item):
     }
 
 
-def _wishlist_item_json(item):
-    product = item.product
-    return {
-        'id': str(product.id),
-        'type': 'product',
-        'name': product.collection_name,
-        'price': float(product.price),
-        'image': product.first_image_url,
-        'in_stock': product.stock_available and product.quantity > 0,
-    }
-
-
 def cart_list(request):
     user_id = request.session.get('site_user_id')
     if not user_id:
@@ -1254,80 +1242,6 @@ def cart_merge(request):
 
     items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
     return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
-
-
-def wishlist_list(request):
-    user_id = request.session.get('site_user_id')
-    if not user_id:
-        return JsonResponse({'success': True, 'items': []})
-    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
-    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
-
-
-def wishlist_page(request):
-    user_id = request.session.get('site_user_id')
-    if not user_id:
-        messages.error(request, 'Please login to view your wishlist.')
-        return redirect('home')
-
-    products = Product.objects.filter(wishlist_items__user_id=user_id).prefetch_related('images').order_by('-wishlist_items__added_at')
-    return render(request, 'product/wishlist_page.html', {'products': products})
-
-
-def wishlist_toggle(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request'})
-    user_id = request.session.get('site_user_id')
-    if not user_id:
-        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
-
-    product_id = request.POST.get('product_id')
-    product = get_object_or_404(Product, pk=product_id)
-
-    existing = WishlistItem.objects.filter(user_id=user_id, product=product).first()
-    if existing:
-        existing.delete()
-    else:
-        WishlistItem.objects.create(user_id=user_id, product=product)
-
-    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
-    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
-
-
-def wishlist_remove(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request'})
-    user_id = request.session.get('site_user_id')
-    if not user_id:
-        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
-
-    product_id = request.POST.get('product_id')
-    WishlistItem.objects.filter(user_id=user_id, product_id=product_id).delete()
-
-    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
-    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
-
-
-def wishlist_merge(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request'})
-    user_id = request.session.get('site_user_id')
-    if not user_id:
-        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
-
-    try:
-        incoming = json.loads(request.POST.get('items', '[]'))
-    except json.JSONDecodeError:
-        incoming = []
-
-    for entry in incoming:
-        product_id = entry.get('id')
-        if not product_id or not Product.objects.filter(pk=product_id).exists():
-            continue
-        WishlistItem.objects.get_or_create(user_id=user_id, product_id=product_id)
-
-    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
-    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
 
 
 def checkout_create_payment(request):

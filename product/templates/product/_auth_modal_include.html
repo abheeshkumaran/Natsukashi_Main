@@ -381,8 +381,8 @@
 
     // Mobile: auto-close the open hamburger menu once a nav link is picked,
     // instead of leaving it open behind the page it just navigated to (or,
-    // for links that don't navigate like "Contact"/wishlist/cart, leaving it
-    // stuck open indefinitely).
+    // for links that don't navigate like "Contact"/cart, leaving it stuck
+    // open indefinitely).
     document.addEventListener('DOMContentLoaded', function () {
         const navbarCollapseEl = document.getElementById('menu');
         if (!navbarCollapseEl || typeof bootstrap === 'undefined') return;

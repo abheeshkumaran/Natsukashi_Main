@@ -12,10 +12,10 @@
 
 html {
     /* Was `zoom: 1.1`. `zoom` is non-standard and Safari (iOS + macOS)
-       mispositions position:fixed overlays (cart/wishlist drawers, search
-       panel, auth modal, Razorpay checkout) under a zoomed html — they
-       render shifted off-viewport. font-size scaling gets the same overall
-       size bump via rem-based spacing without that bug. */
+       mispositions position:fixed overlays (cart drawer, search panel,
+       auth modal, Razorpay checkout) under a zoomed html — they render
+       shifted off-viewport. font-size scaling gets the same overall size
+       bump via rem-based spacing without that bug. */
     font-size: 110%;
 }
 
@@ -149,8 +149,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     }
 }
 
-.cart-count,
-.wishlist-count {
+.cart-count {
     position: absolute;
     top: -5px;
     right: -10px;
@@ -716,34 +715,6 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 .btn-card-outofstock:disabled {
     opacity: 1;
-}
-
-/* Small top-right wishlist heart. Deliberately a single fixed color at all
-   times (never red/never recolored on state change) - state is shown only
-   by the glyph itself swapping outline (not wishlisted) <-> filled
-   (wishlisted), never by color, and only ever changes on an explicit click. */
-.wishlist-heart-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 10;
-    transition: transform 0.2s ease;
-}
-
-.wishlist-heart-btn:hover {
-    transform: scale(1.12);
 }
 
 .stock-badge {
