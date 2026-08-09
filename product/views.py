@@ -13,6 +13,8 @@ from django.db.models import Sum, F, Q, Value
 from django.db.models.functions import Greatest
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
 from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem
 
@@ -44,6 +46,94 @@ def is_valid_email(value):
 
 def get_razorpay_client():
     return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+
+# How long a checkout attempt can sit at status='Payment Pending' before it's
+# treated as abandoned rather than just slow (e.g. a UPI app switch-and-back).
+PENDING_ORDER_TIMEOUT_MINUTES = 30
+
+
+def _cleanup_stale_pending_orders():
+    """Deletes checkout attempts that never completed payment (popup closed,
+    browser crashed, network dropped) once they're old enough to be clearly
+    abandoned. A Payment Pending order never touched stock or the buyer's
+    cart, and its only other side effect - provisionally counting toward the
+    coupon's usage_count - is reversed here, so deleting it fully rolls the
+    attempt back to as if it never happened."""
+    cutoff = timezone.now() - datetime.timedelta(minutes=PENDING_ORDER_TIMEOUT_MINUTES)
+    stale_orders = list(Order.objects.filter(status='Payment Pending', created_at__lt=cutoff))
+    for order in stale_orders:
+        if order.coupon_discount and order.coupon_code:
+            ProductCoupon.objects.filter(coupon_code__iexact=order.coupon_code).update(
+                used_count=Greatest(F('used_count') - 1, Value(0))
+            )
+        order.delete()
+
+
+def _finalize_paid_order(order, razorpay_payment_id):
+    """Marks a Payment Pending order as paid: flips its status, decrements
+    stock for its items, updates the buyer's saved shipping details, and
+    clears purchased items from their cart. Idempotent - if `order` is
+    already 'Order Placed' (finalized by whichever of the browser callback /
+    webhook got here first), this is a no-op and returns False.
+
+    Must be called with `order` already locked via select_for_update()
+    inside the caller's `with transaction.atomic():` block, so a webhook
+    firing at the same moment as the browser's own verify call can't both
+    finalize the same order."""
+    if order.status == 'Order Placed':
+        return False
+
+    order.status = 'Order Placed'
+    order.razorpay_payment_id = razorpay_payment_id
+    order.save(update_fields=['status', 'razorpay_payment_id'])
+
+    for item in order.items.all():
+        if item.product_id:
+            # Locks the product row for the rest of this transaction, same
+            # reasoning as the order lock above.
+            Product.objects.select_for_update().filter(pk=item.product_id).first()
+            Product.objects.filter(pk=item.product_id).update(
+                quantity=Greatest(F('quantity') - item.quantity, Value(0))
+            )
+
+    shipping = {
+        'full_name': order.full_name,
+        'mobile_number': order.mobile_number,
+        'email_address': order.email_address,
+        'house_flat_number': order.house_flat_number,
+        'street_area': order.street_area,
+        'landmark': order.landmark,
+        'city': order.city,
+        'district': order.district,
+        'state': order.state,
+        'country': order.country,
+        'pin_code': order.pin_code,
+        'order_notes': order.order_notes,
+    }
+    UserData.objects.update_or_create(user=order.user, defaults=shipping)
+
+    purchased_product_ids = [item.product_id for item in order.items.all() if item.product_id]
+    if purchased_product_ids:
+        CartItem.objects.filter(user=order.user, product_id__in=purchased_product_ids).delete()
+
+    return True
+
+
+def _order_email_items(order):
+    """Rebuilds the cart_items-shaped list send_order_confirmation_email/
+    send_order_acknowledgment_email expect, from an order's own OrderItems -
+    works from any context (browser callback or webhook), unlike the old
+    session-sourced cart_items."""
+    return [
+        {
+            'name': item.product_name,
+            'type': item.product_type,
+            'qty': item.quantity,
+            'price': float(item.price),
+        }
+        for item in order.items.all()
+    ]
 
 
 def send_order_confirmation_email(order, cart_items, coupon_code, coupon_discount):
@@ -347,6 +437,7 @@ def admin_profile(request):
 
 
 def admin_dashboard(request):
+    _cleanup_stale_pending_orders()
     total_product_stock = Product.objects.aggregate(total_stock=Sum('quantity'))['total_stock'] or 0
     total_product_list = Product.objects.count()
     total_orders = Order.objects.count()
@@ -1242,15 +1333,48 @@ def checkout_create_payment(request):
         logger.exception('Razorpay order creation failed')
         return JsonResponse({'success': False, 'error': 'Unable to start payment. Please try again.'})
 
-    request.session['pending_order'] = {
-        'razorpay_order_id': razorpay_order['id'],
-        'user_id': user.id,
-        'cart_items': cart_items,
-        'coupon_code': coupon_code,
-        'coupon_discount': coupon_discount,
-        'total_amount': total_amount,
-        'shipping': shipping,
-    }
+    # The Order is created now, at status='Payment Pending', rather than
+    # only after the payment succeeds. This is what lets the Razorpay
+    # webhook (below) finalize the order with no browser session to read -
+    # it just looks the order up by razorpay_order_id. Nothing here touches
+    # stock, the cart, or (beyond the provisional coupon count below) any
+    # other real side effect, so an abandoned attempt can be fully rolled
+    # back later by _cleanup_stale_pending_orders deleting this row.
+    _cleanup_stale_pending_orders()
+
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=user,
+            total_amount=total_amount,
+            status='Payment Pending',
+            purchase_type='Online',
+            payment_type='Razorpay',
+            razorpay_order_id=razorpay_order['id'],
+            coupon_code=coupon_code or None,
+            coupon_discount=coupon_discount,
+            **shipping
+        )
+
+        for item in verified_items:
+            OrderItem.objects.create(
+                order=order,
+                product_id=item['id'],
+                product_image=item['image'],
+                product_name=item['name'],
+                product_type=item['type'],
+                price=item['price'],
+                quantity=item['qty'],
+            )
+
+        if coupon_discount > 0 and coupon_code:
+            # Counted the moment a real payment attempt starts (not just on
+            # apply/preview), and reversed by _cleanup_stale_pending_orders
+            # if this attempt is abandoned - so a coupon's usage_count
+            # always reflects orders that actually happened or are still in
+            # flight, never a permanently-inflated count from abandoned carts.
+            ProductCoupon.objects.filter(coupon_code__iexact=coupon_code).update(
+                used_count=F('used_count') + 1
+            )
 
     return JsonResponse({
         'success': True,
@@ -1267,21 +1391,26 @@ def checkout_create_payment(request):
 
 
 def checkout_verify_payment(request):
-    """Verifies the Razorpay payment signature and only then creates the
-    Order, OrderItems, reduces stock and counts coupon usage."""
+    """Verifies the Razorpay payment signature, then finalizes the Payment
+    Pending order checkout_create_payment already created for this
+    razorpay_order_id. This is the fast path, triggered by Razorpay's JS
+    handler the moment the browser sees a successful payment; the
+    razorpay_webhook view below is the fallback path that finalizes the same
+    order server-side if this call never happens (tab closed, network lost)."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-    pending = request.session.get('pending_order')
-    if not pending:
-        return JsonResponse({'success': False, 'error': 'Your checkout session has expired. Please try again.'})
 
     razorpay_payment_id = request.POST.get('razorpay_payment_id', '')
     razorpay_order_id = request.POST.get('razorpay_order_id', '')
     razorpay_signature = request.POST.get('razorpay_signature', '')
 
-    if razorpay_order_id != pending.get('razorpay_order_id'):
-        return JsonResponse({'success': False, 'error': 'Order mismatch. Please try again.'})
+    order_lookup = Order.objects.filter(razorpay_order_id=razorpay_order_id).first()
+    if not order_lookup:
+        return JsonResponse({'success': False, 'error': 'Your checkout session has expired. Please try again.'})
+
+    site_user_id = request.session.get('site_user_id')
+    if not site_user_id or order_lookup.user_id != site_user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
 
     client = get_razorpay_client()
     try:
@@ -1293,83 +1422,86 @@ def checkout_verify_payment(request):
     except razorpay.errors.SignatureVerificationError:
         return JsonResponse({'success': False, 'error': 'Payment verification failed.'})
 
-    user = get_object_or_404(SiteUser, id=pending['user_id'])
-    shipping = pending['shipping']
-    cart_items = pending['cart_items']
-    coupon_code = pending.get('coupon_code')
-    coupon_discount = pending.get('coupon_discount', 0)
-    total_amount = pending.get('total_amount', 0)
-
     with transaction.atomic():
-        # Idempotency guard: if this Razorpay order was already turned into
-        # an Order (e.g. a retried/duplicated verify call), don't create a
-        # second one - just report success again.
-        existing_order = Order.objects.filter(razorpay_order_id=razorpay_order_id).first()
-        if existing_order:
-            request.session.pop('pending_order', None)
-            return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
+        order = Order.objects.select_for_update().get(pk=order_lookup.pk)
+        newly_finalized = _finalize_paid_order(order, razorpay_payment_id)
 
-        order = Order.objects.create(
-            user=user,
-            total_amount=total_amount,
-            status='Order Placed',
-            purchase_type='Online',
-            payment_type='Razorpay',
-            razorpay_order_id=razorpay_order_id,
-            razorpay_payment_id=razorpay_payment_id,
-            **shipping
-        )
-
-        for item in cart_items:
-            product_id = item.get('id')
-            qty = int(item.get('qty', 1))
-
-            OrderItem.objects.create(
-                order=order,
-                product_id=product_id,
-                product_image=item.get('image'),
-                product_name=item.get('name', 'Unknown Product'),
-                product_type=item.get('type', 'Unknown Type'),
-                price=item.get('price', 0),
-                quantity=qty
-            )
-
-            if product_id:
-                # select_for_update locks the row for the rest of this
-                # transaction, so two verify calls racing on the same
-                # product (e.g. a retry firing concurrently) decrement
-                # stock one after another instead of both reading the same
-                # starting quantity.
-                Product.objects.select_for_update().filter(pk=product_id).first()
-                Product.objects.filter(pk=product_id).update(
-                    quantity=Greatest(F('quantity') - qty, Value(0))
-                )
-
-        if coupon_discount > 0 and coupon_code:
-            ProductCoupon.objects.filter(coupon_code__iexact=coupon_code).update(
-                used_count=F('used_count') + 1
-            )
-
-        UserData.objects.update_or_create(user=user, defaults=shipping)
-
-        purchased_product_ids = [item.get('id') for item in cart_items if item.get('id')]
-        if purchased_product_ids:
-            CartItem.objects.filter(user=user, product_id__in=purchased_product_ids).delete()
-
-    del request.session['pending_order']
-
-    send_order_confirmation_email(order, cart_items, coupon_code, coupon_discount)
-    send_order_acknowledgment_email(order, cart_items)
+    if newly_finalized:
+        cart_items = _order_email_items(order)
+        send_order_confirmation_email(order, cart_items, order.coupon_code, order.coupon_discount)
+        send_order_acknowledgment_email(order, cart_items)
 
     return JsonResponse({'success': True, 'redirect_url': '/order-success/'})
+
+
+@csrf_exempt
+def razorpay_webhook(request):
+    """Razorpay calls this server-to-server the moment a payment is
+    captured, independent of whether the customer's browser/tab is even
+    still open - this is what actually closes the gap where a captured
+    payment could otherwise leave no Order behind (checkout_verify_payment
+    alone can't help if the browser never gets to call it).
+
+    Configure this in the Razorpay Dashboard: Settings > Webhooks > add
+    webhook, URL = <site>/razorpay/webhook/, subscribe to payment.captured,
+    then put the secret it gives you in RAZORPAY_WEBHOOK_SECRET."""
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    webhook_secret = settings.RAZORPAY_WEBHOOK_SECRET
+    if not webhook_secret:
+        # Not configured in the Razorpay Dashboard yet - nothing to verify
+        # the request against, so there's nothing safe to do with it.
+        return HttpResponse(status=200)
+
+    signature = request.headers.get('X-Razorpay-Signature', '')
+    body = request.body
+
+    client = get_razorpay_client()
+    try:
+        client.utility.verify_webhook_signature(body.decode('utf-8'), signature, webhook_secret)
+    except razorpay.errors.SignatureVerificationError:
+        return HttpResponse(status=400)
+
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return HttpResponse(status=400)
+
+    if payload.get('event') != 'payment.captured':
+        # Acknowledge anything we don't act on so Razorpay stops retrying it.
+        return HttpResponse(status=200)
+
+    payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+    razorpay_order_id = payment_entity.get('order_id')
+    razorpay_payment_id = payment_entity.get('id')
+    if not razorpay_order_id or not razorpay_payment_id:
+        return HttpResponse(status=200)
+
+    with transaction.atomic():
+        order = Order.objects.select_for_update().filter(razorpay_order_id=razorpay_order_id).first()
+        if not order:
+            # Either an order this webhook secret doesn't own, or its
+            # Payment Pending row was already cleaned up as stale - either
+            # way, nothing to do.
+            return HttpResponse(status=200)
+        newly_finalized = _finalize_paid_order(order, razorpay_payment_id)
+
+    if newly_finalized:
+        cart_items = _order_email_items(order)
+        send_order_confirmation_email(order, cart_items, order.coupon_code, order.coupon_discount)
+        send_order_acknowledgment_email(order, cart_items)
+
+    return HttpResponse(status=200)
 
 
 def order_success(request):
     return render(request, 'product/order_success.html')
 
 def my_orders(request):
+    _cleanup_stale_pending_orders()
     user_id = request.session.get('site_user_id')
-    
+
     previous_statuses = [
         'deliverd', 'cancelled', 'return requested', 'return rejected', 
         'return approved', 'returened', 'refund initiated', 'refund completed'

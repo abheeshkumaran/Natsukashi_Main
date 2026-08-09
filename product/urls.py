@@ -64,6 +64,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('checkout/pay/', views.checkout_create_payment, name='checkout_create_payment'),
     path('checkout/verify/', views.checkout_verify_payment, name='checkout_verify_payment'),
+    path('razorpay/webhook/', views.razorpay_webhook, name='razorpay_webhook'),
     path('order-success/', views.order_success, name='order_success'),
     path('my-orders/', views.my_orders, name='my_orders'),
     path('our-story/', views.our_story, name='our_story'),
