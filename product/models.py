@@ -112,6 +112,7 @@ class SavedAddress(models.Model):
     label = models.CharField(max_length=50, blank=True)
     full_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=20)
+    email_address = models.EmailField(blank=True)
     house_flat_number = models.CharField(max_length=255)
     street_area = models.CharField(max_length=255)
     landmark = models.CharField(max_length=255, blank=True, null=True)

@@ -1045,6 +1045,7 @@ def _saved_address_json(addr):
         'label': addr.label,
         'full_name': addr.full_name,
         'mobile_number': addr.mobile_number,
+        'email_address': addr.email_address or '',
         'house_flat_number': addr.house_flat_number,
         'street_area': addr.street_area,
         'landmark': addr.landmark or '',
@@ -1074,6 +1075,7 @@ def save_address(request):
 
     full_name = request.POST.get('full_name', '').strip()
     mobile_number = request.POST.get('mobile_number', '').strip()
+    email_address = request.POST.get('email_address', '').strip()
     house_flat_number = request.POST.get('house_flat_number', '').strip()
     street_area = request.POST.get('street_area', '').strip()
     landmark = request.POST.get('landmark', '').strip()
@@ -1084,11 +1086,14 @@ def save_address(request):
     pin_code = request.POST.get('pin_code', '').strip()
     label = request.POST.get('label', '').strip()
 
-    if not all([full_name, mobile_number, house_flat_number, street_area, city, district, state]):
+    if not all([full_name, mobile_number, email_address, house_flat_number, street_area, city, district, state]):
         return JsonResponse({'success': False, 'error': 'Please fill in the shipping address fields before saving.'})
 
     if not is_valid_phone(mobile_number):
         return JsonResponse({'success': False, 'error': 'Mobile number must be exactly 10 digits.'})
+
+    if not is_valid_email(email_address):
+        return JsonResponse({'success': False, 'error': 'Please enter a valid email address.'})
 
     if not is_valid_pincode(pin_code):
         return JsonResponse({'success': False, 'error': 'PIN code must be exactly 6 digits.'})
@@ -1098,8 +1103,8 @@ def save_address(request):
 
     addr = SavedAddress.objects.create(
         user=user, label=label, full_name=full_name, mobile_number=mobile_number,
-        house_flat_number=house_flat_number, street_area=street_area, landmark=landmark,
-        city=city, district=district, state=state, country=country, pin_code=pin_code,
+        email_address=email_address, house_flat_number=house_flat_number, street_area=street_area,
+        landmark=landmark, city=city, district=district, state=state, country=country, pin_code=pin_code,
     )
 
     addresses = user.saved_addresses.all()

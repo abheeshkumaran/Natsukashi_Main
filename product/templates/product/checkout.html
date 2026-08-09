@@ -244,6 +244,7 @@
                             {% for addr in saved_addresses %}
                             <div class="saved-address-item" data-address-id="{{ addr.id }}"
                                 data-full-name="{{ addr.full_name }}" data-mobile-number="{{ addr.mobile_number }}"
+                                data-email-address="{{ addr.email_address|default:'' }}"
                                 data-house-flat-number="{{ addr.house_flat_number }}" data-street-area="{{ addr.street_area }}"
                                 data-landmark="{{ addr.landmark|default:'' }}" data-city="{{ addr.city }}"
                                 data-district="{{ addr.district }}" data-state="{{ addr.state }}"
@@ -253,7 +254,7 @@
                                     {{ addr.full_name }}<br>
                                     {{ addr.house_flat_number }}, {{ addr.street_area }}{% if addr.landmark %}, {{ addr.landmark }}{% endif %}<br>
                                     {{ addr.city }}, {{ addr.district }}, {{ addr.state }} - {{ addr.pin_code }}<br>
-                                    Phone: {{ addr.mobile_number }}
+                                    Phone: {{ addr.mobile_number }}{% if addr.email_address %} | Email: {{ addr.email_address }}{% endif %}
                                 </div>
                                 <div class="saved-address-actions">
                                     <button type="button" class="btn btn-sm btn-outline-standalone use-address-btn">Use this address</button>
@@ -449,6 +450,7 @@
         function fillAddressForm(data) {
             document.getElementById('fullNameInput').value = data.fullName || '';
             document.getElementById('mobileNumberInput').value = data.mobileNumber || '';
+            document.getElementById('emailAddressInput').value = data.emailAddress || '';
             document.getElementById('houseFlatNumberInput').value = data.houseFlatNumber || '';
             document.getElementById('streetAreaInput').value = data.streetArea || '';
             document.getElementById('landmarkInput').value = data.landmark || '';
@@ -467,9 +469,11 @@
             }
             listEl.innerHTML = addresses.map(function (addr) {
                 const landmarkPart = addr.landmark ? ', ' + escapeHtml(addr.landmark) : '';
+                const emailPart = addr.email_address ? ' | Email: ' + escapeHtml(addr.email_address) : '';
                 return `
                     <div class="saved-address-item" data-address-id="${addr.id}"
                         data-full-name="${escapeHtml(addr.full_name)}" data-mobile-number="${escapeHtml(addr.mobile_number)}"
+                        data-email-address="${escapeHtml(addr.email_address || '')}"
                         data-house-flat-number="${escapeHtml(addr.house_flat_number)}" data-street-area="${escapeHtml(addr.street_area)}"
                         data-landmark="${escapeHtml(addr.landmark || '')}" data-city="${escapeHtml(addr.city)}"
                         data-district="${escapeHtml(addr.district)}" data-state="${escapeHtml(addr.state)}"
@@ -479,7 +483,7 @@
                             ${escapeHtml(addr.full_name)}<br>
                             ${escapeHtml(addr.house_flat_number)}, ${escapeHtml(addr.street_area)}${landmarkPart}<br>
                             ${escapeHtml(addr.city)}, ${escapeHtml(addr.district)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pin_code)}<br>
-                            Phone: ${escapeHtml(addr.mobile_number)}
+                            Phone: ${escapeHtml(addr.mobile_number)}${emailPart}
                         </div>
                         <div class="saved-address-actions">
                             <button type="button" class="btn btn-sm btn-outline-standalone use-address-btn">Use this address</button>
@@ -500,6 +504,7 @@
                     fillAddressForm({
                         fullName: item.dataset.fullName,
                         mobileNumber: item.dataset.mobileNumber,
+                        emailAddress: item.dataset.emailAddress,
                         houseFlatNumber: item.dataset.houseFlatNumber,
                         streetArea: item.dataset.streetArea,
                         landmark: item.dataset.landmark,
@@ -532,6 +537,7 @@
                 const formData = new URLSearchParams({
                     full_name: document.getElementById('fullNameInput').value,
                     mobile_number: document.getElementById('mobileNumberInput').value,
+                    email_address: document.getElementById('emailAddressInput').value,
                     house_flat_number: document.getElementById('houseFlatNumberInput').value,
                     street_area: document.getElementById('streetAreaInput').value,
                     landmark: document.getElementById('landmarkInput').value,
