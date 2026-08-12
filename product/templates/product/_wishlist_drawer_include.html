@@ -1,0 +1,23 @@
+<!-- Shared wishlist drawer: include once per page, right alongside the cart
+     drawer. Deliberately reuses the cart drawer's CSS classes (.cart-overlay,
+     .cart-drawer, .cart-row, .item-action-*, etc. - all defined in
+     _cart_drawer_include.html, which every page that includes this also
+     includes) so the wishlist looks and behaves exactly like the cart, just
+     with its own ids so the two can open independently. -->
+
+<div id="wishlistOverlay" class="cart-overlay" onclick="closeWishlistDrawer()"></div>
+
+<div id="wishlistDrawer" class="cart-drawer">
+    <div class="cart-drawer-header">
+        <span class="cart-drawer-title">My Wishlist (<span id="wishlistItemCount">0</span>)</span>
+        <button class="cart-drawer-close" onclick="closeWishlistDrawer()">&times;</button>
+    </div>
+
+    <div class="cart-drawer-items">
+        <div id="wishlistItems"></div>
+        <div id="wishlistEmpty" class="cart-drawer-empty" style="display:none;">
+            <span class="empty-icon">♡</span>
+            <p class="mb-0">Your wishlist is empty</p>
+        </div>
+    </div>
+</div>

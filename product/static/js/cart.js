@@ -149,6 +149,8 @@ function formatPrice(amount) {
 }
 
 function openCartDrawer() {
+    if (typeof closeWishlistDrawer === 'function') closeWishlistDrawer();
+
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
     if (!drawer || !overlay) return;

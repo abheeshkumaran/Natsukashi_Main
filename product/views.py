@@ -16,7 +16,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, SavedAddress
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress
 
 import re
 from django.core.validators import validate_email
@@ -1240,6 +1240,62 @@ def cart_merge(request):
 
     items = CartItem.objects.filter(user_id=user_id).select_related('product').order_by('added_at')
     return JsonResponse({'success': True, 'items': [_cart_item_json(i) for i in items]})
+
+
+def _wishlist_item_json(item):
+    product = item.product
+    return {
+        'id': str(product.id),
+        'type': 'product',
+        'name': product.collection_name,
+        'price': float(product.price),
+        'image': product.first_image_url,
+    }
+
+
+def wishlist_list(request):
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': True, 'items': []})
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('-added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
+def wishlist_toggle(request):
+    """Adds the product to the wishlist if it isn't already there, otherwise
+    removes it - this is what the single heart button on each card/modal
+    calls, so one click always does the right thing either way."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    product = get_object_or_404(Product, pk=product_id)
+
+    existing = WishlistItem.objects.filter(user_id=user_id, product=product).first()
+    if existing:
+        existing.delete()
+    else:
+        WishlistItem.objects.create(user_id=user_id, product=product)
+
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('-added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
+
+
+def wishlist_remove(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    user_id = request.session.get('site_user_id')
+    if not user_id:
+        return JsonResponse({'success': False, 'error': 'Please login to continue.'})
+
+    product_id = request.POST.get('product_id')
+    WishlistItem.objects.filter(user_id=user_id, product_id=product_id).delete()
+
+    items = WishlistItem.objects.filter(user_id=user_id).select_related('product').order_by('-added_at')
+    return JsonResponse({'success': True, 'items': [_wishlist_item_json(i) for i in items]})
 
 
 def checkout_create_payment(request):
