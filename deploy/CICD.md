@@ -1,4 +1,4 @@
-# CI/CD setup (GitHub Actions → Lightsail, via OIDC + SSM)
+# Lightsail GitHub CI/CD setup (GitHub Actions → Lightsail, via OIDC + SSM)
 
 No static AWS keys stored in GitHub — the workflow assumes an IAM role via OIDC, then tells the server to redeploy itself via AWS Systems Manager (SSM) Run Command. I can't do any of this from here (all AWS console/CLI), but it's a one-time setup — once done, every push to `main` deploys automatically.
 
