@@ -15,6 +15,12 @@ AWS Console → RDS → Create database:
 - Public access: **No** if RDS and the app end up in the same VPC (more secure); otherwise Yes with a security group locked down to only your app server's IP on port 5432
 - Note the endpoint hostname once it's created (looks like `natsukashi-db.xxxxx.<region>.rds.amazonaws.com`)
 
+`DATABASE_URL` in `.env.production` is already set to `natsukashi-db.c906ycqoew7c.ap-south-1.rds.amazonaws.com` with `sslmode=verify-full` — that mode needs the RDS CA bundle present at `./global-bundle.pem` in the project root on the server:
+```bash
+curl -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+```
+Just fill in the real password in place of `<password>` in `.env.production` before copying it to the server (not committed anywhere).
+
 ### Migrate the data from Railway to RDS
 
 From your machine (with `psql`/`pg_dump` installed, or via this repo's `.venv`):
