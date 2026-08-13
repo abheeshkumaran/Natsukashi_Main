@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import cloudinary
 import os
 from pathlib import Path
 
@@ -47,8 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'cloudinary_storage',
-    'cloudinary',
     'product',
 ]
 
@@ -162,42 +159,28 @@ STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
 MEDIA_URL = '/media/'
 # MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary Configuration
-import cloudinary
-from urllib.parse import urlparse
+# --- AWS S3 for media ---
+# All media (Category.image, ProductImage.image, UpdationTask.related_image)
+# is stored in S3, served via private, signed URLs (AWS_QUERYSTRING_AUTH).
+# See deploy/README.md for bucket/IAM setup and the one-off script that
+# migrated existing files over from the old Cloudinary storage.
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', '')
 
-_cloudinary_url = os.environ.get('CLOUDINARY_URL')
-if _cloudinary_url:
-    _parsed = urlparse(_cloudinary_url)
-    _cloud_name = _parsed.hostname
-    _api_key = _parsed.username
-    _api_secret = _parsed.password
-else:
-    _cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME')
-    _api_key = os.environ.get('CLOUDINARY_API_KEY')
-    _api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+if not AWS_STORAGE_BUCKET_NAME or not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+    raise ValueError("Missing AWS S3 configuration. Please set AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_S3_REGION_NAME in your environment variables.")
 
-if not _cloud_name or not _api_key or not _api_secret:
-    raise ValueError("Missing Cloudinary configuration. Please set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your environment variables.")
-
-# Required by django-cloudinary-storage
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': _cloud_name,
-    'API_KEY': _api_key,
-    'API_SECRET': _api_secret,
-}
-
-# Required by Cloudinary SDK (used by CloudinaryField)
-cloudinary.config(
-    cloud_name=_cloud_name,
-    api_key=_api_key,
-    api_secret=_api_secret,
-    secure=True,
-)
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_QUERYSTRING_AUTH = True        # generate signed (query-string authenticated) URLs
+AWS_QUERYSTRING_EXPIRE = 3600      # signed URL validity, in seconds
+AWS_DEFAULT_ACL = None             # bucket stays private; access is only via signed URLs
+AWS_S3_FILE_OVERWRITE = False
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",

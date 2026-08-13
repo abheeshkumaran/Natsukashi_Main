@@ -1,10 +1,14 @@
 asgiref==3.11.1
 certifi==2026.7.22
 charset-normalizer==3.4.9
+# Not used by current models (media moved to S3) - kept because old
+# migrations (0016, 0020, 0022) still `import cloudinary.models` for their
+# historical CreateModel/AddField operations. Django needs every migration
+# file importable to build its graph, so this stays until those are
+# squashed.
 cloudinary==1.45.0
 dj-database-url==2.2.0
 Django==6.0.6
-django-cloudinary-storage==0.3.0
 idna==3.18
 pillow==12.3.0
 psycopg2-binary==2.9.12
@@ -17,3 +21,6 @@ typing_extensions==4.16.0
 tzdata==2026.2
 urllib3==2.7.0
 whitenoise==6.7.0
+gunicorn==23.0.0
+django-storages==1.14.4
+boto3==1.35.36
