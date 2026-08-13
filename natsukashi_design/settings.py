@@ -203,3 +203,25 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+# --- AWS S3 for media (optional, opt-in) ---
+# Product/Category images currently use CloudinaryField (see models.py),
+# which has its own storage baked in and does NOT go through STORAGES -
+# so setting this alone doesn't move existing images to S3. It wires up
+# django-storages so the "default" storage (used by any plain ImageField/
+# FileField) points at S3 with private, signed URLs, ready for the day
+# CloudinaryField gets swapped to ImageField - see deploy/README.md for
+# that cutover (needs a migration + copying existing files across).
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+if AWS_STORAGE_BUCKET_NAME:
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'ap-south-1')
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_QUERYSTRING_AUTH = True        # generate signed (query-string authenticated) URLs
+    AWS_QUERYSTRING_EXPIRE = 3600      # signed URL validity, in seconds
+    AWS_DEFAULT_ACL = None             # bucket stays private; access is only via signed URLs
+    AWS_S3_FILE_OVERWRITE = False
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    }
