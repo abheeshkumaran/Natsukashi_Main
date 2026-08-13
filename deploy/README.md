@@ -57,8 +57,9 @@ pip install -r requirements.txt
 
 # Create .env here with production values. See .env.example for the full
 # list - at minimum: DATABASE_URL (pointing at RDS), DJANGO_DEBUG=False,
-# a fresh DJANGO_SECRET_KEY, Razorpay/Cloudinary/email keys,
-# RAZORPAY_WEBHOOK_SECRET, and the AWS_* keys below if using S3.
+# a fresh DJANGO_SECRET_KEY, Razorpay/email keys, RAZORPAY_WEBHOOK_SECRET,
+# and the AWS_* S3 keys from step 7 below - the app will not start
+# without the AWS_* ones set, media storage is S3-only now.
 nano .env
 
 python manage.py migrate
@@ -101,9 +102,9 @@ Site should now be reachable on port 80 at the Lightsail static IP.
 - Certbot auto-configures nginx for HTTPS and sets up auto-renewal
 - Update `ALLOWED_HOSTS` in `natsukashi_design/settings.py` from `['*']` to `['yourdomain.com', 'www.yourdomain.com']`
 
-## 7. S3 for media (optional)
+## 7. S3 for media (required)
 
-`settings.py` already has an opt-in S3 block (`natsukashi_design/settings.py`, search for `AWS_STORAGE_BUCKET_NAME`) using `django-storages` + `boto3` (already in `requirements.txt`). It's inert until you set the env vars below - nothing changes unless you do this.
+Cloudinary has been fully removed from the codebase - `Category.image`, `ProductImage.image`, and `UpdationTask.related_image` are now plain `models.ImageField`s backed by S3 (`django-storages` + `boto3`, already in `requirements.txt`). The app **will not start** without the `AWS_*` env vars below set - do this before first deploy.
 
 **AWS side:**
 - S3 → Create bucket, e.g. `natsukashi-media`, same region as everything else
@@ -119,14 +120,16 @@ AWS_SECRET_ACCESS_KEY=<your secret>
 AWS_S3_REGION_NAME=ap-south-1
 ```
 
-**Important - this does NOT move existing images automatically.** `Product.image`, `Category.image`, and the `related_image` field currently use `CloudinaryField` (`product/models.py`), which has its own storage baked in and doesn't go through Django's `STORAGES["default"]` at all - so setting the env vars above only affects *new* plain `ImageField`/`FileField`s, not these existing Cloudinary-backed ones.
+**Then migrate the existing images.** Before the model fields were changed, every existing Category/ProductImage/UpdationTask image URL was exported to `deploy/cloudinary_media_export.json` (44 images: 6 categories, 9 product images, 29 issue-report attachments) - that file is the only record of where they used to live, so don't delete it until this step is confirmed done. Once the bucket + `.env` above are in place:
 
-To actually cut product/category images over to S3, tell me when you're ready and I'll:
-1. Change those 3 fields from `CloudinaryField` to `models.ImageField`
-2. Generate the migration
-3. Write a one-off script to download each image from its current Cloudinary URL and re-upload it into S3 under the new field, so existing product photos aren't lost
+```bash
+python manage.py migrate                    # applies the CloudinaryField -> ImageField schema change
+python manage.py migrate_media_to_s3         # downloads each image and re-uploads it into S3
+```
 
-That's a deliberate step involving your live product images, so I'm not doing it as part of this deploy prep without your go-ahead on timing.
+The command is safe to re-run - it skips anything already migrated, so an interrupted run can just be re-run. Check a few product images render correctly on the site afterward, then `deploy/cloudinary_media_export.json` can be deleted and the Cloudinary account can be closed down.
+
+**Do not run `python manage.py migrate` against the Railway database from your local machine before you're ready to cut over** - the schema change alone doesn't break the currently-live Vercel/Cloudinary site (Cloudinary's Python objects still read the raw column fine), but nothing will be able to render those images as valid S3 files until `migrate_media_to_s3` has also run against a real bucket. Do both steps together, on the server, right before switching DNS over.
 
 ## 8. Update external configs pointing at the old Vercel URL
 

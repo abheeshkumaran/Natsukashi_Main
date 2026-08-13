@@ -1,0 +1,190 @@
+{
+  "categories": [
+    {
+      "pk": 1,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785664694/categories/vvx0weyk9b3iee2stmr7.png",
+      "name": "Featured Onam Picks"
+    },
+    {
+      "pk": 3,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876197/categories/ai6n1tfpqsysqrddul4g.jpg",
+      "name": "Most Purchased Sarees"
+    },
+    {
+      "pk": 5,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876269/categories/boedled1ltd83ngb5ymp.jpg",
+      "name": "mulcotton"
+    },
+    {
+      "pk": 8,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876642/categories/ddddlm4u0vzkepap3fnv.jpg",
+      "name": "Printed set sarees"
+    },
+    {
+      "pk": 9,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876675/categories/zbbrefmrvwejlnkvl1fj.jpg",
+      "name": "Set Mundu"
+    },
+    {
+      "pk": 10,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876857/categories/ssh8tkaerccbossps5jz.jpg",
+      "name": "set sarees"
+    }
+  ],
+  "product_images": [
+    {
+      "pk": 22,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876816/products/o7sbhe6sivuiikpbjcax.jpg"
+    },
+    {
+      "pk": 23,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785876931/products/xk308ecf58trgj9691rr.jpg"
+    },
+    {
+      "pk": 24,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877028/products/t4kzwpucjkdnmmcvr9fc.jpg"
+    },
+    {
+      "pk": 25,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877028/products/bqy6a5ob84lqizovreun.jpg"
+    },
+    {
+      "pk": 26,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877087/products/yhgepxgs0odrthnmdrow.jpg"
+    },
+    {
+      "pk": 27,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877139/products/mjwokpoti0ssgg4oylxd.jpg"
+    },
+    {
+      "pk": 28,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877188/products/lql8owxazofyei9j1bxb.jpg"
+    },
+    {
+      "pk": 29,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785877246/products/zmdaro5nhqbozbkz8bth.jpg"
+    },
+    {
+      "pk": 30,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786283886/products/znheroqgmfqospmbveld.webp"
+    }
+  ],
+  "updation_tasks": [
+    {
+      "pk": 9,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1785864893/ucy0sxlmi7b5oikoacye.png"
+    },
+    {
+      "pk": 15,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786039710/kgsffskmdpoooklze1uf.png"
+    },
+    {
+      "pk": 20,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786045651/va8d0h9vavsaruqfmkor.png"
+    },
+    {
+      "pk": 35,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786090000/u9qkpfxb8ctohpi2qasp.png"
+    },
+    {
+      "pk": 32,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786089173/vg1c3jo6gnhywuubzxdm.png"
+    },
+    {
+      "pk": 28,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786087825/pt39i6vilayzo4ldlicv.png"
+    },
+    {
+      "pk": 31,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786088908/nubkhoxlv41vxwfo7ijp.png"
+    },
+    {
+      "pk": 17,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786045457/vyqyaxvtmqvtzqkmd7vw.png"
+    },
+    {
+      "pk": 27,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786087630/hxwslseycdlzhlpzgjmq.png"
+    },
+    {
+      "pk": 26,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786086606/mraghkjtnmv3gudta7v8.png"
+    },
+    {
+      "pk": 34,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786089764/glyoex8h9a6sdyto8z32.png"
+    },
+    {
+      "pk": 63,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786181014/zphdira9nvkcrbxjzg6z.png"
+    },
+    {
+      "pk": 64,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786182021/xrjqljxm1dwst8bgav55.jpg"
+    },
+    {
+      "pk": 36,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786090404/te85zh3mwychpfu02uwt.png"
+    },
+    {
+      "pk": 70,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786185830/msx4lgycu8bdhvtydbbr.jpg"
+    },
+    {
+      "pk": 71,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786186061/oqodnv8teii8aij5jhhu.png"
+    },
+    {
+      "pk": 39,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786092661/uiunge90mvkhye6z3gz5.png"
+    },
+    {
+      "pk": 68,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786184818/wu6qtxowzc70ziecqtpo.jpg"
+    },
+    {
+      "pk": 66,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786182647/fxsgojxv4rzoqc9wup1h.jpg"
+    },
+    {
+      "pk": 42,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786094523/mut9vl8lfadnk8judpmk.png"
+    },
+    {
+      "pk": 69,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786184903/xvrdq0wyobovec7wmewv.jpg"
+    },
+    {
+      "pk": 41,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786094187/lzfo63kneg6weqtfvclv.png"
+    },
+    {
+      "pk": 43,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786095451/tf11o4wlb0uplj9eyud4.png"
+    },
+    {
+      "pk": 65,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786182423/vuubqhzwjswpoifzudzi.jpg"
+    },
+    {
+      "pk": 40,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786092845/melufdh6qjh8zba5f7me.png"
+    },
+    {
+      "pk": 62,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786167093/zt5tgocm77xycfyrpx6h.jpg"
+    },
+    {
+      "pk": 37,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786091551/wtuidq7jrieuvljybpuz.png"
+    },
+    {
+      "pk": 25,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786086461/jshrzmh4s2vwrjqlxipr.png"
+    },
+    {
+      "pk": 72,
+      "url": "https://res.cloudinary.com/tiruigyj/image/upload/v1786187194/y00gqpiglptxprhy62fo.png"
+    }
+  ]
+}
