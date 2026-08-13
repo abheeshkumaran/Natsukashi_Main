@@ -1,0 +1,18 @@
+[Unit]
+Description=Natsukashi Django app (gunicorn)
+After=network.target
+
+[Service]
+Type=notify
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/Natsukashi_Main
+EnvironmentFile=/home/ubuntu/Natsukashi_Main/.env
+ExecStart=/home/ubuntu/Natsukashi_Main/.venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/home/ubuntu/Natsukashi_Main/natsukashi.sock \
+    natsukashi_design.wsgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
