@@ -1,12 +1,11 @@
 from django.db import models
 from django.utils import timezone
-from cloudinary.models import CloudinaryField
 from django.contrib.auth.hashers import make_password, check_password
 
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    image = CloudinaryField('image', folder='categories', blank=True, null=True)
+    image = models.ImageField(upload_to='categories/', max_length=255, blank=True, null=True)
     show_in_collection_list = models.BooleanField(default=True)
     show_in_collection_table = models.BooleanField(default=False)
 
@@ -50,7 +49,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
-    image = CloudinaryField('image', folder='products')
+    image = models.ImageField(upload_to='products/', max_length=255)
 
     class Meta:
         db_table = 'product_images'
@@ -298,7 +297,7 @@ class UpdationTask(models.Model):
     )
     issue_related = models.CharField(max_length=255)
     raised_by = models.CharField(max_length=100)
-    related_image = CloudinaryField('image', blank=True, null=True)
+    related_image = models.ImageField(upload_to='updation_images/', max_length=255, blank=True, null=True)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, blank=True, null=True)
