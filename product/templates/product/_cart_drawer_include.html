@@ -6,7 +6,7 @@
 
 <div id="cartDrawer" class="cart-drawer">
     <div class="cart-drawer-header">
-        <span class="cart-drawer-title">My Cart (<span id="cartItemCount">0</span>)</span>
+        <span class="cart-drawer-title">My Cart (<span id="cartItemCount" class="drawer-title-count">0</span>)</span>
         <button class="cart-drawer-close" onclick="closeCartDrawer()">&times;</button>
     </div>
 
@@ -105,6 +105,14 @@
         font-size: 1.25rem;
         color: var(--primary-color);
         font-family: var(--heading-font);
+    }
+
+    /* The heading font (a decorative serif) renders digits unevenly - switch
+       just the count number back to the normal body font so it reads
+       cleanly instead of looking like a typo. */
+    .drawer-title-count {
+        font-family: var(--body-font);
+        font-weight: 600;
     }
 
     .cart-drawer-close {

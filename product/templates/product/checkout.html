@@ -121,7 +121,7 @@
                 <img src="{% static 'images/Natsukashii_logo.png' %}" alt="Natsukashi" class="navbar-logo">
             </a>
             <div class="ms-auto">
-                <a href="{% url 'home' %}" class="btn btn-outline-dark" style="border-radius: 20px; padding: 5px 20px;">Back to Shop</a>
+                <a href="{% url 'home' %}" class="btn-outline-standalone" style="border-radius: 20px; padding: 5px 20px; display: inline-block; text-decoration: none;">Back to Shop</a>
             </div>
         </div>
     </nav>
@@ -279,7 +279,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h1 class="checkout-title mb-0">Order Summary</h1>
                         </div>
-                        <a href="javascript:void(0)" id="backToStep1" class="small d-inline-block mb-3">&larr; Edit address</a>
+                        <a href="javascript:void(0)" id="backToStep1" class="btn-outline-standalone d-inline-block mb-3" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">&larr; Edit address</a>
 
                         <div class="delivery-summary-box">
                             <h6>Delivering to</h6>
@@ -344,7 +344,7 @@
                         <p class="text-muted small">Complete your payment in the Razorpay window. Don't close this tab.</p>
                         <div id="step3ErrorMsg" class="alert alert-danger small mt-3" style="display: none;"></div>
                         <button type="button" class="btn btn-outline-standalone mt-2" id="retryPaymentBtn" style="display: none;">Try Again</button>
-                        <a href="javascript:void(0)" id="backToStep2" class="small d-block mt-3">&larr; Back to Order Summary</a>
+                        <a href="javascript:void(0)" id="backToStep2" class="btn-outline-standalone d-inline-block mt-3" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">&larr; Back to Order Summary</a>
                     </div>
                 </div>
             </div>
@@ -853,6 +853,5 @@
         }
     </script>
 
-    {% include 'product/_report_issue_include.html' %}
 </body>
 </html>

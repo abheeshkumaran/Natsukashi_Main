@@ -57,13 +57,13 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             Wishlist ♥
-                            <span class="wishlist-count badge rounded-pill">0</span>
+                            <span class="wishlist-count">0</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openCartDrawer()">
                             Cart 🛒
-                            <span class="cart-count badge rounded-pill">0</span>
+                            <span class="cart-count">0</span>
                         </a>
                     </li>
                     <li class="nav-item dropdown">
@@ -309,7 +309,6 @@
     {% include 'product/_wishlist_drawer_include.html' %}
     {% include 'product/_product_modal_include.html' %}
     {% include 'product/_auth_modal_include.html' %}
-    {% include 'product/_report_issue_include.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/cart.js' %}?v=6"></script>
@@ -347,17 +346,6 @@
             const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '') + window.location.hash;
             window.history.replaceState({}, '', newUrl);
         })();
-
-        // Triple click on navbar logo to open admin panel
-        const navbarBrand = document.querySelector('.navbar-brand');
-        if (navbarBrand) {
-            navbarBrand.addEventListener('click', function (e) {
-                if (e.detail === 3) {
-                    e.preventDefault();
-                    window.location.href = "{% url 'admin_dashboard' %}";
-                }
-            });
-        }
 
     </script>
 

@@ -74,7 +74,7 @@ function updateWishlistBadge() {
     const count = getWishlist().length;
     document.querySelectorAll('.wishlist-count').forEach((el) => {
         el.textContent = count;
-        el.style.display = count > 0 ? 'inline-block' : 'none';
+        el.style.display = count > 0 ? 'inline-flex' : 'none';
     });
 }
 

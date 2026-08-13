@@ -80,7 +80,7 @@ function updateCartBadge() {
     const count = getCart().reduce((sum, item) => sum + item.qty, 0);
     document.querySelectorAll('.cart-count').forEach((el) => {
         el.textContent = count;
-        el.style.display = count > 0 ? 'inline-block' : 'none';
+        el.style.display = count > 0 ? 'inline-flex' : 'none';
     });
 }
 

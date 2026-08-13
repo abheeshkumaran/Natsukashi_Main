@@ -2,239 +2,160 @@
 
 {% block extra_css %}
 <style>
-/* FLOATING DECOR */
-.circle{
-    position:fixed;
-    border-radius:50%;
-    background:rgba(166,124,82,.08);
-    z-index:-1;
-    animation:float 8s infinite ease-in-out;
-}
-.circle1{
-    width:200px;
-    height:200px;
-    top:80px;
-    right:-50px;
-}
-.circle2{
-    width:150px;
-    height:150px;
-    bottom:50px;
-    left:-30px;
-}
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin: 24px 0 32px;
+    }
 
-/* ANIMATIONS */
-@keyframes fadeUp{
-    from{
-        opacity:0;
-        transform:translateY(30px);
+    .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 22px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-@keyframes float{
-    0%,100%{
-        transform:translateY(0);
-    }
-    50%{
-        transform:translateY(-25px);
-    }
-}
 
-.hero{
-    text-align:center;
-    padding:0 20px 40px;
-    animation:fadeUp 1s ease;
-}
-.hero h1{
-    font-size:3rem;
-    color:var(--gold);
-}
-.hero p{
-    margin-top:12px;
-    color:#666;
-    font-size:1.1rem;
-}
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
 
-/* DASHBOARD */
-.dashboard{
-    max-width:1200px;
-    margin:auto;
-}
-.cards{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:25px;
-    margin-top:30px;
-}
-.card{
-    background:var(--card);
-    padding:28px;
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    transition:.35s;
-    opacity:0;
-    transform:translateY(40px);
-}
-.card.show{
-    opacity:1;
-    transform:translateY(0);
-}
-.card:hover{
-    transform:translateY(-8px);
-}
-.card h3{
-    color:#666;
-    margin-bottom:12px;
-}
-.value{
-    font-size:2rem;
-    font-weight:700;
-    color:var(--gold);
-}
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: #fff;
+    }
 
-/* RECENT SECTION */
-.section{
-    margin-top:50px;
-    background:white;
-    border-radius:20px;
-    padding:25px;
-    box-shadow:var(--shadow);
-    opacity:0;
-    transform:translateY(40px);
-    transition:.8s;
-}
-.section.show{
-    opacity:1;
-    transform:translateY(0);
-}
-.section h2{
-    color:var(--gold);
-    margin-bottom:15px;
-}
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-th,td{
-    padding:15px;
-    text-align:left;
-    border-bottom:1px solid #eee;
-}
-th{
-    color:var(--gold);
-}
+    .stat-icon.icon-indigo { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+    .stat-icon.icon-blue   { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .stat-icon.icon-amber  { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .stat-icon.icon-green  { background: linear-gradient(135deg, #059669, #10b981); }
+    .stat-icon.icon-slate  { background: linear-gradient(135deg, #475569, #64748b); }
 
-@media (max-width: 768px) {
-    .hero h1 {
-        font-size: 1.9rem;
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 4px;
     }
-    .hero p {
-        font-size: 1rem;
+
+    .stat-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text);
     }
-    .cards {
-        grid-template-columns: 1fr;
+
+    .dash-section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 22px 24px;
     }
-    .section {
-        padding: 15px;
-        overflow-x: auto;
+
+    .dash-section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
     }
-}
+
+    @media (max-width: 768px) {
+        .dash-section {
+            padding: 16px;
+            overflow-x: auto;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="circle circle1"></div>
-<div class="circle circle2"></div>
-<section class="hero">
-    <h1>Traditional Saree Dashboard</h1>
-    <p>Manage products, orders and customers with elegance.</p>
-</section>
-
-<div class="dashboard">
-
-    <div class="cards">
-
-        <div class="card">
-            <h3>Total Product</h3>
-            <div class="value">{{ total_product_stock }}</div>
-        </div>
-
-        <div class="card">
-            <h3>Total Product by list</h3>
-            <div class="value">{{ total_product_list }}</div>
-        </div>
-
-        <div class="card">
-            <h3>Total Orders</h3>
-            <div class="value">{{ total_orders }}</div>
-        </div>
-
-        <div class="card">
-            <h3>Orders Pending</h3>
-            <div class="value">{{ orders_pending }}</div>
-        </div>
-        
-        <div class="card">
-            <h3>Orders Completed</h3>
-            <div class="value">{{ orders_completed }}</div>
-        </div>
-
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+    <div>
+        <h2 class="mb-1">Dashboard</h2>
+        <p class="text-muted mb-0">Overview of your store's products and orders.</p>
     </div>
-
-    <div class="section">
-        <h2>Recent Orders</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Saree</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for order in recent_completed_orders %}
-                <tr>
-                    <td>#{{ order.id }}</td>
-                    <td>{{ order.full_name }}</td>
-                    <td>{% for item in order.items.all %}{{ item.product_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
-                    <td>{{ order.status }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #999;">No completed orders yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
 </div>
 
-{% endblock %}
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-indigo"><i class="bi bi-boxes"></i></div>
+        <div>
+            <div class="stat-label">Total Product Stock</div>
+            <div class="stat-value">{{ total_product_stock }}</div>
+        </div>
+    </div>
 
-{% block extra_js %}
-<script>
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-        if(entry.isIntersecting){
-            entry.target.classList.add("show");
-        }
-    });
-},{
-    threshold:0.2
-});
+    <div class="stat-card">
+        <div class="stat-icon icon-blue"><i class="bi bi-box-seam"></i></div>
+        <div>
+            <div class="stat-label">Total Product Listings</div>
+            <div class="stat-value">{{ total_product_list }}</div>
+        </div>
+    </div>
 
-document.querySelectorAll('.card, .section')
-.forEach(el => observer.observe(el));
+    <div class="stat-card">
+        <div class="stat-icon icon-slate"><i class="bi bi-receipt"></i></div>
+        <div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">{{ total_orders }}</div>
+        </div>
+    </div>
 
-document.querySelectorAll('.card').forEach((card,index)=>{
-    card.style.transitionDelay = `${index * 0.15}s`;
-});
-</script>
+    <div class="stat-card">
+        <div class="stat-icon icon-amber"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+            <div class="stat-label">Orders Pending</div>
+            <div class="stat-value">{{ orders_pending }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-label">Orders Completed</div>
+            <div class="stat-value">{{ orders_completed }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="dash-section">
+    <h2>Recent Orders</h2>
+
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Saree</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for order in recent_completed_orders %}
+            <tr>
+                <td><strong>#{{ order.id }}</strong></td>
+                <td>{{ order.full_name }}</td>
+                <td>{% for item in order.items.all %}{{ item.product_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                <td><span class="badge bg-success">{{ order.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">No completed orders yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

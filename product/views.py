@@ -8,11 +8,11 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.db import transaction
 from django.db.models import Sum, F, Q, Value
 from django.db.models.functions import Greatest
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
@@ -323,47 +323,6 @@ def product_search(request):
     return JsonResponse({'success': True, 'results': results})
 
 
-def admin_login(request):
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_dashboard')
-
-    error = None
-    next_url = request.POST.get('next') or request.GET.get('next') or ''
-
-    if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '')
-        user = authenticate(request, username=username, password=password)
-        if user is not None and user.is_staff:
-            login(request, user)
-            # Point 8: admin session must not survive a browser close.
-            request.session.set_expiry(0)
-            return redirect(next_url or 'admin_dashboard')
-        error = 'Invalid username or password.'
-
-    return render(request, 'admin/admin_login.html', {'error': error, 'next': next_url})
-
-
-def admin_logout(request):
-    logout(request)
-    return redirect('home')
-
-
-def admin_logout_all_devices(request):
-    from django.contrib.sessions.models import Session
-    from django.utils import timezone
-
-    user_id = request.user.id
-    for session in Session.objects.filter(expire_date__gte=timezone.now()):
-        data = session.get_decoded()
-        if str(data.get('_auth_user_id')) == str(user_id):
-            session.delete()
-
-    logout(request)
-    messages.success(request, 'Logged out from all devices. Please log in again.')
-    return redirect('admin_login')
-
-
 def admin_profile(request):
     site_user = None
     site_user_id = request.session.get('site_user_id')
@@ -374,8 +333,6 @@ def admin_profile(request):
     details_success = False
     site_password_error = None
     site_password_success = False
-    password_error = None
-    password_success = False
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
@@ -419,31 +376,12 @@ def admin_profile(request):
                 site_user.save()
                 site_password_success = True
 
-        elif form_type == 'admin_password':
-            old_password = request.POST.get('old_password', '')
-            new_password = request.POST.get('new_password', '')
-            confirm_password = request.POST.get('confirm_password', '')
-
-            if not request.user.check_password(old_password):
-                password_error = 'Current password is incorrect.'
-            elif len(new_password) < 8:
-                password_error = 'New password must be at least 8 characters.'
-            elif new_password != confirm_password:
-                password_error = 'New password and confirm password do not match.'
-            else:
-                request.user.set_password(new_password)
-                request.user.save()
-                update_session_auth_hash(request, request.user)
-                password_success = True
-
     return render(request, 'admin/admin_profile.html', {
         'site_user': site_user,
         'details_error': details_error,
         'details_success': details_success,
         'site_password_error': site_password_error,
         'site_password_success': site_password_success,
-        'password_error': password_error,
-        'password_success': password_success,
     })
 
 
@@ -623,7 +561,12 @@ def login_user(request):
         if user.check_password(password):
             request.session['site_user_id'] = user.id
             request.session['site_user_name'] = user.name
-            return JsonResponse({'success': True})
+            # The superadmin account doubles as the admin panel login - land
+            # it straight on the dashboard instead of the customer homepage.
+            redirect_url = None
+            if user.email.lower() == settings.SUPERADMIN_EMAIL.lower():
+                redirect_url = reverse('admin_dashboard')
+            return JsonResponse({'success': True, 'redirect_url': redirect_url})
         return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 

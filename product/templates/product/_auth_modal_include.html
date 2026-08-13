@@ -286,7 +286,14 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        // The superadmin account's login redirects straight
+                        // into the admin panel instead of reloading the
+                        // page the customer site was on.
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.reload();
+                        }
                     } else {
                         errorMsg.textContent = data.error;
                         errorMsg.style.display = 'block';
