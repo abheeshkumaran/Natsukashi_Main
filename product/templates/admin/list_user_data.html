@@ -50,7 +50,7 @@
                         <td>{{ order.mobile_number }}</td>
                         <td class="text-success fw-bold">₹{{ order.total_amount }}</td>
                         <td>
-                            <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                            <span class="badge bg-warning text-dark" id="status-badge-{{ order.id }}">{{ order.status }}</span>
                         </td>
                         <td>
                             {% if order.purchase_type == 'Manual' %}
@@ -61,15 +61,11 @@
                         </td>
                         <td>{{ order.payment_type|default:"" }}</td>
                         <td>
-                            <form action="{% url 'update_order_status' order.id %}" method="POST" class="d-flex align-items-center">
-                                {% csrf_token %}
-                                <select name="status" class="form-select form-select-sm me-2" style="width: 130px;">
-                                    {% for s in statuses %}
-                                    <option value="{{ s.value }}" {% if order.status|lower == s.value %}selected{% endif %}>{{ s.label }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                            </form>
+                            <select class="form-select form-select-sm order-status-select" style="width: 130px;" data-order-id="{{ order.id }}" data-status-badge="status-badge-{{ order.id }}">
+                                {% for s in statuses %}
+                                <option value="{{ s.value }}" {% if order.status|lower == s.value %}selected{% endif %}>{{ s.label }}</option>
+                                {% endfor %}
+                            </select>
                         </td>
                         <td>
                             <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
@@ -340,6 +336,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
+        document.querySelectorAll('.order-status-select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                const orderId = select.dataset.orderId;
+                const badge = document.getElementById(select.dataset.statusBadge);
+                const newLabel = select.options[select.selectedIndex].text;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                select.disabled = true;
+                const url = '{% url "update_order_status" 0 %}'.replace('0/', orderId + '/');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: new URLSearchParams({
+                        status: select.value,
+                        csrfmiddlewaretoken: csrfToken,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && badge) {
+                        badge.textContent = newLabel;
+                    } else if (!data.success) {
+                        alert(data.error || 'Failed to update status.');
+                    }
+                })
+                .catch(() => alert('Failed to update status.'))
+                .finally(() => { select.disabled = false; });
+            });
+        });
+
         function downloadPDF(orderId) {
             const element = document.getElementById('pdf-content-' + orderId);
             

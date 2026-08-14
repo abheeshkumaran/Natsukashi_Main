@@ -6,9 +6,10 @@ ADMIN_PANEL_PREFIX = '/admin-panel/'
 
 
 class AdminPanelAuthMiddleware:
-    """The SiteUser account whose email matches settings.SUPERADMIN_EMAIL is
-    the site's one admin - logging in as that account IS logging into the
-    admin panel, and there is nothing else to authenticate against.
+    """The admin login (settings.SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD) is
+    hardcoded and separate from the SiteUser/users table - logging in as
+    that account sets the 'is_superadmin' session flag, which is what gates
+    the admin panel below.
 
     Two rules, both driven off that same session flag:
     1. Anyone who is NOT that account gets bounced out of /admin-panel/ to
@@ -25,13 +26,7 @@ class AdminPanelAuthMiddleware:
     def __call__(self, request):
         path = request.path
 
-        site_user_id = request.session.get('site_user_id')
-        is_site_superadmin = False
-        if site_user_id:
-            from product.models import SiteUser
-            is_site_superadmin = SiteUser.objects.filter(
-                id=site_user_id, email__iexact=settings.SUPERADMIN_EMAIL
-            ).exists()
+        is_site_superadmin = bool(request.session.get('is_superadmin'))
 
         if path.startswith(ADMIN_PANEL_PREFIX):
             if not is_site_superadmin:

@@ -2,6 +2,7 @@ from django.http import Http404, JsonResponse, HttpResponse
 import csv
 import json
 import datetime
+import secrets
 import razorpay
 import logging
 from django.conf import settings
@@ -547,6 +548,15 @@ def login_user(request):
         login_id = request.POST.get('email', '').strip() # It comes from the name="email" input, but can be phone, email, or (for guest accounts) name
         password = request.POST.get('password')
 
+        # The admin account is hardcoded in settings rather than stored as a
+        # SiteUser row, so it never touches the users table.
+        if login_id.lower() == settings.SUPERADMIN_EMAIL.lower():
+            if secrets.compare_digest(password or '', settings.SUPERADMIN_PASSWORD):
+                request.session['is_superadmin'] = True
+                request.session['site_user_name'] = 'Admin'
+                return JsonResponse({'success': True, 'redirect_url': reverse('admin_dashboard')})
+            return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
+
         user = SiteUser.objects.filter(Q(email__iexact=login_id) | Q(phone=login_id)).first()
         if not user:
             # Guest checkout doesn't ask for a separate username, so also allow
@@ -561,12 +571,7 @@ def login_user(request):
         if user.check_password(password):
             request.session['site_user_id'] = user.id
             request.session['site_user_name'] = user.name
-            # The superadmin account doubles as the admin panel login - land
-            # it straight on the dashboard instead of the customer homepage.
-            redirect_url = None
-            if user.email.lower() == settings.SUPERADMIN_EMAIL.lower():
-                redirect_url = reverse('admin_dashboard')
-            return JsonResponse({'success': True, 'redirect_url': redirect_url})
+            return JsonResponse({'success': True, 'redirect_url': None})
         return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
@@ -606,6 +611,7 @@ def guest_login(request):
 def logout_user(request):
     request.session.pop('site_user_id', None)
     request.session.pop('site_user_name', None)
+    request.session.pop('is_superadmin', None)
     messages.success(request, 'Logged out successfully!')
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -832,14 +838,19 @@ def list_delivered_orders(request):
     })
 
 def update_order_status(request, order_id):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if request.method == 'POST':
         order = get_object_or_404(Order, id=order_id)
         new_status = request.POST.get('status')
         if new_status:
             order.status = new_status
             order.save()
+            if is_ajax:
+                return JsonResponse({'success': True, 'status': order.status})
             messages.success(request, f'Order #{order.id} status updated to {new_status}.')
         else:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Missing status'})
             messages.error(request, 'Failed to update order status.')
     return redirect('list_user_data')
 

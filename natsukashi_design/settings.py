@@ -95,8 +95,10 @@ DATABASES = {
 }
 
 
-# Admin panel access gate — only a SiteUser with this exact email may open the admin panel
+# Admin panel login — hardcoded here rather than stored in the users table,
+# so the admin account can't be affected by SiteUser data or DB resets.
 SUPERADMIN_EMAIL = 'natsukashii.traditional@gmail.com'
+SUPERADMIN_PASSWORD = 'Unlearn@123456'
 
 # Razorpay
 # https://razorpay.com/docs/payments/server-integration/python/
