@@ -109,7 +109,10 @@ if [ "$PM2_STATUS" != "online" ]; then
 fi
 
 log "Checking HTTP response from the app..."
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost/ || echo "000")
+# nginx's server_name is the real domain (natsukashii.in), not "localhost" -
+# a bare `curl http://localhost/` sends Host: localhost, which doesn't match
+# any server block and gets nginx's own 404, even when the app is healthy.
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 -H "Host: natsukashii.in" http://localhost/ || echo "000")
 log "Local HTTP check: $HTTP_CODE"
 
 if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "301" ] && [ "$HTTP_CODE" != "302" ]; then
