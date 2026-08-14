@@ -124,6 +124,41 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     transform: scaleX(1);
 }
 
+/* Collections/Settings nav dropdowns - Bootstrap's raw defaults (white
+   background, blue-ish hover) don't match the site's cream/maroon/gold
+   palette. Applies on both desktop and mobile; the mobile media query
+   below only overrides layout (full-width, no floating card chrome). */
+.dropdown-menu {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+}
+
+.dropdown-item {
+    color: var(--text-color);
+    border-radius: 6px;
+    padding: 8px 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--accent-color);
+    color: var(--hover-gold);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.dropdown-divider {
+    border-top-color: var(--border-color);
+}
+
 @media (max-width: 991.98px) {
     .navbar-collapse {
         position: absolute;
