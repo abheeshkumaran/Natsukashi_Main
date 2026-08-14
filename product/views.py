@@ -1907,6 +1907,9 @@ def our_story(request):
 def refund_policy(request):
     return render(request, 'product/refund_policy.html')
 
+def contact(request):
+    return render(request, 'product/contact.html')
+
 def report_issue(request):
     if request.method == 'POST':
         form = UpdationTaskForm(request.POST, request.FILES)
