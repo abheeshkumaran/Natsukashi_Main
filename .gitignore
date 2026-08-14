@@ -10,3 +10,6 @@ media
 staticfiles_build
 .DS_Store
 logs_*/
+global-bundle.pem
+run_local.sh
+db.sqlite3.stale-backup
