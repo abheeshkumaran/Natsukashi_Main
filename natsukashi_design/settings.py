@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'natsukashi_design.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:yBoLkkFVqwFxFNXfuCmofCornwBZnSQp@hayabusa.proxy.rlwy.net:27779/railway'),
+        default=os.environ['DATABASE_URL'],
         conn_max_age=600,
         conn_health_checks=True,
     )
