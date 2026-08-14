@@ -4,6 +4,7 @@
 // synchronous rendering; it's kept in sync via refreshWishlist() and every
 // mutating call below.
 let wishlistCache = [];
+let wishlistRequestSeq = 0;
 
 function wishlistApiCall(url, data) {
     return fetch(url, {
@@ -85,11 +86,46 @@ function toggleWishlist(btn) {
             return;
         }
     }
-    wishlistApiCall('/wishlist/toggle/', { product_id: btn.dataset.id }).then(applyWishlistResponse);
+    const id = btn.dataset.id;
+    const wasActive = wishlistCache.some((item) => item.id === id);
+
+    // Reflect the change immediately instead of waiting on the network
+    // round-trip, then reconcile with the server's response below.
+    if (wasActive) {
+        wishlistCache = wishlistCache.filter((item) => item.id !== id);
+    } else {
+        wishlistCache = [...wishlistCache, { id, type: btn.dataset.type || 'product', name: '', price: 0, image: '' }];
+    }
+    renderAllWishlistUI();
+
+    const requestId = ++wishlistRequestSeq;
+    wishlistApiCall('/wishlist/toggle/', { product_id: id }).then((data) => {
+        if (requestId !== wishlistRequestSeq) return; // superseded by a later change
+        if (data && data.success) {
+            applyWishlistResponse(data);
+        } else {
+            refreshWishlist();
+        }
+    }).catch(() => {
+        if (requestId === wishlistRequestSeq) refreshWishlist();
+    });
 }
 
 function removeFromWishlist(id, type) {
-    wishlistApiCall('/wishlist/remove/', { product_id: id }).then(applyWishlistResponse);
+    wishlistCache = wishlistCache.filter((item) => item.id !== id);
+    renderAllWishlistUI();
+
+    const requestId = ++wishlistRequestSeq;
+    wishlistApiCall('/wishlist/remove/', { product_id: id }).then((data) => {
+        if (requestId !== wishlistRequestSeq) return;
+        if (data && data.success) {
+            applyWishlistResponse(data);
+        } else {
+            refreshWishlist();
+        }
+    }).catch(() => {
+        if (requestId === wishlistRequestSeq) refreshWishlist();
+    });
 }
 
 function moveWishlistItemToCart(id, type) {
