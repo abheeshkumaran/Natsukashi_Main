@@ -22,6 +22,12 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+          # Avoids needing sts:TagSession on the role's trust policy at all -
+          # ruling this out as a variable while debugging a stubborn
+          # "Not authorized to perform sts:AssumeRoleWithWebIdentity" error
+          # that persisted even after the trust policy was confirmed correct
+          # (via `aws iam get-role`) with TagSession already granted.
+          role-skip-session-tagging: true
 
       - name: Trigger deploy.sh on the server via SSM
         id: ssm
