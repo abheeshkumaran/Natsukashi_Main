@@ -106,8 +106,10 @@ function addToCart(btn) {
         applyCartResponse(data);
         btn.disabled = false;
         btn.textContent = 'Go to Cart';
-        // Do not open the cart drawer immediately after adding.
-        // The drawer should open only when the user clicks the "Go to Cart" button.
+        // Open the drawer right away so the add is visibly confirmed -
+        // requiring a second click on "Go to Cart" to actually see the
+        // cart was repeatedly reported as "cart not visible after adding".
+        openCartDrawer();
     });
 }
 
