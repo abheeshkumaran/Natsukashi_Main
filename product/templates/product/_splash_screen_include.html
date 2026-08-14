@@ -1,0 +1,67 @@
+{% load static %}
+<!-- Full-screen splash shown once per browser session (via sessionStorage),
+     right after <body> opens on every main storefront page. Fades out once
+     the page has finished loading, then removes itself from the DOM so it
+     never blocks clicks/scroll afterward. -->
+<div id="splashScreen" class="splash-screen">
+    <img src="{% static 'images/splash_logo.png' %}" alt="Natsukashi" class="splash-logo">
+</div>
+
+<style>
+    .splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: opacity 0.6s ease;
+    }
+
+    .splash-screen.splash-hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .splash-logo {
+        width: 220px;
+        max-width: 60vw;
+        height: auto;
+        animation: splash-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes splash-pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.04); opacity: 0.9; }
+    }
+</style>
+
+<script>
+    (function () {
+        var splash = document.getElementById('splashScreen');
+        if (!splash) return;
+
+        // Only once per browser session - internal navigation between pages
+        // shouldn't replay it every time, just the first arrival.
+        if (sessionStorage.getItem('natsukashiSplashShown')) {
+            splash.remove();
+            return;
+        }
+        sessionStorage.setItem('natsukashiSplashShown', '1');
+
+        function hideSplash() {
+            splash.classList.add('splash-hidden');
+            setTimeout(function () { splash.remove(); }, 700);
+        }
+
+        if (document.readyState === 'complete') {
+            setTimeout(hideSplash, 400);
+        } else {
+            window.addEventListener('load', function () {
+                setTimeout(hideSplash, 400);
+            });
+        }
+    })();
+</script>
