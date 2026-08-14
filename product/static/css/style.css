@@ -19,6 +19,17 @@ html {
     font-size: 110%;
 }
 
+/* iOS Safari shows its own default tap-highlight overlay on any tappable
+   element with no author styling for it - on unstyled native controls
+   (buttons especially) that highlight can pick up the device's system
+   accent/tint color rather than anything defined in this stylesheet, which
+   is invisible on desktop testing since only touch browsers apply it at
+   all. Reported as e.g. the wishlist heart flashing red on iPhone even
+   though nothing here defines a red tap state. */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
     background-color: var(--bg-color);
     font-family: var(--body-font);
@@ -739,6 +750,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
    filled (wishlisted), never by color, and only ever changes on an explicit
    click. */
 .wishlist-heart-btn {
+    appearance: none;
+    -webkit-appearance: none;
     position: absolute;
     top: 10px;
     right: 10px;
@@ -756,6 +769,13 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     cursor: pointer;
     z-index: 10;
     transition: transform 0.2s ease;
+}
+
+.wishlist-heart-btn:active,
+.wishlist-heart-btn:focus {
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+    outline: none;
 }
 
 .wishlist-heart-btn:hover {
