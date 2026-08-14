@@ -43,6 +43,12 @@
         .btn-checkout:hover { background: var(--hover-gold); color: #fff; }
         .btn-checkout:disabled { opacity: 0.6; cursor: not-allowed; }
 
+        /* Independent scroll once there's more than ~3 items, so the total
+           and checkout controls below stay reachable without scrolling
+           past a long product list - not a mobile/Safari-specific fix,
+           this is generic page layout, just far more noticeable on a
+           short mobile viewport than on desktop. */
+        #orderReviewItems { max-height: 300px; overflow-y: auto; padding-right: 6px; }
         .order-review-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-color); }
         .order-review-item:last-child { border-bottom: none; }
         .order-review-item-info { display: flex; align-items: center; gap: 14px; }
