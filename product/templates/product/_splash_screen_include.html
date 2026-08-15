@@ -1,8 +1,9 @@
 {% load static %}
 <!-- Full-screen splash shown once per browser session (via sessionStorage),
-     right after <body> opens on every main storefront page. Fades out once
-     the page has finished loading, then removes itself from the DOM so it
-     never blocks clicks/scroll afterward. -->
+     right after <body> opens on every main storefront page. Logo grows in
+     with a fade, holds briefly, then the whole overlay fades out once the
+     page has finished loading and removes itself from the DOM so it never
+     blocks clicks/scroll afterward. -->
 <div id="splashScreen" class="splash-screen">
     <img src="{% static 'images/splash_logo.png' %}" alt="Natsukashi" class="splash-logo">
 </div>
@@ -29,12 +30,15 @@
         width: 220px;
         max-width: 60vw;
         height: auto;
-        animation: splash-pulse 1.4s ease-in-out infinite;
+        opacity: 0;
+        transform: scale(0.6);
+        animation: splash-grow-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    @keyframes splash-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.04); opacity: 0.9; }
+    @keyframes splash-grow-in {
+        0% { opacity: 0; transform: scale(0.6); }
+        60% { opacity: 1; transform: scale(1.08); }
+        100% { opacity: 1; transform: scale(1); }
     }
 </style>
 
@@ -56,11 +60,13 @@
             setTimeout(function () { splash.remove(); }, 700);
         }
 
+        // Let the logo's own grow-in animation (~1s) finish and hold
+        // briefly before the whole overlay starts fading out.
         if (document.readyState === 'complete') {
-            setTimeout(hideSplash, 400);
+            setTimeout(hideSplash, 1200);
         } else {
             window.addEventListener('load', function () {
-                setTimeout(hideSplash, 400);
+                setTimeout(hideSplash, 1200);
             });
         }
     })();
