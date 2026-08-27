@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 
@@ -6,10 +5,10 @@ ADMIN_PANEL_PREFIX = '/admin-panel/'
 
 
 class AdminPanelAuthMiddleware:
-    """The admin login (settings.SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD) is
-    hardcoded and separate from the SiteUser/users table - logging in as
-    that account sets the 'is_superadmin' session flag, which is what gates
-    the admin panel below.
+    """The admin login lives in its own admin_auth table (product.AdminAuth),
+    separate from the SiteUser/users table - logging in as that account sets
+    the 'is_superadmin' session flag, which is what gates the admin panel
+    below.
 
     Two rules, both driven off that same session flag:
     1. Anyone who is NOT that account gets bounced out of /admin-panel/ to

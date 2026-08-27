@@ -89,9 +89,38 @@ class SiteUser(models.Model):
         
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-        
+
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
+
+
+class AdminAuth(models.Model):
+    """Single-row store for the admin-panel login. Replaces the old
+    hardcoded settings.SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD. The password
+    is stored hashed. Seeded once by data migration; edited from
+    /admin-panel/profile/."""
+    username = models.CharField(max_length=255, default='Admin')
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'admin_auth'
+        verbose_name = 'Admin Auth'
+        verbose_name_plural = 'Admin Auth'
+
+    def __str__(self):
+        return self.email
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+    @classmethod
+    def load(cls):
+        return cls.objects.first()
+
 
 class UserData(models.Model):
     user = models.OneToOneField(SiteUser, on_delete=models.CASCADE, related_name='user_data')

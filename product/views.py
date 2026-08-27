@@ -17,7 +17,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm, HeroSectionForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress, HeroSection, HeroImage
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress, HeroSection, HeroImage, AdminAuth
 
 import re
 from django.core.validators import validate_email
@@ -335,15 +335,55 @@ def admin_profile(request):
     if site_user_id:
         site_user = SiteUser.objects.filter(id=site_user_id).first()
 
+    is_superadmin = bool(request.session.get('is_superadmin'))
+    admin_auth = AdminAuth.load() if is_superadmin else None
+
     details_error = None
     details_success = False
     site_password_error = None
     site_password_success = False
+    admin_details_error = None
+    admin_details_success = False
+    admin_password_error = None
+    admin_password_success = False
 
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
 
-        if form_type == 'site_details' and site_user:
+        if form_type == 'admin_details' and admin_auth:
+            username = request.POST.get('admin_username', '').strip()
+            email = request.POST.get('admin_email', '').strip()
+
+            if not (username and email):
+                admin_details_error = 'Username and email are required.'
+            elif not is_valid_email(email):
+                admin_details_error = 'Please enter a valid email address.'
+            elif AdminAuth.objects.filter(email__iexact=email).exclude(id=admin_auth.id).exists():
+                admin_details_error = 'That email is already in use.'
+            else:
+                admin_auth.username = username
+                admin_auth.email = email
+                admin_auth.save()
+                request.session['site_user_name'] = admin_auth.username
+                admin_details_success = True
+
+        elif form_type == 'admin_password' and admin_auth:
+            old_password = request.POST.get('admin_old_password', '')
+            new_password = request.POST.get('admin_new_password', '')
+            confirm_password = request.POST.get('admin_confirm_password', '')
+
+            if not admin_auth.check_password(old_password):
+                admin_password_error = 'Current password is incorrect.'
+            elif len(new_password) < 8:
+                admin_password_error = 'New password must be at least 8 characters.'
+            elif new_password != confirm_password:
+                admin_password_error = 'New password and confirm password do not match.'
+            else:
+                admin_auth.set_password(new_password)
+                admin_auth.save()
+                admin_password_success = True
+
+        elif form_type == 'site_details' and site_user:
             name = request.POST.get('name', '').strip()
             email = request.POST.get('email', '').strip()
             phone = request.POST.get('phone', '').strip()
@@ -384,10 +424,16 @@ def admin_profile(request):
 
     return render(request, 'admin/admin_profile.html', {
         'site_user': site_user,
+        'is_superadmin': is_superadmin,
+        'admin_auth': admin_auth,
         'details_error': details_error,
         'details_success': details_success,
         'site_password_error': site_password_error,
         'site_password_success': site_password_success,
+        'admin_details_error': admin_details_error,
+        'admin_details_success': admin_details_success,
+        'admin_password_error': admin_password_error,
+        'admin_password_success': admin_password_success,
     })
 
 
@@ -553,12 +599,13 @@ def login_user(request):
         login_id = request.POST.get('email', '').strip() # It comes from the name="email" input, but can be phone, email, or (for guest accounts) name
         password = request.POST.get('password')
 
-        # The admin account is hardcoded in settings rather than stored as a
-        # SiteUser row, so it never touches the users table.
-        if login_id.lower() == settings.SUPERADMIN_EMAIL.lower():
-            if secrets.compare_digest(password or '', settings.SUPERADMIN_PASSWORD):
+        # The admin-panel account lives in its own admin_auth table (not the
+        # users table), so it never touches SiteUser.
+        admin_auth = AdminAuth.load()
+        if admin_auth and login_id.lower() == admin_auth.email.lower():
+            if admin_auth.check_password(password or ''):
                 request.session['is_superadmin'] = True
-                request.session['site_user_name'] = 'Admin'
+                request.session['site_user_name'] = admin_auth.username
                 return JsonResponse({'success': True, 'redirect_url': reverse('admin_dashboard')})
             return JsonResponse({'success': False, 'error': 'failed to login invalid password'})
 

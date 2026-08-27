@@ -74,6 +74,71 @@
             <button type="submit" class="btn btn-primary">Update Site Password</button>
         </form>
     </div>
+    {% elif admin_auth %}
+    <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Admin Account</h5>
+        <p class="text-muted small">This is the admin-panel login, stored in the <code>admin_auth</code> table.</p>
+
+        {% if admin_details_error %}
+        <div class="alert alert-danger">{{ admin_details_error }}</div>
+        {% endif %}
+        {% if admin_details_success %}
+        <div class="alert alert-success">Admin details updated successfully.</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="admin_details">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Username</label>
+                <input type="text" name="admin_username" class="form-control" value="{{ admin_auth.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <input type="email" name="admin_email" class="form-control" value="{{ admin_auth.email }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Details</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded shadow-sm p-4 mb-4" style="max-width: 500px;">
+        <h5 class="fw-bold mb-3">Admin Password</h5>
+        <p class="text-muted small">Used to log in to the admin panel.</p>
+
+        {% if admin_password_error %}
+        <div class="alert alert-danger">{{ admin_password_error }}</div>
+        {% endif %}
+        {% if admin_password_success %}
+        <div class="alert alert-success">Admin password updated successfully.</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="admin_password">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Old Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="admin_old_password" class="form-control" required>
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">New Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="admin_new_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Confirm New Password</label>
+                <div class="pw-wrap">
+                    <input type="password" name="admin_confirm_password" class="form-control" required minlength="8">
+                    <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility(this)">👁</button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Admin Password</button>
+        </form>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

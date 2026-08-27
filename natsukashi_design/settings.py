@@ -95,10 +95,8 @@ DATABASES = {
 }
 
 
-# Admin panel login — hardcoded here rather than stored in the users table,
-# so the admin account can't be affected by SiteUser data or DB resets.
-SUPERADMIN_EMAIL = 'natsukashii.traditional@gmail.com'
-SUPERADMIN_PASSWORD = 'Unlearn@123456'
+# Admin-panel login now lives in the DB (product.AdminAuth / admin_auth
+# table), seeded by migration 0051 and edited from /admin-panel/profile/.
 
 # Razorpay
 # https://razorpay.com/docs/payments/server-integration/python/
