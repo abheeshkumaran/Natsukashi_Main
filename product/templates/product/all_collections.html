@@ -14,7 +14,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=1.3" rel="stylesheet">
     <style>
         .category-filter-bar {
             display: flex;
@@ -164,7 +164,7 @@
                         <h5 class="card-title">{{ product.collection_name }}</h5>
                         <p class="card-text">{{ product.description }}</p>
                         <div class="mt-auto">
-                            <div class="product-price mb-3">₹{{ product.price }}</div>
+                            <div class="product-price mb-3">{% include 'product/_price_display.html' %}</div>
                             <div class="d-flex justify-content-between">
                                 {% if product.quantity == 0 or not product.stock_available %}
                                 <button class="btn btn-card-outline flex-grow-1 me-2 cart-toggle-btn" disabled>Add to Cart</button>
@@ -234,8 +234,8 @@
     {% include 'product/_product_modal_include.html' %}
     {% include 'product/_auth_modal_include.html' %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/cart.js' %}?v=6"></script>
-    <script src="{% static 'js/wishlist.js' %}?v=1"></script>
+    <script src="{% static 'js/cart.js' %}?v=7"></script>
+    <script src="{% static 'js/wishlist.js' %}?v=2"></script>
     <script>
         document.querySelectorAll('.category-filter-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {

@@ -1,4 +1,9 @@
-const FAKE_MRP_MARKUP = 500;
+// The struck-through "MRP" is now a real per-product value (Product.fake_price),
+// sent from the server as item.fake_price. Falls back to the sale price (i.e. no
+// discount shown) when a product has no fake price set.
+function itemMrp(item) {
+    return (item.fake_price && item.fake_price > item.price) ? item.fake_price : item.price;
+}
 
 // The cart now lives server-side (per account), so every browser/device the
 // same user logs into sees the same cart. `cartCache` is just an in-memory
@@ -198,8 +203,9 @@ function renderCartDrawer() {
 
     // Section 1: cart items
     itemsEl.innerHTML = cart.map((item) => {
-        const mrp = item.price + FAKE_MRP_MARKUP;
-        const offPercent = Math.round((FAKE_MRP_MARKUP / mrp) * 100);
+        const mrp = itemMrp(item);
+        const hasOff = mrp > item.price;
+        const offPercent = hasOff ? Math.round((1 - item.price / mrp) * 100) : 0;
         return `
         <div class="cart-row">
             <img src="${item.image}" alt="${item.name}" class="cart-item-img">
@@ -208,8 +214,7 @@ function renderCartDrawer() {
                 <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : 'FEATURED ONAM PICKS'}</div>
                 <div class="price-block">
                     <span class="item-price">${formatPrice(item.price)}</span>
-                    <span class="item-mrp">${formatPrice(mrp)}</span>
-                    <span class="item-off">${offPercent}% off</span>
+                    ${hasOff ? `<span class="item-mrp">${formatPrice(mrp)}</span><span class="item-off">${offPercent}% off</span>` : ''}
                 </div>
                 <div class="qty-stepper">
                     <button onclick="changeQty('${item.id}','${item.type}',-1)">−</button>
@@ -226,7 +231,7 @@ function renderCartDrawer() {
 
     // Section 2: price details
     const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
-    const totalMrp = cart.reduce((sum, item) => sum + (item.price + FAKE_MRP_MARKUP) * item.qty, 0);
+    const totalMrp = cart.reduce((sum, item) => sum + itemMrp(item) * item.qty, 0);
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     const totalDiscount = totalMrp - totalAmount;
 
@@ -256,8 +261,9 @@ function renderCartPage() {
     if (summaryEl) summaryEl.style.display = 'block';
 
     itemsEl.innerHTML = cart.map((item) => {
-        const mrp = item.price + FAKE_MRP_MARKUP;
-        const offPercent = Math.round((FAKE_MRP_MARKUP / mrp) * 100);
+        const mrp = itemMrp(item);
+        const hasOff = mrp > item.price;
+        const offPercent = hasOff ? Math.round((1 - item.price / mrp) * 100) : 0;
         return `
         <div class="cart-row">
             <img src="${item.image}" alt="${item.name}" class="cart-item-img">
@@ -266,8 +272,7 @@ function renderCartPage() {
                 <div class="item-type">${item.type === 'mund' ? 'SHOP BY COLLECTION' : item.type === 'colored' ? 'MOST PURCHASED SAREE' : 'FEATURED ONAM PICKS'}</div>
                 <div class="price-block">
                     <span class="item-price">${formatPrice(item.price)}</span>
-                    <span class="item-mrp">${formatPrice(mrp)}</span>
-                    <span class="item-off">${offPercent}% off</span>
+                    ${hasOff ? `<span class="item-mrp">${formatPrice(mrp)}</span><span class="item-off">${offPercent}% off</span>` : ''}
                 </div>
                 <div class="qty-stepper">
                     <button onclick="changeQty('${item.id}','${item.type}',-1)">−</button>
@@ -283,7 +288,7 @@ function renderCartPage() {
     }).join('');
 
     const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
-    const totalMrp = cart.reduce((sum, item) => sum + (item.price + FAKE_MRP_MARKUP) * item.qty, 0);
+    const totalMrp = cart.reduce((sum, item) => sum + itemMrp(item) * item.qty, 0);
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     const totalDiscount = totalMrp - totalAmount;
 

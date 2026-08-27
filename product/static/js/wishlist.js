@@ -179,13 +179,18 @@ function renderWishlistDrawer() {
 
     if (emptyEl) emptyEl.style.display = 'none';
 
-    itemsEl.innerHTML = wishlist.map((item) => `
+    itemsEl.innerHTML = wishlist.map((item) => {
+        const mrp = (item.fake_price && item.fake_price > item.price) ? item.fake_price : item.price;
+        const hasOff = mrp > item.price;
+        const offPercent = hasOff ? Math.round((1 - item.price / mrp) * 100) : 0;
+        return `
         <div class="cart-row">
             <img src="${item.image}" alt="${item.name}" class="cart-item-img">
             <div class="cart-item-info">
                 <h6 class="item-name">${item.name}</h6>
                 <div class="price-block">
                     <span class="item-price">${formatWishlistPrice(item.price)}</span>
+                    ${hasOff ? `<span class="item-mrp">${formatWishlistPrice(mrp)}</span><span class="item-off">${offPercent}% off</span>` : ''}
                 </div>
                 <div class="item-actions">
                     <a href="javascript:void(0)" class="item-action-btn item-action-move" onclick="moveWishlistItemToCart('${item.id}','${item.type}')">MOVE TO CART</a>
@@ -193,7 +198,8 @@ function renderWishlistDrawer() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', () => {

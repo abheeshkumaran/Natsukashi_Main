@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link href="{% static 'css/style.css' %}?v=1.2" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=1.3" rel="stylesheet">
 </head>
 
 <body>
@@ -91,17 +91,55 @@
     
 </nav>
 
+    {% if hero.marquee_text %}
+    <style>
+        .hero-marquee {
+            background: var(--hover-gold, #a67c00);
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 9px 0;
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .hero-marquee__track {
+            display: inline-flex;
+            white-space: nowrap;
+            will-change: transform;
+            animation: heroMarquee 30s linear infinite;
+        }
+        .hero-marquee:hover .hero-marquee__track { animation-play-state: paused; }
+        .hero-marquee__track span { padding: 0 2.5rem; }
+        @keyframes heroMarquee {
+            from { transform: translateX(-50%); }
+            to { transform: translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hero-marquee__track { animation: none; }
+        }
+    </style>
+    <div class="hero-marquee" aria-hidden="true">
+        <div class="hero-marquee__track">
+            <span>{{ hero.marquee_text }}</span>
+            <span>{{ hero.marquee_text }}</span>
+            <span>{{ hero.marquee_text }}</span>
+            <span>{{ hero.marquee_text }}</span>
+        </div>
+    </div>
+    {% endif %}
+
     {% include 'product/_search_panel_include.html' %}
 
     <!-- Hero -->
 
-    <section class="hero"
-        style="background: #fdfdfd url('{% static 'images/landing_bg.jpeg' %}') no-repeat right center; background-size: auto 100%;">
+    <section class="hero" id="heroSection"
+        style="background: #fdfdfd url('{% if hero_images %}{{ hero_images.0 }}{% else %}{% static 'images/landing_bg.jpeg' %}{% endif %}') no-repeat right center; background-size: auto 100%;">
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-lg-8 hero-content text-start">
-                    <h1 class="heading-font">Curated Onam Edit</h1> <br>
-                    <p class="tagline mb-2">Celebrate Kerala's Timeless Heritage</p>
+                    <h1 class="heading-font">{{ hero.hero_content|default:"Woven with nostalgia." }}</h1> <br>
+                    <p class="tagline mb-2">{{ hero.hero_para_1|default:"Celebrate Kerala's Timeless Heritage" }}</p>
                     <div class="d-flex align-items-center justify-content-center mb-4" style="max-width: 400px;">
                         <div class="line my-0 mx-0" style="flex-grow: 1;"></div>
                         <i class="fa-vellum fa-solid fa-spa mx-3"
@@ -109,17 +147,95 @@
                         <div class="line my-0 mx-0" style="flex-grow: 1;"></div>
                     </div>
                     <p class="hero-text">
-                        Thoughtfully curated Kerala sarees and set mundus, crafted to honour tradition, celebrate
-                        artistry, and make every Onam memory unforgettable.
+                        {{ hero.hero_para_2|default:"Timeless sarees from the traditional weaves of India, thoughtfully curated with love." }}
                     </p>
                     <div class="mt-4">
-                        <a href="{% if onam_category %}{% url 'category_products' onam_category.id %}{% else %}#{% endif %}" class="btn btn-primary-custom me-3 mb-3">SHOP ONAM COLLECTION</a>
+                        <a href="{% if onam_category %}{% url 'category_products' onam_category.id %}{% else %}#{% endif %}" class="btn btn-primary-custom me-3 mb-3">SHOP OUR COLLECTION</a>
                         <a href="{% url 'all_collections' %}" class="btn btn-secondary-custom mb-3">VIEW ALL COLLECTIONS</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    {% if hero_images|length > 1 %}
+    {{ hero_images|json_script:"heroImagesData" }}
+    <style>
+        #heroSection { position: relative; }
+        #heroSection > .container-fluid { position: relative; z-index: 2; }
+        .hero-slider { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: auto 100%;
+            transform: translateX(100%);
+            transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .hero-slide.is-active { transform: translateX(0); }
+        .hero-slide.is-prev { transform: translateX(-100%); }
+        .hero-slide.no-anim { transition: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .hero-slide { transition: none; }
+        }
+    </style>
+    <script>
+        (function () {
+            var data = document.getElementById('heroImagesData');
+            var section = document.getElementById('heroSection');
+            if (!data || !section) return;
+            var urls = JSON.parse(data.textContent);
+            if (urls.length < 2) return;
+
+            // Hand the backdrop over to the sliding layers.
+            section.style.backgroundImage = 'none';
+
+            var slider = document.createElement('div');
+            slider.className = 'hero-slider';
+            var slides = urls.map(function (url, idx) {
+                var s = document.createElement('div');
+                s.className = 'hero-slide no-anim' + (idx === 0 ? ' is-active' : '');
+                s.style.backgroundImage = "url('" + url + "')";
+                slider.appendChild(s);
+                var preload = new Image(); preload.src = url;
+                return s;
+            });
+            section.insertBefore(slider, section.firstChild);
+
+            // Enable transitions only after the first paint so slide 1
+            // doesn't animate in on page load.
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    slides.forEach(function (s) { s.classList.remove('no-anim'); });
+                });
+            });
+
+            var current = 0;
+            setInterval(function () {
+                var next = (current + 1) % slides.length;
+                var cur = slides[current];
+                var nxt = slides[next];
+
+                // The incoming slide always enters from the right edge.
+                if (nxt.classList.contains('is-prev')) {
+                    nxt.classList.add('no-anim');
+                    nxt.classList.remove('is-prev');
+                    void nxt.offsetWidth;
+                    nxt.classList.remove('no-anim');
+                }
+
+                cur.classList.remove('is-active');
+                cur.classList.add('is-prev');
+                nxt.classList.remove('is-prev');
+                nxt.classList.add('is-active');
+
+                current = next;
+            }, 5000);
+        })();
+    </script>
+    {% endif %}
 
 
     <!-- SHOP BY COLLECTION (Categories) -->
@@ -197,7 +313,7 @@
                             <h5 class="card-title">{{ product.collection_name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
                             <div class="mt-auto">
-                                <div class="product-price mb-3">₹{{ product.price }}</div>
+                                <div class="product-price product-price--home mb-3">{% include 'product/_price_display.html' %}</div>
                                 <div class="d-flex justify-content-between">
                                     {% if product.quantity == 0 or not product.stock_available %}
                                     <button class="btn btn-card-outofstock flex-grow-1" disabled>Out of Stock</button>
@@ -312,8 +428,8 @@
     {% include 'product/_auth_modal_include.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/cart.js' %}?v=6"></script>
-    <script src="{% static 'js/wishlist.js' %}?v=1"></script>
+    <script src="{% static 'js/cart.js' %}?v=7"></script>
+    <script src="{% static 'js/wishlist.js' %}?v=2"></script>
     <script>
         // IntersectionObserver to reveal paragraph on scroll
         (function () {

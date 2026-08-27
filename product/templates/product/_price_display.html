@@ -1,0 +1,1 @@
+{% if product.has_fake_price %}<span class="mrp-now">₹{{ product.price }}</span> <span class="mrp-old">₹{{ product.fake_price }}</span> <span class="mrp-off">{{ product.discount_percent }}% off</span>{% else %}<span class="mrp-now">₹{{ product.price }}</span>{% endif %}

@@ -466,6 +466,10 @@
                 <i class="bi bi-shop"></i><span class="link-label">Manual Selling</span>
             </a>
 
+            <a href="{% url 'hero_updation' %}" class="sidebar-link {% if request.resolver_match.url_name == 'hero_updation' %}active{% endif %}">
+                <i class="bi bi-image"></i><span class="link-label">Hero Updation</span>
+            </a>
+
             <a href="{% url 'list_users' %}" class="sidebar-link {% if 'user' in request.resolver_match.url_name and 'data' not in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-people"></i><span class="link-label">Users</span>
             </a>

@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Sum, F, Q, Value
+from django.db.models import Sum, F, Q, Value, Max
 from django.db.models.functions import Greatest
 from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress
+from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm, HeroSectionForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress, HeroSection, HeroImage
 
 import re
 from django.core.validators import validate_email
@@ -290,11 +290,15 @@ def home(request):
     table_categories = Category.objects.filter(show_in_collection_table=True).prefetch_related('products', 'products__images').order_by('id')
     all_products = Product.objects.all().prefetch_related('images').order_by('-id')
     onam_category = Category.objects.filter(name='Featured Onam Picks').first()
+    hero = HeroSection.load()
+    hero_images = [img.image.url for img in hero.images.all()]
     return render(request, 'product/home.html', {
         'categories': categories,
         'table_categories': table_categories,
         'all_products': all_products,
         'onam_category': onam_category,
+        'hero': hero,
+        'hero_images': hero_images,
     })
 
 
@@ -317,6 +321,7 @@ def product_search(request):
         'id': p.id,
         'name': p.collection_name,
         'price': float(p.price),
+        'fake_price': float(p.fake_price) if p.has_fake_price else None,
         'image': p.first_image_url,
         'in_stock': p.stock_available and p.quantity > 0,
     } for p in products]
@@ -1095,6 +1100,7 @@ def _cart_item_json(item):
         'type': 'product',
         'name': product.collection_name,
         'price': float(product.price),
+        'fake_price': float(product.fake_price) if product.has_fake_price else None,
         'image': product.first_image_url,
         'qty': item.quantity,
     }
@@ -1203,6 +1209,7 @@ def _wishlist_item_json(item):
         'type': 'product',
         'name': product.collection_name,
         'price': float(product.price),
+        'fake_price': float(product.fake_price) if product.has_fake_price else None,
         'image': product.first_image_url,
     }
 
@@ -1772,6 +1779,31 @@ def manage_updations(request):
         'high_priority_tasks': high_priority_tasks,
         'low_priority_tasks': low_priority_tasks,
     })
+
+def hero_updation(request):
+    """Admin page to view/replace the home-page hero image (and its text).
+    Backed by the single HeroSection row."""
+    hero = HeroSection.load()
+    if request.method == 'POST':
+        form = HeroSectionForm(request.POST, request.FILES, instance=hero)
+        if form.is_valid():
+            form.save()
+
+            delete_ids = request.POST.getlist('delete_images')
+            if delete_ids:
+                hero.images.filter(id__in=delete_ids).delete()
+
+            new_images = request.FILES.getlist('hero_images')
+            next_order = (hero.images.aggregate(m=Max('sort_order'))['m'] or 0) + 1
+            for offset, image_file in enumerate(new_images):
+                HeroImage.objects.create(hero=hero, image=image_file, sort_order=next_order + offset)
+
+            messages.success(request, 'Hero section updated successfully.')
+            return redirect('hero_updation')
+    else:
+        form = HeroSectionForm(instance=hero)
+    return render(request, 'admin/hero_updation.html', {'form': form, 'hero': hero})
+
 
 def add_updation(request):
     if request.method == 'POST':

@@ -699,6 +699,39 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: var(--primary-color);
 }
 
+/* Real price first, then struck-through fake MRP, then the auto discount */
+.mrp-now {
+    font-weight: 700;
+}
+
+.mrp-old {
+    text-decoration: line-through;
+    color: #999;
+    font-weight: 500;
+    font-size: 0.9em;
+    margin-left: 6px;
+}
+
+.mrp-off {
+    color: #388e3c;
+    font-weight: 700;
+    font-size: 0.85em;
+    margin-left: 6px;
+}
+
+/* Home page cards use a more compact price line */
+.product-price--home {
+    font-size: 0.85rem;
+}
+
+.product-price--home .mrp-old {
+    font-size: 0.8em;
+}
+
+.product-price--home .mrp-off {
+    font-size: 0.78em;
+}
+
 .btn-card-outline {
     background: transparent;
     border: 1px solid var(--primary-color);

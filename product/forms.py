@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Category, UpdationTask, ProductCoupon
+from .models import Product, Category, UpdationTask, ProductCoupon, HeroSection
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -8,6 +8,18 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category Name'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class HeroSectionForm(forms.ModelForm):
+    class Meta:
+        model = HeroSection
+        fields = ['hero_content', 'hero_para_1', 'hero_para_2', 'marquee_text']
+        widgets = {
+            'hero_content': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Hero heading'}),
+            'hero_para_1': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'First paragraph'}),
+            'hero_para_2': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Second paragraph'}),
+            'marquee_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Scrolling text shown under the navbar'}),
         }
 
 
@@ -43,10 +55,11 @@ class MultiFileInput(forms.FileInput):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['collection_name', 'description', 'price', 'quantity', 'stock_available']
+        fields = ['collection_name', 'description', 'fake_price', 'price', 'quantity', 'stock_available']
         widgets = {
             'collection_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Collection Name'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Description', 'rows': 4}),
+            'fake_price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Fake Price (MRP)', 'step': '0.01'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Price'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantity'}),
             'stock_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

@@ -46,7 +46,15 @@
                             <span class="text-muted small no-categories-msg">None</span>
                         {% endfor %}
                     </td>
-                    <td>₹{{ product.price }}</td>
+                    <td>
+                        {% if product.has_fake_price %}
+                            <span class="text-muted text-decoration-line-through">₹{{ product.fake_price }}</span>
+                            ₹{{ product.price }}
+                            <span class="badge bg-success">{{ product.discount_percent }}% off</span>
+                        {% else %}
+                            ₹{{ product.price }}
+                        {% endif %}
+                    </td>
                     <td>
                         {% if product.stock_available and product.quantity > 0 %}
                             <span class="badge bg-success">In Stock ({{ product.quantity }})</span>

@@ -38,11 +38,15 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label for="{{ form.fake_price.id_for_label }}" class="form-label fw-bold">Fake Price</label>
+                            {{ form.fake_price }}
+                        </div>
+                        <div class="col-md-4">
                             <label for="{{ form.price.id_for_label }}" class="form-label fw-bold">Price <span class="text-danger">*</span></label>
                             {{ form.price }}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="{{ form.quantity.id_for_label }}" class="form-label fw-bold">Quantity</label>
                             {{ form.quantity }}
                         </div>

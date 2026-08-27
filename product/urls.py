@@ -50,6 +50,7 @@ urlpatterns = [
     path('admin-panel/users/delete/<int:pk>/', views.delete_user, name='delete_user'),
     path('admin-panel/user-data/', views.list_user_data, name='list_user_data'),
     path('admin-panel/user-data/download-csv/', views.download_user_data_csv, name='download_user_data_csv'),
+    path('admin-panel/hero-updation/', views.hero_updation, name='hero_updation'),
     path('admin-panel/updations/', views.manage_updations, name='manage_updations'),
     path('admin-panel/updations/add/', views.add_updation, name='add_updation'),
     path('admin-panel/manual-selling/', views.manual_selling, name='manual_selling'),
