@@ -55,6 +55,9 @@
                         </ul>
                     </li>
                     <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'contact' %} active{% endif %}" href="{% url 'contact' %}">Contact ✉️</a></li>
+                    {% if hero.toggle %}
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'toggle_page' %} active{% endif %}" href="{% url 'toggle_page' %}">{{ hero.toggle }}</a></li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="javascript:void(0)" onclick="openWishlistDrawer()">
                             Wishlist ♥
@@ -150,7 +153,7 @@
                         {{ hero.hero_para_2|default:"Timeless sarees from the traditional weaves of India, thoughtfully curated with love." }}
                     </p>
                     <div class="mt-4">
-                        <a href="{% if onam_category %}{% url 'category_products' onam_category.id %}{% else %}#{% endif %}" class="btn btn-primary-custom me-3 mb-3">SHOP OUR COLLECTION</a>
+                        <a href="{% url 'toggle_page' %}" class="btn btn-primary-custom me-3 mb-3">{{ hero.toggle|default:"SHOP OUR COLLECTION" }}</a>
                         <a href="{% url 'all_collections' %}" class="btn btn-secondary-custom mb-3">VIEW ALL COLLECTIONS</a>
                     </div>
                 </div>

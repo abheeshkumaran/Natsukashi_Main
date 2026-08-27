@@ -11,6 +11,7 @@ urlpatterns = [
     path('admin-panel/products/edit/<int:pk>/', views.edit_product, name='edit_product'),
     path('admin-panel/products/delete/<int:pk>/', views.delete_product, name='delete_product'),
     path('admin-panel/products/update-categories/<int:pk>/', views.update_product_categories, name='update_product_categories'),
+    path('admin-panel/products/toggle-page/<int:pk>/', views.toggle_product_toggle_page, name='toggle_product_toggle_page'),
     path('admin-panel/product-images/delete/<int:pk>/', views.delete_product_image, name='delete_product_image'),
     path('admin-panel/categories/', views.list_categories, name='list_categories'),
     path('admin-panel/categories/add/', views.add_category, name='add_category'),
@@ -69,4 +70,5 @@ urlpatterns = [
     path('my-orders/', views.my_orders, name='my_orders'),
     path('my-orders/<int:order_id>/', views.order_detail, name='order_detail'),
     path('our-story/', views.our_story, name='our_story'),
+    path('toggle/', views.toggle_page, name='toggle_page'),
 ]

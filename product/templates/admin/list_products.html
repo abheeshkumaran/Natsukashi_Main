@@ -81,7 +81,20 @@
                                     <input type="hidden" name="categories" value="{{ category.id }}" id="hidden-cat-{{ product.id }}-{{ category.id }}">
                                 {% endfor %}
                             </div>
-                            
+
+                        </form>
+
+                        <form action="{% url 'toggle_product_toggle_page' product.id %}" method="POST" class="mt-1">
+                            {% csrf_token %}
+                            {% if product.show_on_toggle_page %}
+                                <button type="submit" class="btn btn-sm btn-success w-100" style="font-size: 0.75rem;" title="Remove from the {{ hero.toggle|default:'Toggle' }} page">
+                                    &#10003; {{ hero.toggle|default:"Toggle Page" }}
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-success w-100" style="font-size: 0.75rem;" title="Add to the {{ hero.toggle|default:'Toggle' }} page">
+                                    + {{ hero.toggle|default:"Toggle Page" }}
+                                </button>
+                            {% endif %}
                         </form>
                     </td>
                     <td>

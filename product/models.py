@@ -26,6 +26,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=0)
     stock_available = models.BooleanField(default=True)
+    show_on_toggle_page = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     class Meta:
@@ -330,6 +331,8 @@ class HeroSection(models.Model):
     hero_para_2 = models.TextField(blank=True, default='')
     hero_image = models.ImageField(upload_to='hero_section/', max_length=255, blank=True, null=True)
     marquee_text = models.CharField(max_length=500, blank=True, default='')
+    toggle = models.CharField(max_length=100, blank=True, default='')
+    toggle_para = models.TextField(blank=True, default='')
 
     class Meta:
         db_table = 'hero_section'

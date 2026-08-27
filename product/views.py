@@ -750,7 +750,33 @@ def nav_categories_context(request):
         categories = Category.objects.filter(show_in_collection_table=True).order_by('name')
     except Exception:
         categories = []
-    return {'nav_categories': categories}
+    try:
+        hero = HeroSection.load()
+    except Exception:
+        hero = None
+    return {'nav_categories': categories, 'hero': hero}
+
+
+def toggle_page(request):
+    """Standalone page opened from the navbar link whose label is set in
+    admin -> Hero Updation -> Toggle. Its heading is that same label, its
+    body is the Toggle Para field, and it lists every product an admin has
+    marked "show on toggle page" from the products list."""
+    hero = HeroSection.load()
+    products = Product.objects.filter(show_on_toggle_page=True).prefetch_related('images').order_by('-id')
+    return render(request, 'product/toggle_page.html', {'hero': hero, 'products': products})
+
+
+def toggle_product_toggle_page(request, pk):
+    """Flips Product.show_on_toggle_page for one product (from the button in
+    the products list's Manage Categories cell)."""
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        product.show_on_toggle_page = not product.show_on_toggle_page
+        product.save(update_fields=['show_on_toggle_page'])
+        state = 'added to' if product.show_on_toggle_page else 'removed from'
+        messages.success(request, f'"{product.collection_name}" {state} the toggle page.')
+    return redirect('list_products')
 
 
 def product_modal(request, product_type, pk):

@@ -14,12 +14,14 @@ class CategoryForm(forms.ModelForm):
 class HeroSectionForm(forms.ModelForm):
     class Meta:
         model = HeroSection
-        fields = ['hero_content', 'hero_para_1', 'hero_para_2', 'marquee_text']
+        fields = ['hero_content', 'hero_para_1', 'hero_para_2', 'marquee_text', 'toggle', 'toggle_para']
         widgets = {
             'hero_content': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Hero heading'}),
             'hero_para_1': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'First paragraph'}),
             'hero_para_2': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Second paragraph'}),
             'marquee_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Scrolling text shown under the navbar'}),
+            'toggle': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'SHOP OUR COLLECTION'}),
+            'toggle_para': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Text shown on the toggle page'}),
         }
 
 
