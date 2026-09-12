@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Category, UpdationTask, ProductCoupon, HeroSection
+from .models import Product, Category, UpdationTask, ProductCoupon, HeroSection, ProductReview
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -65,6 +65,19 @@ class ProductForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Price'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantity'}),
             'stock_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class ProductReviewForm(forms.ModelForm):
+    class Meta:
+        model = ProductReview
+        fields = ['product', 'rating', 'review_count']
+        widgets = {
+            'product': forms.Select(attrs={'class': 'form-select'}),
+            'rating': forms.Select(attrs={'class': 'form-select'}),
+            'review_count': forms.NumberInput(attrs={
+                'class': 'form-control', 'min': 0, 'placeholder': 'e.g. 10',
+            }),
         }
 
 class UpdationTaskForm(forms.ModelForm):

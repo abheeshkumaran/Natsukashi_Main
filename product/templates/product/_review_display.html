@@ -1,0 +1,6 @@
+{% if product.review %}
+<div class="product-review-summary" aria-label="{{ product.review.rating }} out of 5 stars, {{ product.review.review_count }} reviews">
+    <span class="product-review-stars">{% if product.review.rating >= 1 %}★{% else %}☆{% endif %}{% if product.review.rating >= 2 %}★{% else %}☆{% endif %}{% if product.review.rating >= 3 %}★{% else %}☆{% endif %}{% if product.review.rating >= 4 %}★{% else %}☆{% endif %}{% if product.review.rating >= 5 %}★{% else %}☆{% endif %}</span>
+    <span>{{ product.review.review_count }} Review{{ product.review.review_count|pluralize }}</span>
+</div>
+{% endif %}

@@ -43,7 +43,7 @@
                 <tbody>
                     {% for order in orders %}
                     <tr>
-                        <td><strong>#{{ order.id }}</strong></td>
+                        <td><strong>{{ order.order_code }}</strong></td>
                         <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
                         <td>{{ order.user.email }}</td>
                         <td>{{ order.full_name }}</td>
@@ -117,7 +117,7 @@
                     <div id="pdf-content-{{ order.id }}" style="background-color: #fdfbf7; padding: 0; font-family: 'Inter', sans-serif; color: #333;">
                         <!-- Non-printable header for modal only -->
                         <div class="modal-header d-print-none" style="border-bottom: 1px solid #eaeaea; padding: 15px 25px; background: #fff;">
-                            <h5 class="modal-title fw-bold" style="color: #6b1d2f;">Order Details: #{{ order.id }}</h5>
+                            <h5 class="modal-title fw-bold" style="color: #6b1d2f;">Order Details: {{ order.order_code }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         
@@ -133,7 +133,7 @@
                                 <div class="text-end">
                                     <h4 class="text-uppercase mb-2" style="color: #6b1d2f; font-weight: 600; font-size: 18px; letter-spacing: 1.5px;">Tax Invoice / Bill</h4>
                                     <div class="d-inline-block text-start" style="border: 1px solid #e0d5d5; padding: 8px 15px; border-radius: 4px; background: #fdfbf7;">
-                                        <p class="mb-1" style="font-size: 12px; margin: 0;"><strong>Order No:</strong> #{{ order.id }}</p>
+                                        <p class="mb-1" style="font-size: 12px; margin: 0;"><strong>Order No:</strong> {{ order.order_code }}</p>
                                         <p class="mb-0" style="font-size: 12px; margin: 0;"><strong>Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
                                     </div>
                                 </div>
@@ -242,7 +242,7 @@
                                 </div>
                                 <div class="text-end">
                                     <div style="border: 1px solid #333; padding: 5px 15px; display: inline-block;">
-                                        <p class="mb-0" style="font-size: 14px; font-weight: bold;">#{{ order.id }}</p>
+                                        <p class="mb-0" style="font-size: 14px; font-weight: bold;">{{ order.order_code }}</p>
                                     </div>
                                 </div>
                             </div>

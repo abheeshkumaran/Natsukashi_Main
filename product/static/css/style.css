@@ -490,6 +490,17 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes logoAutoHide {
+    from { opacity: 1; }
+    to { opacity: 0; visibility: hidden; }
+}
+
+@media (max-width: 767.98px) {
+    .logo {
+        animation: logoReveal 1.5s ease forwards, logoAutoHide 0.8s ease forwards 5s;
+    }
+}
+
 .hero h1 {
     font-size: 3.5rem;
     font-weight: 700;
@@ -697,6 +708,22 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--primary-color);
+}
+
+.product-review-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+}
+
+.product-review-stars,
+.review-stars {
+    color: #d39b22;
+    letter-spacing: 1px;
+    white-space: nowrap;
 }
 
 /* Real price first, then struck-through fake MRP, then the auto discount */
@@ -918,13 +945,25 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 }
 
 @media (max-width: 767.98px) {
+    .card-grid {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 0 16px 14px;
+        margin: 0 -16px;
+        scroll-snap-type: x proximity;
+    }
+
     .horizontal-scroll-item {
-        width: 170px;
+        width: 78vw;
+        max-width: 300px;
     }
 
     .card-grid-item {
-        flex: 0 0 170px;
-        width: 170px;
+        flex: 0 0 78vw;
+        width: 78vw;
+        max-width: 300px;
+        scroll-snap-align: start;
     }
 
     .product-card .card-body {
@@ -955,8 +994,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 @media (max-width: 359.98px) {
     .card-grid-item {
-        flex: 1 1 100%;
-        width: 100%;
+        flex: 0 0 78vw;
+        width: 78vw;
     }
 }
 

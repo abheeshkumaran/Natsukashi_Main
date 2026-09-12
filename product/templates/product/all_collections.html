@@ -165,6 +165,7 @@
                     </a>
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ product.collection_name }}</h5>
+                        {% include 'product/_review_display.html' %}
                         <p class="card-text">{{ product.description }}</p>
                         <div class="mt-auto">
                             <div class="product-price mb-3">{% include 'product/_price_display.html' %}</div>

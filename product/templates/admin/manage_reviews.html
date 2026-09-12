@@ -1,0 +1,134 @@
+{% extends 'admin/admin_base.html' %}
+{% block extra_css %}
+<style>
+    .review-rating-picker {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        min-height: 38px;
+    }
+
+    .review-rating-star {
+        border: 0;
+        background: transparent;
+        color: #d9dde5;
+        cursor: pointer;
+        font-size: 2rem;
+        line-height: 1;
+        padding: 0 2px;
+        transition: color .15s ease, transform .15s ease;
+    }
+
+    .review-rating-star:hover,
+    .review-rating-star.is-selected,
+    .review-rating-star.is-preview {
+        color: #d39b22;
+    }
+
+    .review-rating-star:hover {
+        transform: scale(1.08);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid py-2">
+    <div class="mb-4">
+        <h2 class="mb-1">Reviews</h2>
+        <p class="text-muted mb-0">Set the rating and review count shown for each product.</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h4 class="mb-4">{% if editing_review %}Update Review{% else %}Create New Review{% endif %}</h4>
+            <form method="post">
+                {% csrf_token %}
+                {% if editing_review %}<input type="hidden" name="review_id" value="{{ editing_review.id }}">{% endif %}
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold" for="{{ form.product.id_for_label }}">Select Product</label>
+                        {{ form.product }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" for="reviewRating">Star Rating</label>
+                        <input type="hidden" name="rating" id="reviewRating" value="{{ form.rating.value|default:'' }}">
+                        <div class="review-rating-picker" id="reviewRatingPicker" role="radiogroup" aria-label="Select star rating">
+                            {% for value in '12345'|make_list %}
+                            <button type="button" class="review-rating-star" data-rating="{{ forloop.counter }}" role="radio" aria-label="{{ value }} star{{ value|pluralize }}" aria-checked="false">★</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" for="{{ form.review_count.id_for_label }}">Review Count</label>
+                        {{ form.review_count }}
+                        <div class="form-text">Shown as “number Reviews”.</div>
+                    </div>
+                    <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">Save</button></div>
+                </div>
+                {% if form.errors %}<div class="text-danger mt-3">{{ form.errors }}</div>{% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h4 class="mb-3">Created Reviews</h4>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Product</th><th>Rating</th><th>Review Count</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    {% for review in reviews %}
+                        <tr>
+                            <td>{{ review.product.collection_name }}</td>
+                            <td class="review-stars">{% for star in '12345'|make_list %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</td>
+                            <td>{{ review.review_count }} Review{{ review.review_count|pluralize }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'manage_reviews' %}?edit={{ review.id }}">Update</a>
+                                <form class="d-inline" method="post" action="{% url 'delete_review' review.id %}">
+                                    {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}<tr><td colspan="4" class="text-muted text-center py-4">No reviews created yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        const input = document.getElementById('reviewRating');
+        const picker = document.getElementById('reviewRatingPicker');
+        if (!input || !picker) return;
+
+        const stars = Array.from(picker.querySelectorAll('.review-rating-star'));
+        function paint(value) {
+            stars.forEach(function (star) {
+                const selected = Number(star.dataset.rating) <= value;
+                star.classList.toggle('is-selected', selected);
+                star.setAttribute('aria-checked', Number(star.dataset.rating) === value ? 'true' : 'false');
+            });
+        }
+
+        stars.forEach(function (star) {
+            star.addEventListener('mouseenter', function () {
+                const value = Number(star.dataset.rating);
+                stars.forEach(function (item) {
+                    item.classList.toggle('is-preview', Number(item.dataset.rating) <= value);
+                });
+            });
+            star.addEventListener('click', function () {
+                input.value = star.dataset.rating;
+                paint(Number(input.value));
+            });
+        });
+
+        picker.addEventListener('mouseleave', function () { paint(Number(input.value) || 0); });
+        paint(Number(input.value) || 0);
+    })();
+</script>
+{% endblock %}

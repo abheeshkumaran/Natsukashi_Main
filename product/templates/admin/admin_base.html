@@ -470,6 +470,10 @@
                 <i class="bi bi-image"></i><span class="link-label">Hero Updation</span>
             </a>
 
+            <a href="{% url 'manage_reviews' %}" class="sidebar-link {% if 'review' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-star"></i><span class="link-label">Reviews</span>
+            </a>
+
             <a href="{% url 'list_users' %}" class="sidebar-link {% if 'user' in request.resolver_match.url_name and 'data' not in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-people"></i><span class="link-label">Users</span>
             </a>

@@ -16,8 +16,8 @@ from django.db.models.functions import Greatest
 from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm, HeroSectionForm
-from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress, HeroSection, HeroImage, AdminAuth
+from .forms import ProductForm, CategoryForm, UpdationTaskForm, ProductCouponForm, HeroSectionForm, ProductReviewForm
+from .models import Product, ProductImage, SiteUser, UserData, Order, OrderItem, OrderStatus, Category, UpdationTask, ProductCoupon, CartItem, WishlistItem, SavedAddress, HeroSection, HeroImage, AdminAuth, ProductReview
 
 import re
 from django.core.validators import validate_email
@@ -286,9 +286,9 @@ Traditional Collections
 
 # Create your views here.
 def home(request):
-    categories = Category.objects.filter(show_in_collection_list=True).prefetch_related('products', 'products__images').order_by('id')
-    table_categories = Category.objects.filter(show_in_collection_table=True).prefetch_related('products', 'products__images').order_by('id')
-    all_products = Product.objects.all().prefetch_related('images').order_by('-id')
+    categories = Category.objects.filter(show_in_collection_list=True).prefetch_related('products', 'products__images', 'products__review').order_by('id')
+    table_categories = Category.objects.filter(show_in_collection_table=True).prefetch_related('products', 'products__images', 'products__review').order_by('id')
+    all_products = Product.objects.all().prefetch_related('images', 'review').order_by('-id')
     onam_category = Category.objects.filter(name='Featured Onam Picks').first()
     hero = HeroSection.load()
     hero_images = [img.image.url for img in hero.images.all()]
@@ -315,7 +315,7 @@ def product_search(request):
     for word in words:
         filters &= (Q(collection_name__icontains=word) | Q(description__icontains=word))
 
-    products = Product.objects.filter(filters).prefetch_related('images').distinct().order_by('collection_name')[:20]
+    products = Product.objects.filter(filters).prefetch_related('images', 'review').distinct().order_by('collection_name')[:20]
 
     results = [{
         'id': p.id,
@@ -545,12 +545,12 @@ def add_colored_saree(request):
 
 
 def list_onam_sarees(request):
-    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images', 'review')
     return render(request, 'admin/list_onam_sarees.html', {'sarees': sarees})
 
 
 def list_colored_sarees(request):
-    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images', 'review')
     return render(request, 'admin/list_colored_sarees.html', {'sarees': sarees})
 
 def register_user(request):
@@ -669,7 +669,7 @@ def logout_user(request):
 
 
 def list_onam_set_munds(request):
-    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images')
+    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images', 'review')
     return render(request, 'admin/list_onam_set_munds.html', {'munds': munds})
 
 
@@ -758,17 +758,17 @@ def delete_onam_set_mund(request, pk):
 
 
 def onam_saree_explore(request):
-    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Featured Onam Picks').prefetch_related('images', 'review')
     return render(request, 'product/onam_saree_explore.html', {'sarees': sarees})
 
 
 def colored_saree_explore(request):
-    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images')
+    sarees = Product.objects.filter(categories__name='Most Purchased Sarees').prefetch_related('images', 'review')
     return render(request, 'product/colored_saree_explore.html', {'sarees': sarees})
 
 
 def onam_mund_explore(request):
-    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images')
+    munds = Product.objects.filter(categories__name='Shop By Collection').prefetch_related('images', 'review')
     return render(request, 'product/onam_mund_explore.html', {'munds': munds})
 
 
@@ -777,13 +777,13 @@ PRODUCT_MODEL_BY_TYPE = {'saree': Product, 'mund': Product, 'colored': Product, 
 
 def category_products(request, pk):
     category = get_object_or_404(Category, pk=pk)
-    products = category.products.all().prefetch_related('images')
+    products = category.products.all().prefetch_related('images', 'review')
     return render(request, 'product/category_products.html', {'category': category, 'products': products})
 
 def new_arrivals(request):
     from django.utils import timezone
     cutoff = timezone.now() - datetime.timedelta(days=15)
-    products = Product.objects.filter(created_at__gte=cutoff).prefetch_related('images').order_by('-created_at')
+    products = Product.objects.filter(created_at__gte=cutoff).prefetch_related('images', 'review').order_by('-created_at')
     return render(request, 'product/new_arrivals.html', {'products': products})
 
 def all_collections(request):
@@ -810,7 +810,7 @@ def toggle_page(request):
     body is the Toggle Para field, and it lists every product an admin has
     marked "show on toggle page" from the products list."""
     hero = HeroSection.load()
-    products = Product.objects.filter(show_on_toggle_page=True).prefetch_related('images').order_by('-id')
+    products = Product.objects.filter(show_on_toggle_page=True).prefetch_related('images', 'review').order_by('-id')
     return render(request, 'product/toggle_page.html', {'hero': hero, 'products': products})
 
 
@@ -957,7 +957,7 @@ def download_user_data_csv(request):
     for order in orders:
         items_str = " | ".join([f"{item.quantity}x {item.product_name} (₹{item.price})" for item in order.items.all()])
         writer.writerow([
-            order.id,
+            order.order_code,
             order.created_at.strftime("%Y-%m-%d %H:%M"),
             order.total_amount,
             order.status,
@@ -1828,6 +1828,39 @@ def delete_product_image(request, pk):
         messages.success(request, 'Image deleted successfully.')
         return redirect('edit_product', pk=product_id)
     return redirect('list_products')
+
+
+def manage_reviews(request):
+    edit_review = None
+    edit_id = request.GET.get('edit')
+    if edit_id:
+        edit_review = get_object_or_404(ProductReview, pk=edit_id)
+
+    if request.method == 'POST':
+        review_id = request.POST.get('review_id')
+        instance = get_object_or_404(ProductReview, pk=review_id) if review_id else None
+        form = ProductReviewForm(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Review details saved successfully.')
+            return redirect('manage_reviews')
+    else:
+        form = ProductReviewForm(instance=edit_review)
+
+    reviews = ProductReview.objects.select_related('product').order_by('-id')
+    return render(request, 'admin/manage_reviews.html', {
+        'form': form,
+        'reviews': reviews,
+        'editing_review': edit_review,
+    })
+
+
+def delete_review(request, pk):
+    review = get_object_or_404(ProductReview, pk=pk)
+    if request.method == 'POST':
+        review.delete()
+        messages.success(request, 'Review details deleted successfully.')
+    return redirect('manage_reviews')
 
 # Updations Tracker
 def manage_updations(request):

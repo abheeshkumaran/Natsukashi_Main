@@ -73,6 +73,20 @@ class ProductImage(models.Model):
         return f"Image for {self.product.collection_name}"
 
 
+class ProductReview(models.Model):
+    product = models.OneToOneField(Product, related_name='review', on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(choices=[(value, value) for value in range(1, 6)])
+    review_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'product_reviews'
+        verbose_name = 'Product Review'
+        verbose_name_plural = 'Product Reviews'
+
+    def __str__(self):
+        return f"{self.product.collection_name} - {self.rating} stars"
+
+
 class SiteUser(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -211,6 +225,27 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.email}"
+
+    @property
+    def order_code(self):
+        """Human-facing order id: A0001..A9999, then B0001.. up to Z9999,
+        then AA0001... Derived from the numeric pk, which stays the real
+        primary key used in URLs and lookups."""
+        n = self.id or 0
+        if n <= 0:
+            return ''
+        idx = n - 1
+        seq = idx % 9999 + 1
+        cycle = idx // 9999
+        letters = ''
+        c = cycle
+        while True:
+            letters = chr(ord('A') + c % 26) + letters
+            c = c // 26 - 1
+            if c < 0:
+                break
+        return f'{letters}{seq:04d}'
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
